@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Light the Valley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: a hand-drawn valley map on paper beside a sketchbook control panel; stacks on phones.
+   Styled after the "SDG 7 Affordable and clean energy" deck: cream paper, colored-pencil drawings,
+   indigo handwriting, green highlights, yellow / orange / indigo stars. Single light look by choice. */
+:root {
+  --paper: #f8f4d9;
+  --paper-2: #f1ebc4;
+  --indigo: #5b6496;
+  --green: #427f12;
+  --yellow: #fdca39;
+  --orange: #ff4401;
+  --brown: #b1741e;
+  --water: #c9d0ec;
+  --ink-soft: #7c83ad;
+  --font-display: "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --font-body: "Patrick Hand", "Segoe Print", "Comic Sans MS", cursive;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--paper); color: var(--indigo);
+  font: 19px/1.35 var(--font-body);
+  padding: 20px 16px 40px;
+}
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 18px; position: relative; }
+h1 img { width: .42em; vertical-align: top; margin-left: .12em; }
+h1 img.s2 { width: .26em; vertical-align: middle; transform: rotate(14deg); }
+header .sq { display: block; width: 200px; max-width: 60%; margin-top: 2px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 4px 20px; }
+h1 { font: 700 clamp(46px, 8vw, 78px)/.9 var(--font-display); margin: 0; text-wrap: balance; }
+h1 span { color: var(--green); }
+.tag { font-size: 20px; color: var(--green); }
+
+.rough { border: 2px solid var(--indigo); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+
+.hud { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.stat { background: var(--paper); padding: 8px 14px 10px; }
+.stat:nth-child(even) { border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px; }
+.stat .k { font-size: 17px; color: var(--green); }
+.stat .v { font: 700 36px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.meter { height: 10px; border: 1.5px solid var(--indigo); border-radius: 8px 3px 8px 3px; overflow: hidden; margin-top: 6px; }
+.meter i { display: block; height: 100%; width: 0; background: var(--green); transition: width .4s;
+  background-image: repeating-linear-gradient(-55deg, transparent 0 3px, rgba(248,244,217,.45) 3px 5px); }
+
+.main { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 820px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.board-wrap { padding: 14px; background: var(--paper); }
+.weather { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 18px; margin-bottom: 10px; }
+.weather b { font: 700 24px var(--font-display); color: var(--green); }
+.board { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.tile {
+  aspect-ratio: 1; max-width: 100%; padding: 0; cursor: pointer; position: relative;
+  display: grid; place-items: center; color: var(--indigo); background: var(--paper-2);
+  border: 1.5px dashed rgba(91,100,150,.35);
+  border-radius: 12px 4px 10px 5px / 5px 10px 4px 12px;
+}
+.tile:nth-child(3n) { border-radius: 5px 12px 4px 10px / 10px 4px 12px 5px; }
+.tile.river {
+  background: var(--water); border-style: solid; border-color: transparent;
+  background-image: repeating-radial-gradient(circle at 30% 120%, transparent 0 7px, rgba(91,100,150,.35) 7px 8.5px);
+}
+.tile:hover { border: 2px solid var(--orange); }
+.tile:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+.tile.can { border: 2.5px solid var(--green); }
+.tile svg, .tile img { width: 86%; height: 86%; object-fit: contain; }
+.tile img.house { filter: grayscale(1) brightness(.75) opacity(.7); transition: filter .3s; }
+.tile img.house.lit { filter: drop-shadow(0 0 6px var(--yellow)); }
+.tile .eff { position: absolute; top: 1px; left: 2px; width: 34%; height: auto; }
+.tile .badge {
+  position: absolute; right: 3px; bottom: 0; font: 700 17px var(--font-display); color: var(--green);
+}
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 16px; margin-top: 10px; }
+.legend b { color: var(--green); }
+.sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px 2px 5px 2px; vertical-align: -1px; margin-right: 5px; border: 1.5px solid var(--indigo); }
+
+.side { display: grid; gap: 14px; }
+.card { padding: 14px 16px; background: var(--paper); }
+.card h2 { font: 700 34px/1 var(--font-display); margin: 0 0 10px; }
+.tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+.tool {
+  font: inherit; color: var(--indigo); background: var(--paper); cursor: pointer; text-align: left;
+  display: grid; gap: 0; padding: 6px 8px; border: 1.5px solid var(--indigo);
+  border-radius: 10px 3px 12px 4px / 4px 12px 3px 10px;
+}
+.tool svg, .tool img { width: 40px; height: 40px; object-fit: contain; }
+.tool .n { font-size: 17px; line-height: 1.1; }
+.tool .c { font: 700 20px var(--font-display); color: var(--green); }
+.tool[aria-pressed="true"] { background: #fff3c4; border: 2.5px solid var(--orange); }
+.tool:disabled { opacity: .45; cursor: not-allowed; }
+.tool:focus-visible, .btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.info { font-size: 17px; color: var(--green); margin: 10px 0 0; min-height: 2.8em; }
+.btn {
+  width: 100%; font: 700 34px/1 var(--font-display); padding: 10px 12px 12px; cursor: pointer;
+  background: var(--yellow); color: var(--indigo); border: 2.5px solid var(--indigo);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 3px 4px 0 var(--indigo);
+}
+.btn:hover { background: #ffd65c; }
+.btn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--indigo); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.fact { position: relative; }
+.fact .src { font: 700 22px var(--font-display); color: var(--orange); }
+.fact p { color: var(--green); font-size: 19px; }
+.fact img { position: absolute; right: 10px; top: -14px; width: 46px; transform: rotate(10deg); }
+.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 17px; max-height: 180px; overflow: auto; }
+.log li { padding-left: 22px; position: relative; }
+.log li::before { content: "✦"; position: absolute; left: 2px; color: var(--ink-soft); }
+.log li.good::before { color: var(--green); } .log li.bad::before { color: var(--orange); } .log li.warn::before { color: var(--brown); }
+
+.overlay { position: fixed; inset: 0; background: rgba(91,100,150,.55); display: grid; place-items: center; padding: 16px; z-index: 10; }
+.modal { background: var(--paper); color: var(--indigo); padding: 22px 24px; max-width: 480px; width: 100%; display: grid; gap: 12px; }
+.modal h2 { font: 700 46px/.95 var(--font-display); margin: 0; text-wrap: balance; }
+.modal p { margin: 0; }
+.modal b { color: var(--green); }
+.stars { display: flex; gap: 6px; }
+.stars img { width: 48px; }
+.stars img.off { filter: grayscale(1) opacity(.3); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="pencil"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+  </svg>
+  <header>
+    <div><h1>Light the <span>Valley</span><img class="s1" src="assets/star-yellow.png" alt=""><img class="s2" src="assets/star-orange.png" alt=""></h1><img class="sq" src="assets/squiggle.png" alt=""></div>
+    <div class="tag">SDG 7 · Affordable and clean energy · draft game</div>
+  </header>
+
+  <section class="hud" aria-label="Valley status">
+    <div class="stat rough"><div class="k">Year</div><div class="v" id="hYear">2021</div></div>
+    <div class="stat rough"><div class="k">Budget</div><div class="v" id="hMoney">$100k</div></div>
+    <div class="stat rough"><div class="k">Homes with power</div><div class="v" id="hAccess">0%</div><div class="meter"><i id="mAccess"></i></div></div>
+    <div class="stat rough"><div class="k">Clean share</div><div class="v" id="hClean">0%</div><div class="meter"><i id="mClean"></i></div></div>
+    <div class="stat rough"><div class="k">Air pollution</div><div class="v" id="hPoll">0</div><div class="meter"><i id="mPoll"></i></div></div>
+  </section>
+
+  <div class="main">
+    <section class="board-wrap rough" aria-label="Valley map">
+      <div class="weather" id="weather"></div>
+      <div class="board" id="board"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--water)"></i>River</span>
+        <span><i class="sw" style="background:var(--yellow)"></i>Home with power</span>
+        <span><i class="sw" style="background:#bdb8a0"></i>Home in the dark</span>
+        <span>Supply <b id="lSupply">0</b> MW · Demand <b id="lDemand">0</b> MW</span>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="card rough">
+        <h2>Build</h2>
+        <div class="tools" id="tools"></div>
+        <p class="info" id="info">Pick something to build, then tap a tile on the map.</p>
+      </div>
+      <button class="btn" id="endYear" type="button">End year →</button>
+      <div class="card rough fact" id="fact"></div>
+      <div class="card rough">
+        <h2>Valley news</h2>
+        <ul class="log" id="log"></ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal rough" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h2 id="mTitle"></h2>
+    <div id="mBody"></div>
+    <button class="btn" id="mBtn" type="button">OK</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const COLS = 9, ROWS = 6, START_YEAR = 2021, END_YEAR = 2030, POLL_MAX = 100;
+
+  // Wind, hydro and coal are drawn in the deck's colored-pencil style; house, solar and LED reuse its drawings.
+  const P = 'filter="url(#pencil)" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  const ICON = {
+    solar: '<img src="assets/solar.png" alt="">',
+    wind: `<svg viewBox="0 0 48 48"><g ${P}><path d="M23 22 21 46h6l-2-24" stroke="#5b6496" stroke-width="2"/><path d="M24 21C22 14 22 8 24 3c2 5 2 11 0 18Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/><path d="M24 21c-6 4-12 6-18 6 4-4 10-6 18-6Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/><path d="M24 21c6 4 11 9 13 15-5-2-10-7-13-15Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/><circle cx="24" cy="21" r="2.6" fill="#fdca39" stroke="#5b6496" stroke-width="1.5"/><path d="M14 46h20" stroke="#b1741e" stroke-width="2"/></g></svg>`,
+    hydro: `<svg viewBox="0 0 48 48"><g ${P}><path d="M5 12h38v26H5z" stroke="#5b6496" stroke-width="2.2" fill="#5b6496" fill-opacity=".25"/><path d="M5 12l6-5h26l6 5" stroke="#5b6496" stroke-width="2"/><path d="M8 32c4-3 7 3 11 0s7 3 11 0 7 3 11 0" stroke="#5b6496" stroke-width="2"/><path d="M8 38c4-3 7 3 11 0s7 3 11 0 7 3 11 0" stroke="#5b6496" stroke-width="1.6"/><path d="M26 15l-6 9h6l-4 8" stroke="#ff4401" stroke-width="2.4" fill="#fdca39"/></g></svg>`,
+    coal: `<svg viewBox="0 0 48 48"><g ${P}><path d="M5 44V26l10-6v6l10-6v6l10-6v24z" stroke="#5b6496" stroke-width="2.2" fill="#8a8572" fill-opacity=".55"/><path d="M36 44V10h6v34" stroke="#5b6496" stroke-width="2.2" fill="#8a8572" fill-opacity=".55"/><circle cx="40" cy="6" r="3.5" stroke="#8a8572" stroke-width="2" fill="#bdb8a0"/><circle cx="33" cy="4" r="2.5" stroke="#8a8572" stroke-width="1.6" fill="#bdb8a0"/><path d="M5 44h38" stroke="#b1741e" stroke-width="2"/><path d="M10 34h4M20 34h4M30 34h2" stroke="#fdca39" stroke-width="3"/></g></svg>`,
+    insulate: '<img src="assets/led.png" alt="">',
+    remove: `<svg viewBox="0 0 48 48"><g ${P}><path d="M10 10 38 38M38 10 10 38" stroke="#ff4401" stroke-width="4"/></g></svg>`,
+    house: (lit, eff) => `<img class="house${lit ? ' lit' : ''}" src="assets/house.png" alt="">${eff ? '<img class="eff" src="assets/star-green.png" alt="">' : ''}`,
+  };
+
+  const TOOLS = {
+    solar:    { name: 'Solar farm', cost: 20, clean: true,  desc: 'Makes 3 MW in a normal year. Output follows the sunshine.' },
+    wind:     { name: 'Wind turbine', cost: 35, clean: true, desc: 'Makes about 5 MW. Output swings with the wind each year.' },
+    hydro:    { name: 'Small hydro', cost: 60, clean: true, desc: 'Steady 9 MW. Must sit on a land tile next to the river.' },
+    coal:     { name: 'Coal plant', cost: 15, clean: false, desc: 'Cheap, steady 8 MW. Costs $3k a year to run and adds 7 pollution every year.' },
+    insulate: { name: 'Efficient home', cost: 8, desc: 'LED bulbs and insulation: an efficient home needs 1 MW instead of 2. Tap a home. It gets a green star.' },
+    remove:   { name: 'Demolish', cost: 0, desc: 'Remove a power plant. You get half its price back.' },
+  };
+
+  const FACTS = [
+    ['Around 670 million people still lived without electricity in the early 2020s, most of them in sub-Saharan Africa.', 'SDG 7.1 · Universal access'],
+    ['Target 7.2 asks countries to substantially increase the share of renewable energy in the global energy mix by 2030.', 'SDG 7.2 · Renewables'],
+    ['Target 7.3 asks the world to double the global rate of improvement in energy efficiency by 2030.', 'SDG 7.3 · Efficiency'],
+    ['The price of electricity from solar panels fell by roughly 90% between 2010 and 2020.', 'Renewables'],
+    ['About 2.3 billion people still cook with polluting fuels like wood, charcoal and kerosene, which harms health indoors.', 'SDG 7.1 · Clean cooking'],
+    ['Off-grid solar kits and mini-grids are often the fastest way to bring power to remote villages.', 'Access'],
+    ['Energy is the largest source of greenhouse gas emissions, about three quarters of the global total.', 'Climate link · SDG 13'],
+    ['Efficient appliances and insulated buildings cut bills and reduce how many power plants a town needs.', 'SDG 7.3 · Efficiency'],
+    ['Target 7.b is about expanding infrastructure and upgrading technology for modern energy in developing countries.', 'SDG 7.b · Infrastructure'],
+    ['Reliable power lets clinics refrigerate vaccines, schools stay open after dark and small shops grow.', 'Why it matters'],
+  ];
+
+  const EVENTS = [
+    { t: 'Sunny year! Solar farms produce more.', k: 'good', fx: s => { s.sun = 1.3; } },
+    { t: 'A cloudy, rainy year. Solar is weaker, but the river runs high.', k: 'warn', fx: s => { s.sun = 0.6; s.river = 1.2; } },
+    { t: 'Drought. The river is low and hydro output drops.', k: 'warn', fx: s => { s.river = 0.6; } },
+    { t: 'Strong winds all year. Turbines spin fast.', k: 'good', fx: s => { s.wind = 1.4; } },
+    { t: 'A still year with little wind.', k: 'warn', fx: s => { s.wind = 0.5; } },
+    { t: 'A climate fund grants the valley $40k for clean energy.', k: 'good', fx: s => { s.money += 40; } },
+    { t: 'Coal prices spike. Coal plants cost $3k more to run this year.', k: 'bad', fx: s => { s.coalExtra = 3; } },
+    { t: 'A new school opens. Two more families move in.', k: 'warn', fx: s => { addHouses(2); } },
+    { t: 'A calm, ordinary year.', k: '', fx: () => {} },
+  ];
+
+  let S;
+  const $ = id => document.getElementById(id);
+  const rnd = n => Math.floor(Math.random() * n);
+
+  function newGame() {
+    const tiles = [];
+    // A river that meanders down the map.
+    let rc = 6;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) tiles.push({ r, c, river: false, b: null, house: null });
+      tiles[r * COLS + rc].river = true;
+      if (r < ROWS - 1) { const d = [-1, 0, 1][rnd(3)]; const nc = Math.min(COLS - 2, Math.max(4, rc + d)); if (nc !== rc) { tiles[r * COLS + nc].river = true; rc = nc; } }
+    }
+    S = { year: START_YEAR, money: 100, poll: 0, tiles, tool: 'solar', sun: 1, wind: 1, river: 1, coalExtra: 0, log: [], fact: 0, over: false };
+    addHouses(5);
+    rollYear(true);
+    render();
+  }
+
+  function addHouses(n) {
+    const free = S.tiles.filter(t => !t.river && !t.b && !t.house);
+    for (let i = 0; i < n && free.length; i++) {
+      const t = free.splice(rnd(free.length), 1)[0];
+      t.house = { eff: false };
+    }
+  }
+
+  const nearRiver = t => [[1,0],[-1,0],[0,1],[0,-1]].some(([dr, dc]) => {
+    const r = t.r + dr, c = t.c + dc;
+    return r >= 0 && r < ROWS && c >= 0 && c < COLS && S.tiles[r * COLS + c].river;
+  });
+
+  function output(b) {
+    if (b === 'solar') return 3 * S.sun;
+    if (b === 'wind') return 5 * S.wind;
+    if (b === 'hydro') return 9 * S.river;
+    if (b === 'coal') return 8;
+    return 0;
+  }
+
+  function compute() {
+    let supply = 0, clean = 0, coal = 0;
+    for (const t of S.tiles) if (t.b) {
+      const o = output(t.b); supply += o;
+      if (TOOLS[t.b].clean) clean += o; else coal++;
+    }
+    const homes = S.tiles.filter(t => t.house);
+    const demand = homes.reduce((a, t) => a + (t.house.eff ? 1 : 2), 0);
+    // Power the cheapest-to-serve homes first.
+    let left = supply; const lit = new Set();
+    [...homes].sort((a, b) => (a.house.eff ? 1 : 2) - (b.house.eff ? 1 : 2)).forEach(t => {
+      const need = t.house.eff ? 1 : 2;
+      if (left + 1e-9 >= need) { left -= need; lit.add(t); }
+    });
+    return { supply, clean, coal, demand, homes: homes.length, lit, access: homes.length ? lit.size / homes.length : 0, cleanShare: supply ? clean / supply : 0 };
+  }
+
+  function rollYear(first) {
+    S.sun = 0.8 + Math.random() * 0.4;
+    S.wind = 0.7 + Math.random() * 0.6;
+    S.river = 1; S.coalExtra = 0;
+    if (!first) {
+      const e = EVENTS[rnd(EVENTS.length)];
+      e.fx(S); log(`${S.year}: ${e.t}`, e.k);
+    } else {
+      log(`${S.year}: Five families in the valley have no electricity. Build them clean, affordable power by ${END_YEAR}.`, 'warn');
+    }
+    S.fact = (S.year - START_YEAR) % FACTS.length;
+  }
+
+  function log(text, kind) { S.log.unshift({ text, kind }); S.log = S.log.slice(0, 30); }
+
+  function place(t) {
+    if (S.over) return;
+    const tool = S.tool, cfg = TOOLS[tool];
+    const say = m => { $('info').textContent = m; };
+    if (tool === 'remove') {
+      if (!t.b) return say('There is no power plant here to remove.');
+      S.money += Math.floor(TOOLS[t.b].cost / 2); say(`Removed the ${TOOLS[t.b].name.toLowerCase()}.`); t.b = null;
+    } else if (tool === 'insulate') {
+      if (!t.house) return say('Upgrades go on homes. Tap a house.');
+      if (t.house.eff) return say('This home is already efficient.');
+      if (S.money < cfg.cost) return say(`You need $${cfg.cost}k to upgrade a home.`);
+      S.money -= cfg.cost; t.house.eff = true; say('Home upgraded. It now needs half the power.');
+    } else {
+      if (t.river) return say('You cannot build on the river.');
+      if (t.house || t.b) return say('This tile is taken. Pick an empty land tile.');
+      if (tool === 'hydro' && !nearRiver(t)) return say('Small hydro must be right next to the river.');
+      if (S.money < cfg.cost) return say(`Not enough budget. A ${cfg.name.toLowerCase()} costs $${cfg.cost}k.`);
+      S.money -= cfg.cost; t.b = tool; say(`Built a ${cfg.name.toLowerCase()}.`);
+    }
+    render();
+  }
+
+  function endYear() {
+    if (S.over) return;
+    const st = compute();
+    const income = 15 + 6 * st.lit.size;
+    const upkeep = st.coal * (3 + S.coalExtra);
+    S.money += income - upkeep;
+    S.poll = Math.max(0, S.poll + st.coal * 7 - 3);
+    log(`${S.year} result: ${st.lit.size}/${st.homes} homes powered. Earned $${income}k${upkeep ? `, coal running costs $${upkeep}k` : ''}.`, st.access >= 1 ? 'good' : st.access >= .5 ? 'warn' : 'bad');
+
+    if (S.poll >= POLL_MAX) return finish(st, true);
+    if (S.year >= END_YEAR) return finish(st, false);
+
+    S.year++;
+    addHouses(S.year >= 2026 ? 3 : 2);
+    rollYear(false);
+    render();
+  }
+
+  function finish(st, smog) {
+    S.over = true; render();
+    let title, stars = 0, body;
+    if (smog) {
+      title = 'The valley is choking on smog';
+      body = `<p>Air pollution hit ${POLL_MAX} in ${S.year}. Coal kept the lights on but made people sick. Try mixing in solar, wind and hydro.</p>`;
+    } else {
+      stars = (st.access >= 1 ? 1 : 0) + (st.cleanShare >= 0.8 ? 1 : 0) + (S.poll < 30 ? 1 : 0);
+      title = stars === 3 ? 'SDG 7 achieved in the valley!' : stars ? 'Good progress by 2030' : 'The valley is still in the dark';
+      body = `<div class="stars" aria-label="${stars} of 3 stars">${['yellow', 'green', 'orange'].map((c, i) => `<img class="${i < stars ? '' : 'off'}" src="assets/star-${c}.png" alt="">`).join('')}</div>
+        <p>Homes with power: <b>${Math.round(st.access * 100)}%</b> (goal 100%)<br>
+        Clean share of power: <b>${Math.round(st.cleanShare * 100)}%</b> (goal 80%)<br>
+        Air pollution: <b>${S.poll}</b> (goal under 30)</p>`;
+    }
+    $('mTitle').textContent = title;
+    $('mBody').innerHTML = body;
+    $('mBtn').textContent = 'Play again';
+    $('overlay').hidden = false;
+    $('mBtn').focus();
+  }
+
+  function render() {
+    const st = compute();
+    $('hYear').textContent = S.year;
+    $('hMoney').textContent = `$${S.money}k`;
+    $('hAccess').textContent = `${Math.round(st.access * 100)}%`;
+    $('hClean').textContent = `${Math.round(st.cleanShare * 100)}%`;
+    $('hPoll').textContent = `${S.poll} / ${POLL_MAX}`;
+    $('mAccess').style.width = `${st.access * 100}%`;
+    $('mClean').style.width = `${st.cleanShare * 100}%`;
+    const mp = $('mPoll'); mp.style.width = `${S.poll}%`;
+    mp.style.backgroundColor = S.poll >= 60 ? 'var(--orange)' : S.poll >= 30 ? 'var(--brown)' : 'var(--green)';
+    $('lSupply').textContent = st.supply.toFixed(1);
+    $('lDemand').textContent = st.demand;
+
+    const pct = x => `${Math.round(x * 100)}%`;
+    $('weather').innerHTML = `<span>Sun <b>${pct(S.sun)}</b></span><span>Wind <b>${pct(S.wind)}</b></span><span>River <b>${pct(S.river)}</b></span><span>Years left <b>${END_YEAR - S.year + 1}</b></span>`;
+
+    const board = $('board'); board.innerHTML = '';
+    for (const t of S.tiles) {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'tile' + (t.river ? ' river' : '');
+      let label = t.river ? 'River' : 'Empty land';
+      if (t.b) { el.innerHTML = ICON[t.b] + `<span class="badge">${output(t.b).toFixed(0)}</span>`; label = `${TOOLS[t.b].name}, ${output(t.b).toFixed(1)} MW`; }
+      else if (t.house) { const lit = st.lit.has(t); el.innerHTML = ICON.house(lit, t.house.eff); label = `Home, ${lit ? 'has power' : 'no power'}${t.house.eff ? ', efficient' : ''}`; }
+      if (S.tool === 'hydro' && !t.river && !t.b && !t.house && nearRiver(t)) el.classList.add('can');
+      el.setAttribute('aria-label', `Row ${t.r + 1}, column ${t.c + 1}: ${label}`);
+      el.addEventListener('click', () => place(t));
+      board.appendChild(el);
+    }
+
+    const tools = $('tools'); tools.innerHTML = '';
+    for (const [k, cfg] of Object.entries(TOOLS)) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tool';
+      b.setAttribute('aria-pressed', S.tool === k);
+      b.disabled = S.over;
+      b.innerHTML = `${ICON[k]}<span class="n">${cfg.name}</span><span class="c">${cfg.cost ? `$${cfg.cost}k` : 'refund ½'}</span>`;
+      b.addEventListener('click', () => { S.tool = k; $('info').textContent = cfg.desc; render(); });
+      tools.appendChild(b);
+    }
+
+    const [ft, fs] = FACTS[S.fact];
+    $('fact').innerHTML = `<img src="assets/star-indigo.png" alt=""><div class="src">Did you know? · ${fs}</div><p style="margin:6px 0 0">${ft}</p>`;
+    $('log').innerHTML = S.log.map(l => `<li class="${l.kind}">${l.text}</li>`).join('');
+    $('endYear').textContent = S.year >= END_YEAR ? 'Finish 2030 →' : `End ${S.year} →`;
+    $('endYear').disabled = S.over;
+  }
+
+  $('endYear').addEventListener('click', endYear);
+  $('mBtn').addEventListener('click', () => { $('overlay').hidden = true; if (S.over) newGame(); });
+
+  newGame();
+  $('info').textContent = TOOLS.solar.desc;
+})();
+</script>
+</body>
+</html>
