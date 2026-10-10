@@ -2,13 +2,12 @@
 
 # ✦ Light Dash ✦
 
-### Раннер про чистую энергию для всех · A runner about clean energy for everyone
+### A runner game about clean energy for everyone
 
 **SDG 7: Affordable and clean energy**
 
-**[▶ Играть / Play](https://n1x-plut0.github.io/sdg-7-/)**
+**[▶ Play in your browser](https://n1x-plut0.github.io/sdg-7-/)**
 
-*Без скачивания и регистрации. Работает на компьютере и на телефоне.*
 *No download, no sign-up. Works on a laptop or a phone.*
 
 <img src="assets/dash-play.jpg" alt="Light Dash: a runner in a hard hat races past dark houses toward a tall wall of coal smog, with sun, water and wind energy to collect" width="820">
@@ -17,37 +16,37 @@
 
 ---
 
-## Беги. Собирай энергию. Зажигай свет.
+## Run. Collect energy. Light up homes.
 
-Около **685 миллионов человек** в мире до сих пор живут без электричества.
-Твой бегун мчится через деревни, холмы и город. Собирай энергию солнца, ветра и воды,
-отдавай её домам без света и пробивайся сквозь угольный смог.
-**Чем больше домов горит, тем чище небо.**
+About **685 million people** in the world still live without electricity.
+Your runner races through villages, hills and a city. Collect energy from the sun, wind and water,
+give it to homes in the dark, and dash through coal smog.
+**The more homes glow, the clearer the sky gets.**
 
-Это и есть Цель устойчивого развития ООН № 7:
-*«Обеспечить доступ к недорогой, надёжной, устойчивой и современной энергии для всех»* к 2030 году.
+That's the UN's Sustainable Development Goal 7:
+*"Ensure access to affordable, reliable, sustainable and modern energy for all"* by 2030.
 
-## Управление стрелками
+## Arrow-key controls
 
-| Клавиша | Что делает |
+| Key | What it does |
 |:---:|---|
-| **↑** (или пробел) | Прыжок. Держи, чтобы прыгать снова. Нажми на жёлтом солнышке в воздухе, чтобы прыгнуть ещё раз. |
-| **↓** | Присесть под облако смога. В воздухе: быстро упасть. |
-| **→** | Рывок сквозь стену смога. Стоит 1 ⚡. |
-| **←** | Зажечь дом рядом с тобой. Стоит 1 ⚡. |
+| **↑** (or Space) | Jump. Hold to keep jumping. Press it on a yellow sun in the air to jump again. |
+| **↓** | Duck under a smog cloud. In the air: drop fast. |
+| **→** | Dash through a smog wall. Costs 1 ⚡. |
+| **←** | Light the home next to you. Costs 1 ⚡. |
 
-На телефоне под экраном есть большие кнопки со стрелками.
+On a phone, use the big arrow buttons under the screen.
 
-## Что внутри
+## What's inside
 
-- **3 уровня по целям SDG 7:** 7.1 «Деревня без света», 7.2 «Ветреные холмы», 7.3 «Умный город».
-- **Марафон 2030:** бесконечный забег. Сможешь пробежать 2030 метров?
-- **8 персонажей:** Аня, Тимур, Инженер Ли, Учёная Амара, Велокурьер Нико, Ночная смена, Солнечная Зара и Ватт, лампочка из нашей презентации.
-- **13 ачивок,** которые открывают новых персонажей.
-- **9 звёзд-фактов,** спрятанных в уровнях. Каждая открывает настоящий факт о SDG 7.
-- **Тренировка:** возрождение на флажках, чтобы спокойно выучить уровень.
-- **Демо в меню:** пока ты в меню, бегун сам проходит уровень на фоне.
-- Русский и английский языки.
+- **3 levels based on SDG 7 targets:** 7.1 "Village in the dark", 7.2 "Windy hills", 7.3 "Smart city".
+- **Marathon 2030:** an endless run. Can you make it 2030 meters?
+- **8 runners:** Anya, Timur, Engineer Li, Scientist Amara, Courier Niko, Night shift, Sunny Zara, and Watt, the light bulb from our presentation.
+- **13 achievements** that unlock new runners.
+- **9 fact stars** hidden in the levels. Each one reveals a real fact about SDG 7.
+- **Practice mode:** respawn at checkpoint flags while you learn a level.
+- **Menu demo:** while you're in the menu, a runner plays the level in the background.
+- English and Russian.
 
 <div align="center">
 <img src="assets/dash-skins.jpg" alt="The runner selection screen with eight hand-drawn characters" width="600">
@@ -55,48 +54,37 @@
 <img src="assets/dash-marathon.jpg" alt="Marathon mode: a lit house glows warmly, and the sky is clear of smog" width="600">
 </div>
 
-## Факты из игры
+## Facts from the game
 
-- Около 80% людей без электричества живут в Африке южнее Сахары.
-- Около 2,1 миллиарда человек готовят еду на дровах, угле или керосине.
-- С 2010 по 2020 год солнечное электричество подешевело примерно на 90%.
-- LED-лампа тратит примерно на 75–80% меньше электричества, чем лампа накаливания.
+- About 80% of people without electricity live in sub-Saharan Africa.
+- About 2.1 billion people cook with wood, coal or kerosene.
+- From 2010 to 2020, electricity from solar panels got about 90% cheaper.
+- An LED bulb uses about 75–80% less electricity than an old incandescent bulb.
 
-…и ещё 5 фактов ждут тебя в уровнях.
-
----
-
-## English
-
-**Run. Collect energy. Light up homes.** About 685 million people still live without electricity.
-Your runner races through villages, hills and a city. Collect energy from sun, wind and water,
-give it to homes in the dark, and dash through coal smog. The more homes glow, the clearer the sky.
-
-**Arrow keys:** ↑ jump (and bounce off suns in the air), ↓ duck under smog or drop fast, → dash through smog walls (1 ⚡), ← light the home next to you (1 ⚡).
-
-3 levels based on SDG 7 targets, an endless Marathon 2030 mode, 8 runners to unlock, 13 achievements and 9 hidden fact stars.
+…and 5 more facts are waiting in the levels.
 
 ---
 
-## Ещё одна игра: Light the Valley
+## Another game: Light the Valley
 
-Наша первая игра: спокойная стратегия, где ты строишь солнечные, ветряные и гидростанции для долины с 2021 по 2030 год.
-**[▶ Играть в Light the Valley](https://n1x-plut0.github.io/sdg-7-/valley.html)**
+Our first game is a calm strategy game: build solar, wind and hydro power for a valley from 2021 to 2030.
+**[▶ Play Light the Valley](https://n1x-plut0.github.io/sdg-7-/valley.html)**
 
 <img src="assets/promo-play.jpg" alt="Light the Valley: a hand-drawn map with solar farms, wind turbines and homes" width="520">
 
-## Как запустить у себя
+## Play locally
 
-Скачай или склонируй репозиторий и открой `index.html` в браузере. Больше ничего не нужно.
+Download or clone this repo and open `index.html` in any browser. That's it.
 
-## Шрифты
+## Fonts
 
-Игры оформлены как наша презентация: **Biro Script Plus** для заголовков и **Linotype Feltpen** для текста.
-Это платные шрифты, поэтому их файлов **нет** в репозитории. Если шрифты установлены на компьютере,
-игра использует их сама. Можно также положить лицензионные файлы в `assets/fonts/`
-(`BiroScriptPlus.woff2` и `LinotypeFeltpen.woff2`). Без них игра использует бесплатные Caveat, Patrick Hand и Neucha.
+The games are styled after our class presentation and use **Biro Script Plus** (headings) and
+**Linotype Feltpen** (text). These are licensed fonts, so they are **not** included in this repo.
+If they're installed on your computer, the games use them automatically. You can also put licensed
+web font files in `assets/fonts/`, named `BiroScriptPlus.woff2` and `LinotypeFeltpen.woff2`.
+Without them, the games fall back to the free Google Fonts Caveat, Patrick Hand and Neucha.
 
-## Авторы и источники
+## Credits
 
-- Рисунки дома, солнечной панели, LED-лампы, приборов и звёзд взяты из нашей презентации о SDG 7.
-- Факты: Цели устойчивого развития ООН, SDG 7 (задачи 7.1, 7.2, 7.3, 7.b), отчёт *Tracking SDG 7*.
+- Drawings of the house, solar panel, LED bulb, appliances and stars come from our SDG 7 presentation.
+- Facts: UN Sustainable Development Goals, SDG 7 targets 7.1, 7.2, 7.3 and 7.b, and the *Tracking SDG 7* report.

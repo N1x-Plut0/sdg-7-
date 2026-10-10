@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -241,11 +241,12 @@ const FACTS = [
    Save
    ========================================================= */
 const SAVE_KEY = 'light-dash-v1';
-const save = { lang: 'ru', mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}], ach: [],
+const save = { lang: 'en', langChosen: false, mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}], ach: [],
   stats: { energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 } };
 try {
   const s = JSON.parse(localStorage.getItem(SAVE_KEY));
   if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = [0, 1, 2].map(i => (s.lv && s.lv[i]) || {}); }
+  if (!save.langChosen) save.lang = 'en';
 } catch (e) {}
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
 const t = k => T[save.lang][k] ?? k;
@@ -401,12 +402,12 @@ function endlessBuilder() {
     if (r < .16) this.spikes(1 + Math.floor(Math.random() * 3)).gap(g());
     else if (r < .28) this.energy(3).gap(g());
     else if (r < .38) this.pit(130 + Math.floor(Math.random() * 50)).gap(g());
-    else if (r < .48) { this.block(130, 45 + Math.floor(Math.random() * 30)).gap(0).spikes(2).gap(g()); }
+    else if (r < .48) { this.block(280, 45 + Math.floor(Math.random() * 30)).gap(0).spikes(2).gap(g()); }
     else if (r < .58) this.cloud(110 + Math.floor(Math.random() * 30)).gap(g());
     else if (r < .66) { this.energy(2).gap(100).wall().gap(g()); }
     else if (r < .74) { this.pad().gap(40).spikes(4).gap(g()); }
     else if (r < .82) { this.pit(300); this.o.push({ t: 'orb', x: this.x - 300 + 115, y: G - 150, r: 18 }); this.gap(g()); }
-    else if (r < .9) { this.block(120, 45).block(120, 90).gap(0).spikes(2).gap(g()); }
+    else if (r < .9) { this.block(210, 45).block(210, 90).gap(0).spikes(2).gap(g()); }
     else { this.spikes(2).gap(Math.round(v * .8)).spikes(2).gap(g()); }
   };
   return b;
@@ -570,7 +571,7 @@ function autopilot() {
       if (g.b < p.x - 14) continue;
       if (g.a > p.x + 400) break;
       if (g.kind === 'step') {
-        if (g.top < p.y - 4) { const rise = p.y - g.top; const lead = v * (0.05 + rise / 650); if (g.a - front < lead && g.a - front > -4) a.up = true; }
+        if (g.top < p.y - 4) { const rise = p.y - g.top; const lead = v * (0.08 + rise / 520); if (g.a - front < lead && g.a - front > -4) a.up = true; }
         continue;
       }
       if (g.base !== G && p.y !== g.base) continue;
@@ -940,7 +941,7 @@ function menu() {
       <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
     </div>`);
   on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements);
-  on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; persist(); applyLang(); menu(); });
+  on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; save.langChosen = true; persist(); applyLang(); menu(); });
 }
 
 function levels() {
@@ -1121,6 +1122,16 @@ function applyLang() {
 
 /* Test hook: run a level with the autopilot, without drawing */
 window.__lightDash = {
+  simulateEndless() {
+    const keep = { demo, endless, lvl, run, state };
+    demo = true; endless = true; run = null; newRun(false);
+    let n = 0;
+    while (run.p.alive && n < 120 * 300) { step(STEP, autopilot()); n++; }
+    const p = run.p, near = lvl.objs.filter(o => Math.abs(o.x - p.x) < 260 && o.t !== 'energy').map(o => o.t + '@' + Math.round(o.x - p.x) + (o.w ? '/' + o.w : '') + (o.top ? '^' + (G - o.top) : ''));
+    const res = { m: Math.floor(p.x / 50), y: Math.round(G - p.y), speed: Math.round(run.speed), near: near.join(' ') };
+    demo = keep.demo; endless = keep.endless; lvl = keep.lvl; run = keep.run; state = keep.state;
+    return res;
+  },
   autoplay(v) { autoPlay = !!v; },
   simulate(i, jitter = 0) {
     const keep = { demo, endless, lvl, run, state };
