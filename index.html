@@ -1,20 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Light the Valley</title>
+<title>Light Dash</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Neucha&family=Patrick+Hand&display=swap">
 <style>
-/* Layout: a hand-drawn valley map with walking characters, beside a sketchbook control panel; stacks on phones.
-   Styled after the "SDG 7 Affordable and clean energy" deck: cream paper, colored-pencil drawings,
-   indigo handwriting, green highlights, yellow / orange / indigo stars. Single light look by choice. */
-
-/* Biro Script Plus (headings) and Linotype Feltpen (text) are licensed fonts. They load from the
-   player's computer if installed, or from assets/fonts/ if the licensed files are placed there.
-   Caveat and Patrick Hand are free look-alikes used as fallbacks. */
+/* Layout: one wide game screen (canvas + menu overlays), arrow pad under it, then short explainer cards.
+   Styled after the "SDG 7 Affordable and clean energy" deck: cream paper, colored pencil, indigo handwriting. */
 @font-face {
   font-family: "Biro Script Plus";
   src: local("Biro Script Plus"), local("BiroScriptPlus-Regular"), url("assets/fonts/BiroScriptPlus.woff2") format("woff2");
@@ -28,887 +23,1124 @@
 :root {
   --paper: #f8f4d9;
   --paper-2: #f1ebc4;
-  --tile-line: rgba(91,100,150,.35);
   --indigo: #5b6496;
+  --indigo-deep: #3d4470;
   --green: #427f12;
   --yellow: #fdca39;
   --orange: #ff4401;
   --brown: #b1741e;
-  --water: #c9d0ec;
-  --ink-soft: #7c83ad;
-  --night: rgba(38,42,78,.72);
   --font-display: "Biro Script Plus", "Caveat", "Segoe Print", cursive;
-  --font-body: "Linotype Feltpen", "Patrick Hand", "Segoe Print", "Comic Sans MS", cursive;
+  --font-body: "Linotype Feltpen", "Patrick Hand", "Neucha", "Segoe Print", cursive;
   color-scheme: light;
 }
-body[data-map="blueprint"] { --paper-2: #e3e9f6; --tile-line: rgba(91,100,150,.55); --water: #aebde6; }
-body[data-map="autumn"] { --paper-2: #f3dfb8; --tile-line: rgba(177,116,30,.45); --water: #c4d6d9; }
-
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html, body { margin: 0; }
-body {
-  background: var(--paper); color: var(--indigo);
-  font: 19px/1.35 var(--font-body);
-  padding: 20px 16px 40px;
-}
+body { background: var(--paper); color: var(--indigo); font: 19px/1.35 var(--font-body); padding: 16px 16px 40px; }
 button { font: inherit; color: inherit; }
-.wrap { max-width: 1140px; margin: 0 auto; display: grid; gap: 16px; }
-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 20px; }
-h1 { font: 400 clamp(46px, 8vw, 80px)/.95 var(--font-display); margin: 0; text-wrap: balance; }
-h1 span { color: var(--green); }
-h1 img { width: .42em; vertical-align: top; margin-left: .12em; }
-h1 img.s2 { width: .26em; vertical-align: middle; transform: rotate(14deg); }
-header .sq { display: block; width: 200px; max-width: 60%; margin-top: 2px; }
-.head-right { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-.tag { font-size: 19px; color: var(--green); }
-.chip {
-  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; cursor: pointer; background: var(--paper);
-  border: 2px solid var(--indigo); border-radius: 14px 4px 14px 4px / 4px 14px 4px 14px; font-size: 18px;
-}
-.chip img { width: 22px; }
-.chip:hover { background: #fff3c4; }
-.chip:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
-
+.wrap { max-width: 1000px; margin: 0 auto; display: grid; gap: 14px; }
 .rough { border: 2px solid var(--indigo); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
 
-.hud { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-.stat { background: var(--paper); padding: 8px 14px 10px; }
-.stat:nth-child(even) { border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px; }
-.stat .k { font-size: 17px; color: var(--green); }
-.stat .v { font: 400 32px/1.1 var(--font-body); font-variant-numeric: tabular-nums; }
-@media (max-width: 520px) { .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .stat { padding: 6px 10px 8px; } .stat .k { font-size: 15px; } .stat .v { font-size: 24px; } }
-.meter { height: 10px; border: 1.5px solid var(--indigo); border-radius: 8px 3px 8px 3px; overflow: hidden; margin-top: 6px; }
-.meter i { display: block; height: 100%; width: 0; background-color: var(--green); transition: width .4s;
-  background-image: repeating-linear-gradient(-55deg, transparent 0 3px, rgba(248,244,217,.45) 3px 5px); }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 6px 16px; }
+h1 { font: 400 clamp(40px, 7vw, 64px)/.95 var(--font-display); margin: 0; }
+h1 span { color: var(--green); }
+h1 img { width: .4em; vertical-align: top; margin-left: .1em; }
+.tag { color: var(--green); font-size: 18px; }
 
-.main { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.game { position: relative; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; background: var(--paper); overflow: hidden; touch-action: manipulation; }
+.game > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hudbtns { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; z-index: 2; }
+.hudbtns button { width: 38px; height: 38px; display: grid; place-items: center; cursor: pointer; background: var(--paper); border: 2px solid var(--indigo); border-radius: 12px 4px 12px 4px; font-size: 18px; }
 
-.board-wrap { padding: 14px; background: var(--paper); display: grid; gap: 10px; }
-.weather { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 18px; }
-.weather b { font: 400 21px var(--font-body); color: var(--green); }
-.stage { position: relative; }
-.board { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
-.tile {
-  aspect-ratio: 1; max-width: 100%; padding: 0; cursor: pointer; position: relative;
-  display: grid; place-items: center; background: var(--paper-2);
-  border: 1.5px dashed var(--tile-line);
-  border-radius: 12px 4px 10px 5px / 5px 10px 4px 12px;
-  transition: filter .6s, box-shadow .6s;
+.screen {
+  position: absolute; inset: 0; z-index: 5; overflow: auto; padding: 18px 22px;
+  background: rgba(248, 244, 217, .9); display: grid; align-content: start; gap: 12px;
 }
-.tile:nth-child(3n) { border-radius: 5px 12px 4px 10px / 10px 4px 12px 5px; }
-.tile.river {
-  background: var(--water); border-style: solid; border-color: transparent;
-  background-image: repeating-radial-gradient(circle at 30% 120%, transparent 0 7px, rgba(91,100,150,.35) 7px 8.5px);
-  animation: flow 6s linear infinite;
-}
-@keyframes flow { to { background-position: 0 -34px; } }
-body[data-map="blueprint"] .tile:not(.river) {
-  background-image: linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.7) 1px, transparent 1px);
-  background-size: 25% 25%;
-}
-.tile:hover { border: 2px solid var(--orange); }
-.tile:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
-.tile.can { border: 2.5px solid var(--green); }
-.tile > svg, .tile > img { width: 86%; height: 86%; object-fit: contain; }
-.tile img.bldg { filter: grayscale(1) brightness(.75) opacity(.7); transition: filter .3s; }
-.tile img.bldg.lit { filter: drop-shadow(0 0 6px var(--yellow)); }
-.tile .eff { position: absolute; top: 1px; left: 2px; width: 34%; height: auto; }
-.tile .badge { position: absolute; right: 3px; bottom: 0; font: 400 15px var(--font-body); color: var(--green); }
-.tile .lbl { position: absolute; left: 0; right: 0; bottom: -2px; text-align: center; font-size: 12px; color: var(--indigo); }
-.tile.pop > * { animation: pop .5s cubic-bezier(.3,1.6,.5,1); }
-@keyframes pop { from { transform: scale(.2) rotate(-10deg); opacity: 0; } }
-
-/* Night reveal at the end of each year */
-.stage.night .tile { filter: brightness(.38) saturate(.5); }
-.stage.night .tile.glow { filter: none; box-shadow: 0 0 22px 4px var(--yellow); background: #fff4c0; }
-.stage.night .actor { filter: brightness(.45); }
-.banner {
-  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-3deg); z-index: 6; pointer-events: none;
-  background: var(--paper); padding: 8px 22px 10px; font: 400 clamp(26px, 5vw, 42px)/1.05 var(--font-display);
-  text-align: center; white-space: nowrap; animation: bannerIn .45s cubic-bezier(.3,1.5,.5,1);
-}
-.banner small { display: block; font: 18px var(--font-body); color: var(--green); white-space: normal; }
-@keyframes bannerIn { from { transform: translate(-50%, -50%) rotate(-12deg) scale(.4); opacity: 0; } }
-
-/* Characters */
-.actors { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
-.actor {
-  position: absolute; width: calc(100% / 9 * .5); transform: translate(-50%, -100%);
-  transition-property: left, top; transition-timing-function: linear; transition: filter .6s;
-}
-.actor svg { width: 100%; height: auto; display: block; }
-.actor .body { transform-origin: 50% 100%; }
-.actor.walking .body { animation: bob .32s ease-in-out infinite alternate; }
-.actor.left .body { transform: scaleX(-1); }
-.actor.left.walking .body { animation-name: bobL; }
-@keyframes bob { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-8%) rotate(3deg); } }
-@keyframes bobL { from { transform: scaleX(-1) translateY(0) rotate(-3deg); } to { transform: scaleX(-1) translateY(-8%) rotate(3deg); } }
-.actor.me { width: calc(100% / 9 * .62); z-index: 2; }
-.actor.me::after {
-  content: "you"; position: absolute; left: 50%; top: -18px; transform: translateX(-50%);
-  font: 15px var(--font-body); color: var(--orange);
-}
-.actor.cheer .body { animation: cheer .25s ease-in-out 4 alternate; }
-@keyframes cheer { to { transform: translateY(-25%); } }
-
-.waster {
-  position: absolute; z-index: 4; pointer-events: auto; transform: translate(-50%, -100%);
-  width: calc(100% / 9 * .9); aspect-ratio: 1; padding: 6%; cursor: pointer;
-  background: #fff; border: 2.5px solid var(--orange); border-radius: 50% 50% 50% 8px;
-  animation: wobble 1s ease-in-out infinite alternate;
-}
-.waster img { position: absolute; inset: 14%; width: 72%; height: 72%; object-fit: contain; }
-.waster:focus-visible { outline: 3px solid var(--indigo); }
-@keyframes wobble { from { transform: translate(-50%, -100%) rotate(-6deg); } to { transform: translate(-50%, -108%) rotate(6deg); } }
-
-.float {
-  position: absolute; z-index: 5; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
-  font: 400 22px var(--font-body); color: var(--green); animation: floatUp 1.3s ease-out forwards;
-  text-shadow: 0 0 3px var(--paper), 0 0 6px var(--paper);
-}
-.float.bad { color: var(--orange); }
-@keyframes floatUp { to { transform: translate(-50%, -260%); opacity: 0; } }
-
-.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 16px; }
-.legend b { color: var(--green); }
-.sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px 2px 5px 2px; vertical-align: -1px; margin-right: 5px; border: 1.5px solid var(--indigo); }
-
-/* Watt, the guide */
-.watt { display: flex; gap: 10px; align-items: flex-start; }
-.watt img { width: 54px; flex: none; animation: hover 2.2s ease-in-out infinite alternate; }
-@keyframes hover { to { transform: translateY(-6px) rotate(4deg); } }
-.watt .say {
-  position: relative; flex: 1; min-width: 0; background: #fff; padding: 8px 12px; font-size: 17px; color: var(--green);
-  border: 2px solid var(--green); border-radius: 18px 18px 18px 4px;
-}
-.watt .say b { color: var(--indigo); font-weight: 400; font-family: var(--font-display); font-size: 21px; }
-
-.side { display: grid; gap: 14px; }
-.card { padding: 14px 16px; background: var(--paper); }
-.card h2 { font: 400 32px/1 var(--font-display); margin: 0 0 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.card h2 small { font: 17px var(--font-body); color: var(--green); }
-.tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
-.tool {
-  background: var(--paper); cursor: pointer; text-align: left; display: grid; padding: 6px 8px;
-  border: 1.5px solid var(--indigo); border-radius: 10px 3px 12px 4px / 4px 12px 3px 10px;
-}
-.tool svg, .tool img { width: 40px; height: 40px; object-fit: contain; }
-.tool .n { font-size: 17px; line-height: 1.1; }
-.tool .c { font: 400 19px var(--font-body); color: var(--green); }
-.tool[aria-pressed="true"] { background: #fff3c4; border: 2.5px solid var(--orange); }
-.tool:disabled { opacity: .45; cursor: not-allowed; }
-.tool:focus-visible, .btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
-.info { font-size: 17px; color: var(--green); margin: 10px 0 0; min-height: 2.8em; }
+@media (max-width: 700px) { .screen { position: fixed; inset: 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); padding-top: calc(18px + env(safe-area-inset-top, 0px)); background: rgba(248, 244, 217, .97); } }
+.screen h2 { font: 400 clamp(34px, 5.5vw, 52px)/1 var(--font-display); margin: 0; text-wrap: balance; }
+.screen h3 { font: 400 26px/1 var(--font-display); margin: 0; }
+.screen p { margin: 0; max-width: 60ch; }
+.screen .sub { color: var(--green); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .btn {
-  width: 100%; font: 400 32px/1.05 var(--font-display); padding: 10px 12px 12px; cursor: pointer;
-  background: var(--yellow); color: var(--indigo); border: 2.5px solid var(--indigo);
-  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-  box-shadow: 3px 4px 0 var(--indigo);
+  font: 400 26px/1.05 var(--font-display); padding: 8px 18px 10px; cursor: pointer; background: var(--yellow); color: var(--indigo);
+  border: 2.5px solid var(--indigo); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; box-shadow: 3px 4px 0 var(--indigo);
 }
-.btn:hover { background: #ffd65c; }
+.btn.alt { background: var(--paper); }
+.btn:hover { filter: brightness(1.04); }
 .btn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--indigo); }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.btn.alt { background: var(--paper); font-size: 26px; }
+.btn:focus-visible, .card:focus-visible, .key:focus-visible, .hudbtns button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.menu-title { font: 400 clamp(54px, 10vw, 96px)/.9 var(--font-display); margin: 4px 0 0; }
+.menu-title span { color: var(--green); }
 
-.missions { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.missions li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; align-items: start; font-size: 17px; }
-.missions .box { width: 22px; height: 22px; border: 2px solid var(--indigo); border-radius: 6px 2px 7px 3px; margin-top: 2px; display: grid; place-items: center; color: var(--green); font-size: 20px; line-height: 1; }
-.missions .rw { font-size: 16px; color: var(--green); white-space: nowrap; }
-.missions li.done { animation: done 1.2s ease-out; }
-.missions li.done .t { text-decoration: line-through; text-decoration-color: var(--orange); text-decoration-thickness: 2px; }
-@keyframes done { 30% { background: #fff3c4; } }
-
-.fact { position: relative; }
-.fact .src { font: 400 22px var(--font-display); color: var(--orange); }
-.fact p { color: var(--green); font-size: 18px; }
-.fact > img { position: absolute; right: 10px; top: -14px; width: 46px; transform: rotate(10deg); }
-.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 17px; max-height: 170px; overflow: auto; }
-.log li { padding-left: 22px; position: relative; }
-.log li::before { content: "✦"; position: absolute; left: 2px; color: var(--ink-soft); }
-.log li.good::before { color: var(--green); } .log li.bad::before { color: var(--orange); } .log li.warn::before { color: var(--brown); }
-
-.toast {
-  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20;
-  background: var(--yellow); color: var(--indigo); padding: 8px 18px 10px; font: 400 26px/1.1 var(--font-display);
-  box-shadow: 3px 4px 0 var(--indigo); max-width: calc(100% - 32px); text-align: center; animation: bannerIn .4s;
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.card {
+  text-align: left; cursor: pointer; background: var(--paper); padding: 10px 14px 12px; display: grid; gap: 4px;
+  border: 2px solid var(--indigo); border-radius: 14px 5px 16px 4px / 5px 16px 4px 14px;
 }
-.toast small { display: block; font: 17px var(--font-body); }
+.card .k { font-size: 15px; color: var(--orange); }
+.card .n { font: 400 26px/1 var(--font-display); }
+.card .d { font-size: 16px; color: var(--green); }
+.card .st { font-size: 16px; }
+.card.locked { opacity: .55; cursor: not-allowed; }
+.card[aria-pressed="true"] { background: #fff3c4; border: 2.5px solid var(--orange); }
+.card canvas { width: 70px; height: 84px; justify-self: center; }
+.ach { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.ach div { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center; padding: 6px 10px; border: 1.5px dashed rgba(91,100,150,.5); border-radius: 10px 4px 12px 4px; font-size: 16px; }
+.ach div.got { border-style: solid; border-color: var(--green); background: #f3f6dc; }
+.ach img { width: 30px; }
+.ach div:not(.got) img { filter: grayscale(1) opacity(.35); }
+.ach b { display: block; font: 400 21px/1 var(--font-display); }
+.fact { background: #fff; padding: 10px 14px; border: 2px solid var(--green); border-radius: 16px 16px 16px 4px; color: var(--green); }
+.fact b { font: 400 20px var(--font-display); color: var(--orange); display: block; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 20px; }
+.stats b { color: var(--green); font-weight: 400; }
+.keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 17px; max-width: 520px; }
+.keys kbd { display: inline-block; min-width: 30px; text-align: center; border: 2px solid var(--indigo); border-radius: 6px 3px 7px 3px; padding: 0 6px; margin-right: 6px; font-family: var(--font-body); background: #fff; }
 
-.overlay { position: fixed; inset: 0; background: rgba(91,100,150,.55); display: grid; place-items: center; padding: 16px; z-index: 10; overflow: auto; }
-.modal { background: var(--paper); color: var(--indigo); padding: 20px 22px; max-width: 560px; width: 100%; display: grid; gap: 12px; }
-.modal h2 { font: 400 44px/1 var(--font-display); margin: 0; text-wrap: balance; }
-.modal p { margin: 0; }
-.modal b { color: var(--green); font-weight: 400; }
-.modal .row { display: flex; flex-wrap: wrap; gap: 10px; }
-.modal .row .btn { flex: 1 1 160px; width: auto; }
-.intro { display: flex; gap: 14px; align-items: center; }
-.intro img { width: 70px; flex: none; }
-.stars { display: flex; gap: 6px; }
-.stars img { width: 48px; }
-.stars img.off { filter: grayscale(1) opacity(.3); }
-.skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
-.skin {
-  display: grid; justify-items: center; gap: 2px; padding: 8px 6px; cursor: pointer; background: var(--paper);
-  border: 1.5px solid var(--indigo); border-radius: 12px 4px 12px 4px / 4px 12px 4px 12px; font-size: 16px;
-}
-.skin svg { width: 46px; height: 60px; }
-.skin .swatch { width: 60px; height: 46px; border: 1.5px solid var(--indigo); border-radius: 6px; margin: 7px 0; }
-.skin .price { font-size: 16px; color: var(--green); }
-.skin[aria-pressed="true"] { background: #fff3c4; border: 2.5px solid var(--orange); }
-.skin.locked { opacity: .6; }
-.skin:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
-.modal h3 { font: 400 28px/1 var(--font-display); margin: 4px 0 0; }
+.toast { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); z-index: 6; background: var(--yellow); padding: 6px 16px 8px; font: 400 22px/1.1 var(--font-display); box-shadow: 3px 4px 0 var(--indigo); text-align: center; pointer-events: none; animation: tin .35s cubic-bezier(.3,1.5,.5,1); max-width: 90%; }
+.toast small { display: block; font: 15px var(--font-body); }
+@keyframes tin { from { transform: translateX(-50%) scale(.5); opacity: 0; } }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+.pad { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; user-select: none; -webkit-user-select: none; }
+.key {
+  touch-action: none; cursor: pointer; display: grid; justify-items: center; gap: 0; padding: 6px 4px 8px; background: var(--paper);
+  border: 2.5px solid var(--indigo); border-radius: 18px 6px 18px 6px / 6px 18px 6px 18px; box-shadow: 3px 4px 0 var(--indigo);
 }
+.key .a { font: 400 34px/1 var(--font-body); }
+.key .l { font-size: 15px; color: var(--green); }
+.key.on { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--indigo); background: #fff3c4; }
+.key.up { background: var(--yellow); }
+
+.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.info section { padding: 12px 16px; }
+.info h2 { font: 400 30px/1 var(--font-display); margin: 0 0 6px; }
+.info p { margin: 0 0 6px; font-size: 17px; }
+.info a { color: var(--green); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <filter id="pencil"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
-</svg>
 <div class="wrap">
   <header>
-    <div><h1>Light the <span>Valley</span><img class="s1" src="assets/star-yellow.png" alt=""><img class="s2" src="assets/star-orange.png" alt=""></h1><img class="sq" src="assets/squiggle.png" alt=""></div>
-    <div class="head-right">
-      <span class="tag">SDG 7 · Affordable and clean energy</span>
-      <button class="chip" id="sparks" type="button" title="Open the wardrobe"><img src="assets/star-yellow.png" alt=""><span id="sparkCount">0 sparks</span> · Wardrobe</button>
-    </div>
+    <h1>Light <span>Dash</span><img src="assets/star-yellow.png" alt=""></h1>
+    <span class="tag" data-t="tagline"></span>
   </header>
 
-  <section class="hud" aria-label="Valley status">
-    <div class="stat rough"><div class="k">Year</div><div class="v" id="hYear">2021</div></div>
-    <div class="stat rough"><div class="k">Budget</div><div class="v" id="hMoney">$100k</div></div>
-    <div class="stat rough"><div class="k">Buildings with power</div><div class="v" id="hAccess">0%</div><div class="meter"><i id="mAccess"></i></div></div>
-    <div class="stat rough"><div class="k">Clean share</div><div class="v" id="hClean">0%</div><div class="meter"><i id="mClean"></i></div></div>
-    <div class="stat rough"><div class="k">Air pollution</div><div class="v" id="hPoll">0</div><div class="meter"><i id="mPoll"></i></div></div>
-  </section>
+  <div class="game rough" id="game">
+    <canvas id="cv" aria-label="Light Dash"></canvas>
+    <div class="hudbtns">
+      <button type="button" id="bPause" aria-label="Pause">II</button>
+      <button type="button" id="bSound" aria-label="Sound">♪</button>
+    </div>
+    <div class="screen" id="screen"></div>
+    <div class="toast" id="toast" hidden></div>
+  </div>
 
-  <div class="main">
-    <section class="board-wrap rough" aria-label="Valley map">
-      <div class="weather" id="weather"></div>
-      <div class="stage" id="stage">
-        <div class="board" id="board"></div>
-        <div class="actors" id="actors"></div>
-      </div>
-      <div class="legend">
-        <span><i class="sw" style="background:var(--water)"></i>River</span>
-        <span><i class="sw" style="background:var(--yellow)"></i>Has power</span>
-        <span><i class="sw" style="background:#bdb8a0"></i>In the dark</span>
-        <span>Supply <b id="lSupply">0</b> MW · Demand <b id="lDemand">0</b> MW</span>
-      </div>
-      <div class="watt" aria-live="polite">
-        <img src="assets/led.png" alt="Watt the LED bulb">
-        <div class="say" id="watt"></div>
-      </div>
-    </section>
+  <div class="pad" id="pad">
+    <button type="button" class="key" data-k="left"><span class="a">←</span><span class="l" data-t="kLeft"></span></button>
+    <button type="button" class="key" data-k="down"><span class="a">↓</span><span class="l" data-t="kDown"></span></button>
+    <button type="button" class="key up" data-k="up"><span class="a">↑</span><span class="l" data-t="kUp"></span></button>
+    <button type="button" class="key" data-k="right"><span class="a">→</span><span class="l" data-t="kRight"></span></button>
+  </div>
 
-    <aside class="side">
-      <div class="card rough">
-        <h2>Missions <small id="mCount">0 / 0</small></h2>
-        <ul class="missions" id="missions"></ul>
-      </div>
-      <div class="card rough">
-        <h2>Build</h2>
-        <div class="tools" id="tools"></div>
-        <p class="info" id="info"></p>
-      </div>
-      <button class="btn" id="endYear" type="button">End year</button>
-      <div class="card rough fact" id="fact"></div>
-      <div class="card rough">
-        <h2>Valley news</h2>
-        <ul class="log" id="log"></ul>
-      </div>
-    </aside>
+  <div class="info">
+    <section class="rough"><h2 data-t="whatTitle"></h2><p data-t="what1"></p><p data-t="what2"></p></section>
+    <section class="rough"><h2 data-t="howTitle"></h2><p data-t="how1"></p><p data-t="how2"></p></section>
+    <section class="rough"><h2 data-t="moreTitle"></h2><p data-t="more1"></p><p><a href="valley.html" data-t="moreLink"></a></p></section>
   </div>
 </div>
-
-<div class="overlay" id="overlay" hidden>
-  <div class="modal rough" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-    <h2 id="mTitle"></h2>
-    <div id="mBody"></div>
-    <div class="row" id="mBtns"></div>
-  </div>
-</div>
-<div class="toast" id="toast" hidden></div>
 
 <script>
 (() => {
-  const COLS = 9, ROWS = 6, START_YEAR = 2021, END_YEAR = 2030, POLL_MAX = 100;
-  const $ = id => document.getElementById(id);
-  const rnd = n => Math.floor(Math.random() * n);
-  const pick = a => a[rnd(a.length)];
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+'use strict';
+/* =========================================================
+   Text (Russian + English)
+   ========================================================= */
+const T = {
+  ru: {
+    tagline: 'Беги, собирай чистую энергию и зажигай свет. SDG 7',
+    kLeft: 'зажечь дом', kDown: 'присесть', kUp: 'прыжок', kRight: 'рывок',
+    whatTitle: 'Что такое SDG 7?',
+    what1: 'Цель устойчивого развития № 7 (ООН): «Обеспечить доступ к недорогой, надёжной, устойчивой и современной энергии для всех» к 2030 году.',
+    what2: 'В игре ты собираешь энергию солнца, ветра и воды, отдаёшь её домам без света и пробиваешь угольный смог. Чем больше домов горит, тем чище небо.',
+    howTitle: 'Как играть',
+    how1: 'Бегун бежит сам. ↑ или пробел: прыжок (держи, чтобы прыгать снова). ↓: присесть под облако смога, в воздухе быстро упасть. →: рывок сквозь стену смога (−1 ⚡). ←: зажечь дом рядом (−1 ⚡).',
+    how2: 'Жёлтые солнышки в воздухе: нажми ↑, когда касаешься, и прыгнешь ещё раз. Синие панели на земле подбрасывают высоко. На телефоне используй кнопки под экраном.',
+    moreTitle: 'Ещё',
+    more1: 'В каждом уровне спрятаны 3 звезды-факта о SDG 7. Ачивки открывают новых персонажей. Прогресс сохраняется в этом браузере.',
+    moreLink: 'Первая игра: «Light the Valley» (стратегия) →',
+    play: 'Играть', levels: 'Уровни', skins: 'Персонажи', achievements: 'Ачивки', back: 'Назад', lang: 'English',
+    menuSub: 'Раннер про чистую энергию для всех. Цель 7 ООН.',
+    endless: 'Марафон 2030', endlessD: 'Бесконечный забег. Как далеко убежишь?',
+    best: 'Рекорд', meters: 'м', locked: 'Пройди прошлый уровень',
+    practice: 'Тренировка', practiceOn: 'Тренировка: вкл (возрождение на флажках)', practiceOff: 'Тренировка: выкл',
+    start: 'Старт (↑)', retry: 'Ещё раз', next: 'Следующий уровень', menu: 'Меню', resume: 'Продолжить',
+    paused: 'Пауза', attempt: 'Попытка', complete: 'Уровень пройден!',
+    housesLit: 'Домов со светом', facts: 'Звёзды-факты', attempts: 'Попыток', energyLeft: 'Энергии осталось',
+    newFacts: 'Найденные факты', noEnergy: 'Нет энергии! Собирай ⚡', distance: 'Дистанция',
+    runOver: 'Забег окончен', choose: 'Выбери персонажа', unlock: 'Как открыть', wear: 'Выбран',
+    achGot: 'Ачивка!', skinGot: 'Новый персонаж!', of: 'из',
+    controls: 'Управление',
+    kj: 'прыжок / прыжок с солнышка', ks: 'присесть, быстро упасть', kr: 'рывок сквозь смог (−1 ⚡)', kl: 'зажечь дом (−1 ⚡)', kp: 'пауза',
+    hintUp: '↑ прыжок', hintLeft: '← зажги дом!', hintDown: '↓ присядь под смог', hintRight: '→ рывок сквозь смог', hintOrb: '↑ на солнышке', hintPad: 'панель подбросит',
+    goal: 'Цель SDG',
+  },
+  en: {
+    tagline: 'Run, collect clean energy and light up homes. SDG 7',
+    kLeft: 'light home', kDown: 'duck', kUp: 'jump', kRight: 'dash',
+    whatTitle: 'What is SDG 7?',
+    what1: 'UN Sustainable Development Goal 7: "Ensure access to affordable, reliable, sustainable and modern energy for all" by 2030.',
+    what2: 'In the game you collect energy from sun, wind and water, give it to homes without light, and break through coal smog. The more homes glow, the clearer the sky gets.',
+    howTitle: 'How to play',
+    how1: 'Your runner runs on their own. ↑ or Space: jump (hold to keep jumping). ↓: duck under smog clouds, or drop fast in the air. →: dash through a smog wall (−1 ⚡). ←: light the home next to you (−1 ⚡).',
+    how2: 'Yellow suns in the air: press ↑ while touching one to jump again. Blue panels on the ground launch you high. On a phone, use the buttons under the screen.',
+    moreTitle: 'More',
+    more1: 'Each level hides 3 fact stars about SDG 7. Achievements unlock new runners. Progress is saved in this browser.',
+    moreLink: 'Our first game: "Light the Valley" (strategy) →',
+    play: 'Play', levels: 'Levels', skins: 'Runners', achievements: 'Achievements', back: 'Back', lang: 'Русский',
+    menuSub: 'A runner about clean energy for everyone. UN Goal 7.',
+    endless: 'Marathon 2030', endlessD: 'Endless run. How far can you go?',
+    best: 'Best', meters: 'm', locked: 'Finish the previous level',
+    practice: 'Practice', practiceOn: 'Practice: on (respawn at flags)', practiceOff: 'Practice: off',
+    start: 'Start (↑)', retry: 'Retry', next: 'Next level', menu: 'Menu', resume: 'Resume',
+    paused: 'Paused', attempt: 'Attempt', complete: 'Level complete!',
+    housesLit: 'Homes with light', facts: 'Fact stars', attempts: 'Attempts', energyLeft: 'Energy left',
+    newFacts: 'Facts you found', noEnergy: 'No energy! Collect ⚡', distance: 'Distance',
+    runOver: 'Run over', choose: 'Choose your runner', unlock: 'To unlock', wear: 'Selected',
+    achGot: 'Achievement!', skinGot: 'New runner!', of: 'of',
+    controls: 'Controls',
+    kj: 'jump / jump off a sun', ks: 'duck, drop fast', kr: 'dash through smog (−1 ⚡)', kl: 'light a home (−1 ⚡)', kp: 'pause',
+    hintUp: '↑ jump', hintLeft: '← light the home!', hintDown: '↓ duck under smog', hintRight: '→ dash through smog', hintOrb: '↑ on the sun', hintPad: 'panels launch you',
+    goal: 'SDG target',
+  },
+};
 
-  /* ---------- Saved progress: sparks and skins (per browser, optional) ---------- */
-  const SAVE_KEY = 'light-the-valley-v1';
-  let save = { sparks: 0, owned: ['classic', 'sketchbook'], skin: 'classic', map: 'sketchbook', best: 0 };
-  try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY)) || {}); } catch (e) {}
-  const persist = () => {
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
-    const el = document.getElementById('sparkCount'); if (el) el.textContent = `${save.sparks} spark${save.sparks === 1 ? '' : 's'}`;
-  };
+const LEVEL_TXT = [
+  { ru: ['Деревня без света', '7.1 Доступ для всех', 'Около 685 миллионов человек живут без электричества. Пробеги через деревню и зажги свет в каждом доме.'],
+    en: ['Village in the dark', '7.1 Access for all', 'About 685 million people live without electricity. Run through the village and light every home.'] },
+  { ru: ['Ветреные холмы', '7.2 Возобновляемая энергия', 'Больше солнца, ветра и воды вместо угля. Прыгай по платформам, лови ветер и пробивай смог.'],
+    en: ['Windy hills', '7.2 Renewable energy', 'More sun, wind and water instead of coal. Jump across platforms, catch the wind and dash through smog.'] },
+  { ru: ['Умный город', '7.3 Энергоэффективность', 'Город тратит энергию впустую. Быстрее, выше, точнее: прыгай с солнышек и неси свет на крыши.'],
+    en: ['Smart city', '7.3 Energy efficiency', 'The city wastes energy. Faster, higher, sharper: bounce off suns and carry light across the rooftops.'] },
+];
 
-  /* ---------- Drawings ---------- */
-  const P = 'filter="url(#pencil)" fill="none" stroke-linecap="round" stroke-linejoin="round"';
-  function person({ shirt, hat, skin = '#dab680', lamp = false, kid = false }) {
-    const hatSvg = hat === 'none' ? '' : hat === 'ranger'
-      ? `<path d="M8 13h24M12 13c0-6 4-8 8-8s8 2 8 8" stroke="#5b6496" stroke-width="1.6" fill="#b1741e"/>`
-      : `<path d="M10 13c0-6 4-9 10-9s10 3 10 9z" stroke="#5b6496" stroke-width="1.6" fill="${hat}"/><path d="M8 13h24" stroke="#5b6496" stroke-width="2"/>`;
-    const lampSvg = lamp ? `<circle cx="20" cy="8" r="6" fill="#fdca39" opacity=".45"/><circle cx="20" cy="8" r="2.4" fill="#fff6b0" stroke="#5b6496" stroke-width="1"/>` : '';
-    const s = kid ? 'transform="translate(5 14) scale(.75)"' : '';
-    return `<svg viewBox="0 0 40 60"><g class="body"><g ${s} ${P}>
-      <path d="M15 42 13 58M25 42l2 16" stroke="#5b6496" stroke-width="3"/>
-      <path d="M11 24c0-4 4-6 9-6s9 2 9 6v18H11z" stroke="#5b6496" stroke-width="1.8" fill="${shirt}"/>
-      <path d="M11 26 6 38M29 26l5 12" stroke="#5b6496" stroke-width="2.6"/>
-      <circle cx="20" cy="12" r="7" stroke="#5b6496" stroke-width="1.6" fill="${skin}"/>
-      ${hatSvg}${lampSvg}
-      <path d="M17 13h.1M23 13h.1" stroke="#5b6496" stroke-width="2"/>
-    </g></g></svg>`;
+const FACTS = [
+  { ru: 'В 2022 году около 685 миллионов человек в мире жили без электричества.', en: 'In 2022, about 685 million people in the world lived without electricity.' },
+  { ru: 'Около 80% людей без электричества живут в Африке южнее Сахары.', en: 'About 80% of people without electricity live in sub-Saharan Africa.' },
+  { ru: 'Около 2,1 миллиарда человек готовят еду на дровах, угле или керосине. Этот дым вредит здоровью.', en: 'About 2.1 billion people cook with wood, coal or kerosene. The smoke harms their health.' },
+  { ru: 'С 2010 по 2020 год электричество от солнечных панелей подешевело примерно на 90%.', en: 'From 2010 to 2020, electricity from solar panels got about 90% cheaper.' },
+  { ru: 'Солнце, ветер, вода и другие возобновляемые источники дают около 30% электричества в мире.', en: 'Sun, wind, water and other renewables make about 30% of the world\'s electricity.' },
+  { ru: 'Производство энергии даёт около трёх четвертей всех парниковых газов. Поэтому SDG 7 связана с климатом (SDG 13).', en: 'Energy causes about three quarters of all greenhouse gases. That is why SDG 7 is linked to climate (SDG 13).' },
+  { ru: 'Цель 7.3: к 2030 году вдвое ускорить рост энергоэффективности во всём мире.', en: 'Target 7.3: double the global rate of improvement in energy efficiency by 2030.' },
+  { ru: 'LED-лампа тратит примерно на 75–80% меньше электричества, чем обычная лампа накаливания.', en: 'An LED bulb uses about 75–80% less electricity than an old incandescent bulb.' },
+  { ru: 'Приборы в режиме ожидания могут съедать от 5 до 10% электричества дома. Выключай их из розетки!', en: 'Devices on standby can use 5–10% of a home\'s electricity. Unplug them!' },
+];
+
+/* =========================================================
+   Save
+   ========================================================= */
+const SAVE_KEY = 'light-dash-v1';
+const save = { lang: 'ru', mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}], ach: [],
+  stats: { energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 } };
+try {
+  const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+  if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = [0, 1, 2].map(i => (s.lv && s.lv[i]) || {}); }
+} catch (e) {}
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+const t = k => T[save.lang][k] ?? k;
+
+/* =========================================================
+   Characters (people) and skins
+   ========================================================= */
+const SKINS = [
+  { id: 'anya',   ru: 'Аня',            en: 'Anya',            shirt: '#5b6496', pants: '#3d4470', skin: '#f0d2a8', hair: '#4a2f1b', style: 'bun' },
+  { id: 'timur',  ru: 'Тимур',          en: 'Timur',           shirt: '#427f12', pants: '#5b6496', skin: '#c48a5a', hair: '#1e1a16', style: 'cap', hat: '#ff4401', need: 'l1' },
+  { id: 'li',     ru: 'Инженер Ли',     en: 'Engineer Li',     shirt: '#ff4401', pants: '#5b6496', skin: '#e8c39a', hair: '#141414', style: 'hardhat', hat: '#fdca39', need: 'allhouses' },
+  { id: 'amara',  ru: 'Учёная Амара',   en: 'Scientist Amara', shirt: '#ffffff', pants: '#427f12', skin: '#8a5a3c', hair: '#1a1210', style: 'curly', goggles: true, need: 'e100' },
+  { id: 'niko',   ru: 'Велокурьер Нико', en: 'Courier Niko',   shirt: '#fdca39', pants: '#3d4470', skin: '#dab680', hair: '#b1741e', style: 'helmet', hat: '#427f12', need: 'dash10' },
+  { id: 'night',  ru: 'Ночная смена',   en: 'Night shift',     shirt: '#2f3664', pants: '#1f2447', skin: '#b1741e', hair: '#1a1210', style: 'headlamp', hat: '#5b6496', need: 'l3' },
+  { id: 'zara',   ru: 'Солнечная Зара', en: 'Sunny Zara',      shirt: '#fdca39', pants: '#ff4401', skin: '#6b4428', hair: '#1a1210', style: 'long', crown: true, need: 'm1000' },
+  { id: 'watt',   ru: 'Ватт',           en: 'Watt',            shirt: '#fdca39', pants: '#5b6496', skin: '#fdca39', hair: '#fdca39', style: 'led', need: 'facts' },
+];
+const skinById = id => SKINS.find(s => s.id === id) || SKINS[0];
+const skinOpen = s => !s.need || save.ach.includes(s.need);
+
+const ACH = [
+  { id: 'l1',        ru: ['Первый свет', 'Пройди уровень 1'], en: ['First light', 'Finish level 1'] },
+  { id: 'l2',        ru: ['Ветер в спину', 'Пройди уровень 2'], en: ['Tailwind', 'Finish level 2'] },
+  { id: 'l3',        ru: ['Умный город', 'Пройди уровень 3'], en: ['Smart city', 'Finish level 3'] },
+  { id: 'allhouses', ru: ['Свет для всех', 'Зажги все дома на уровне'], en: ['Light for all', 'Light every home in a level'] },
+  { id: 'e100',      ru: ['Сборщик энергии', 'Собери 100 ⚡ всего'], en: ['Energy collector', 'Collect 100 ⚡ in total'] },
+  { id: 'dash10',    ru: ['Сквозь смог', 'Пробей рывком 10 стен смога'], en: ['Through the smog', 'Dash through 10 smog walls'] },
+  { id: 'h50',       ru: ['50 окон', 'Зажги 50 домов всего'], en: ['50 windows', 'Light 50 homes in total'] },
+  { id: 'clean',     ru: ['Чистый забег', 'Пройди уровень с первой попытки'], en: ['Clean run', 'Finish a level on the first attempt'] },
+  { id: 'att50',     ru: ['Упорство', 'Сделай 50 попыток'], en: ['Never give up', 'Make 50 attempts'] },
+  { id: 'facts',     ru: ['Знаток SDG 7', 'Найди все 9 звёзд-фактов'], en: ['SDG 7 expert', 'Find all 9 fact stars'] },
+  { id: 'm1000',     ru: ['Марафонец', 'Пробеги 1000 м в Марафоне'], en: ['Marathoner', 'Run 1000 m in the Marathon'] },
+  { id: 'm2030',     ru: ['Цель 2030', 'Пробеги 2030 м в Марафоне'], en: ['Goal 2030', 'Run 2030 m in the Marathon'] },
+  { id: 'style',     ru: ['Новый образ', 'Смени персонажа'], en: ['New look', 'Change your runner'] },
+];
+
+/* =========================================================
+   Physics constants (logical screen 800 x 450)
+   ========================================================= */
+const W = 800, H = 450, G = 380, PX = 200;
+const GRAV = 2600, JUMP = 830, ORBV = 800, PADV = 1180, FASTFALL = 1000;
+const PW = 28, PH = 52, SH = 24;
+const STEP = 1 / 120;
+
+/* =========================================================
+   Level builder
+   ========================================================= */
+function Builder(speed) {
+  this.v = speed; this.x = 520; this.o = []; this.groups = [];
+  this.D = (2 * JUMP / GRAV) * speed;
+}
+Builder.prototype = {
+  add(o) { this.o.push(o); return o; },
+  gap(d) { this.x += d; return this; },
+  energy(n = 3, y = G - 30, step = 46) { for (let i = 0; i < n; i++) this.add({ t: 'energy', x: this.x + i * step, y, k: (this.o.length + i) % 3 }); this.x += n * step; return this; },
+  arc(n = 3, top = G - 105) { // energy along a jump arc over the next obstacle
+    const span = this.D * 0.7;
+    for (let i = 0; i < n; i++) { const f = n === 1 ? .5 : i / (n - 1); this.add({ t: 'energy', x: this.x + 30 + f * span, y: top + Math.pow((f - .5) * 2, 2) * 45, k: i % 3 }); }
+    return this;
+  },
+  spikes(n = 1, base = G) { const w = 36; for (let i = 0; i < n; i++) this.add({ t: 'spike', x: this.x + i * w, w, h: 38, base }); this.groups.push({ a: this.x, b: this.x + n * w, base, kind: 'hop' }); this.x += n * w; return this; },
+  pit(w) { this.add({ t: 'pit', x: this.x, w }); this.groups.push({ a: this.x, b: this.x + w, base: G, kind: 'hop' }); this.x += w; return this; },
+  block(w, h) { const top = G - h; this.add({ t: 'block', x: this.x, w, top, h }); this.groups.push({ a: this.x, b: this.x + w, base: G, top, kind: 'step' }); this.x += w; return this; },
+  plat(w, top, h = 22) { this.add({ t: 'block', x: this.x, w, top, h }); this.x += w; return this; },
+  cloud(w = 100) { this.add({ t: 'cloud', x: this.x, w }); this.x += w; return this; },
+  wall() { this.add({ t: 'wall', x: this.x, w: 44 }); this.x += 44; return this; },
+  pad() { this.add({ t: 'pad', x: this.x, w: 44 }); this.x += 44; return this; },
+  orb(dx, y) { this.add({ t: 'orb', x: this.x + dx, y, r: 18 }); return this; },
+  house() { this.add({ t: 'house', x: this.x }); return this; },
+  fact(id, dx, y) { this.add({ t: 'fact', x: this.x + dx, y, id }); return this; },
+  check() { this.add({ t: 'check', x: this.x }); return this; },
+  sign(key, dx = 0) { this.add({ t: 'sign', x: this.x + dx, key }); return this; },
+  finish(extra = 500) { this.x += extra; this.len = this.x; return this; },
+};
+
+function buildLevel(i) {
+  const L = [300, 340, 380][i], b = new Builder(L), D = b.D;
+  if (i === 0) {
+    b.gap(80).sign('hintUp', 40).gap(260)
+     .energy(3).gap(180).sign('hintLeft', -60).house().gap(300)
+     .spikes(1).gap(330).spikes(1).gap(300).energy(3).gap(170).spikes(2).gap(320)
+     .house().gap(220).energy(2).gap(160)
+     .pit(130).gap(320).energy(3).gap(120).spikes(2).gap(300)
+     .block(130, 45).gap(300).spikes(1).gap(280)
+     .house().gap(200).block(170, 70).gap(0);
+    b.fact(0, -110, G - 150);
+    b.gap(330).check()
+     .spikes(3).gap(320).energy(3).gap(170).pit(150).gap(320)
+     .sign('hintDown', -40).house().gap(200).cloud(110).gap(330).energy(3).gap(200)
+     .spikes(2).gap(260).cloud(110).gap(320);
+    b.fact(1, 75, G - 115); b.pit(150).gap(320)
+     .house().gap(150).energy(3).gap(120).sign('hintRight', 0).gap(200)
+     .wall().gap(330).check()
+     .block(110, 40).block(110, 80).gap(300).spikes(2).gap(300)
+     .energy(3).gap(120).house().gap(220).block(200, 60);
+    b.fact(2, -100, G - 180);
+    b.gap(300).spikes(1).gap(260).energy(3).finish(500);
+  } else if (i === 1) {
+    b.gap(200).energy(3).gap(200).house().gap(250)
+     .spikes(2).gap(300).block(270, 50).gap(0).spikes(2).gap(300)
+     .energy(3).gap(150).house().gap(150).cloud(120).gap(330)
+     .sign('hintPad', 0).gap(120).pad().gap(30).spikes(5).gap(330)
+     .energy(3).gap(150).wall().gap(320).house().gap(160)
+     .pit(170).gap(320);
+    b.fact(3, 40, G - 240); b.pad().gap(30).spikes(5).gap(330).check()
+     .block(120, 45).block(120, 90).gap(0).spikes(3).gap(320)
+     .energy(3).gap(100).house().gap(170).cloud(120).gap(110).energy(2).gap(170).cloud(120).gap(330)
+     .spikes(3).gap(300).energy(3).gap(170).wall().gap(150).energy(3).gap(170).house().gap(150)
+     .pit(180).gap(320).check()
+     .block(220, 60);
+    b.fact(4, -90, G - 170);
+    b.gap(0).spikes(2).gap(320).energy(3).gap(100).house().gap(170)
+     .pad().gap(40).spikes(4).gap(20).wall().gap(330).energy(3).gap(150).house().gap(200)
+     .spikes(2).gap(280).cloud(130).gap(330).pit(180).gap(330);
+    b.fact(5, 60, G - 120); b.spikes(3).gap(330).energy(3).gap(150).house().gap(150).finish(520);
+  } else {
+    b.gap(200).energy(3).gap(150).house().gap(260)
+     .spikes(2).gap(320).sign('hintOrb', 0).gap(80).pit(320);
+    b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
+    b.gap(330).energy(3).gap(120).house().gap(200)
+     .block(210, 60).block(210, 100).gap(0).spikes(4).gap(320)
+     .wall().gap(150).energy(3).gap(120).house().gap(200).cloud(130).gap(330)
+     .pit(320);
+    b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
+    b.fact(6, -320 + 235, G - 268);
+    b.gap(330).check()
+     .energy(3).gap(120).house().gap(160).spikes(3).gap(300)
+     .pad().gap(40).spikes(5).gap(330).energy(3).gap(150).wall().gap(140).house().gap(220)
+     .cloud(130).gap(120).energy(2).gap(160).cloud(130).gap(330)
+     .block(260, 70);
+    b.fact(7, -130, G - 170);
+    b.gap(0).spikes(3).gap(330).check()
+     .energy(3).gap(120).house().gap(160).pit(320);
+    b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
+    b.gap(330).spikes(2).gap(260).wall().gap(150).energy(3).gap(130).house().gap(200)
+     .block(210, 50).block(210, 95).gap(0).spikes(4).gap(330)
+     .energy(3).gap(120).house().gap(180).cloud(140).gap(330);
+    b.fact(8, 80, G - 118); b.pit(200).gap(340).spikes(3).gap(320).energy(3).gap(150).house().gap(150).finish(520);
   }
-  const SPECIAL_SVG = {
-    school: `<svg viewBox="0 0 48 48"><g ${P}><path d="M6 44V22L24 10l18 12v22z" stroke="#5b6496" stroke-width="2.2" fill="#ff4401" fill-opacity=".35"/><path d="M24 10V2l8 3-8 3" stroke="#427f12" stroke-width="2" fill="#427f12"/><path d="M20 44V34h8v10" stroke="#5b6496" stroke-width="2" fill="#b1741e"/><path d="M11 26h6v5h-6zM31 26h6v5h-6z" stroke="#5b6496" stroke-width="1.6" fill="#fdca39"/><path d="M4 44h40" stroke="#b1741e" stroke-width="2"/></g></svg>`,
-    clinic: `<svg viewBox="0 0 48 48"><g ${P}><path d="M6 44V16h36v28z" stroke="#5b6496" stroke-width="2.2" fill="#ffffff" fill-opacity=".8"/><path d="M4 16 24 6l20 10" stroke="#5b6496" stroke-width="2"/><path d="M21 21h6v6h6v6h-6v6h-6v-6h-6v-6h6z" stroke="#ff4401" stroke-width="1.8" fill="#ff4401" fill-opacity=".7"/><path d="M4 44h40" stroke="#b1741e" stroke-width="2"/></g></svg>`,
+  b.o.sort((a, c) => a.x - c.x);
+  return { idx: i, speed: L, objs: b.o, groups: b.groups, len: b.len, houses: b.o.filter(o => o.t === 'house').length, D };
+}
+
+/* Endless: append random patterns ahead of the runner */
+function endlessBuilder() {
+  const b = new Builder(320); b.len = Infinity; b.n = 0;
+  b.more = function () {
+    const v = this.v; this.D = (2 * JUMP / GRAV) * v;
+    const g = () => Math.round(v * 0.95 + Math.random() * 120);
+    const r = Math.random();
+    this.n++;
+    if (this.n % 5 === 0) { this.energy(3).gap(120).house().gap(g()); return; }
+    if (r < .16) this.spikes(1 + Math.floor(Math.random() * 3)).gap(g());
+    else if (r < .28) this.energy(3).gap(g());
+    else if (r < .38) this.pit(130 + Math.floor(Math.random() * 50)).gap(g());
+    else if (r < .48) { this.block(130, 45 + Math.floor(Math.random() * 30)).gap(0).spikes(2).gap(g()); }
+    else if (r < .58) this.cloud(110 + Math.floor(Math.random() * 30)).gap(g());
+    else if (r < .66) { this.energy(2).gap(100).wall().gap(g()); }
+    else if (r < .74) { this.pad().gap(40).spikes(4).gap(g()); }
+    else if (r < .82) { this.pit(300); this.o.push({ t: 'orb', x: this.x - 300 + 115, y: G - 150, r: 18 }); this.gap(g()); }
+    else if (r < .9) { this.block(120, 45).block(120, 90).gap(0).spikes(2).gap(g()); }
+    else { this.spikes(2).gap(Math.round(v * .8)).spikes(2).gap(g()); }
   };
-  const svgImg = svg => 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ').replace('url(#pencil)', 'none'));
-  const ICON = {
-    solar: '<img src="assets/solar.png" alt="">',
-    wind: `<svg viewBox="0 0 48 48"><g ${P}><path d="M23 22 21 46h6l-2-24" stroke="#5b6496" stroke-width="2"/><g class="rotor" style="transform-origin:24px 21px"><path d="M24 21C22 14 22 8 24 3c2 5 2 11 0 18Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/><path d="M24 21c-6 4-12 6-18 6 4-4 10-6 18-6Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/><path d="M24 21c6 4 11 9 13 15-5-2-10-7-13-15Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/></g><circle cx="24" cy="21" r="2.6" fill="#fdca39" stroke="#5b6496" stroke-width="1.5"/><path d="M14 46h20" stroke="#b1741e" stroke-width="2"/></g></svg>`,
-    hydro: `<svg viewBox="0 0 48 48"><g ${P}><path d="M5 12h38v26H5z" stroke="#5b6496" stroke-width="2.2" fill="#5b6496" fill-opacity=".25"/><path d="M5 12l6-5h26l6 5" stroke="#5b6496" stroke-width="2"/><path d="M8 32c4-3 7 3 11 0s7 3 11 0 7 3 11 0" stroke="#5b6496" stroke-width="2"/><path d="M8 38c4-3 7 3 11 0s7 3 11 0 7 3 11 0" stroke="#5b6496" stroke-width="1.6"/><path d="M26 15l-6 9h6l-4 8" stroke="#ff4401" stroke-width="2.4" fill="#fdca39"/></g></svg>`,
-    coal: `<svg viewBox="0 0 48 48"><g ${P}><path d="M5 44V26l10-6v6l10-6v6l10-6v24z" stroke="#5b6496" stroke-width="2.2" fill="#8a8572" fill-opacity=".55"/><path d="M36 44V10h6v34" stroke="#5b6496" stroke-width="2.2" fill="#8a8572" fill-opacity=".55"/><circle class="smoke" cx="40" cy="6" r="3.5" stroke="#8a8572" stroke-width="2" fill="#bdb8a0"/><circle class="smoke s2" cx="33" cy="4" r="2.5" stroke="#8a8572" stroke-width="1.6" fill="#bdb8a0"/><path d="M5 44h38" stroke="#b1741e" stroke-width="2"/><path d="M10 34h4M20 34h4M30 34h2" stroke="#fdca39" stroke-width="3"/></g></svg>`,
-    insulate: '<img src="assets/led.png" alt="">',
-    remove: `<svg viewBox="0 0 48 48"><g ${P}><path d="M10 10 38 38M38 10 10 38" stroke="#ff4401" stroke-width="4"/></g></svg>`,
+  return b;
+}
+
+/* =========================================================
+   Game state
+   ========================================================= */
+let lvl, B, run, endless = false;
+const input = { up: false, down: false, jumpBuf: 0, light: false, dash: false };
+
+function newRun(fromCheckpoint) {
+  const cp = fromCheckpoint && run && run.cp;
+  if (!cp) {
+    if (endless) { B = endlessBuilder(); for (let i = 0; i < 6; i++) B.more(); lvl = { idx: -1, speed: 320, objs: B.o, groups: B.groups, len: Infinity, houses: 0 }; }
+    else lvl = buildLevel(lvl.idx);
+  }
+  const attempt = run ? run.attempt + 1 : 1;
+  const base = cp ? cp.snap : { x: 0, energy: 0, lit: [], facts: [], broken: [] };
+  for (const o of lvl.objs) { o.lit = base.lit.includes(o); o.got = base.facts.includes(o) || (o.t === 'energy' && o.x < base.x); o.broken = base.broken.includes(o); o.used = false; }
+  run = {
+    p: { x: base.x, y: G, vy: 0, ground: true, slideT: 0, dash: 0, dashCd: 0, alive: true, ang: 0 },
+    energy: base.energy, time: 0, deadT: 0, attempt, cp: cp || null, fresh: !cp, deaths: run && run.sameLevel ? run.deaths : 0,
+    sameLevel: true, particles: [], flash: '', flashT: 0, done: false, speed: lvl.speed, startX: base.x, wallsBroken: 0,
   };
-  const BLDG_IMG = { home: 'assets/house.png', school: svgImg(SPECIAL_SVG.school), clinic: svgImg(SPECIAL_SVG.clinic) };
-  // Spinning turbines and drifting smoke, only when motion is allowed.
-  if (!reduced) document.head.insertAdjacentHTML('beforeend', `<style>
-    .tile .rotor { animation: spin var(--spin, 3s) linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
-    .tile .smoke { animation: smoke 2.4s ease-in infinite; } .tile .smoke.s2 { animation-delay: 1.2s; }
-    @keyframes smoke { to { transform: translate(4px, -6px); opacity: 0; } }</style>`);
+}
 
-  /* ---------- Game data ---------- */
-  const TOOLS = {
-    solar:    { name: 'Solar farm', cost: 20, clean: true,  desc: 'Makes 3 MW in a normal year. Output follows the sunshine.' },
-    wind:     { name: 'Wind turbine', cost: 35, clean: true, desc: 'Makes about 5 MW. Output swings with the wind each year.' },
-    hydro:    { name: 'Small hydro', cost: 60, clean: true, desc: 'Steady 9 MW. Must sit on a land tile next to the river (green outline).' },
-    coal:     { name: 'Coal plant', cost: 15, clean: false, desc: 'Cheap, steady 8 MW. Costs $3k a year to run and adds 7 pollution every year.' },
-    insulate: { name: 'Efficient upgrade', cost: 8, desc: 'LED bulbs and insulation: the building needs 1 MW less. Tap a home, school or clinic.' },
-    remove:   { name: 'Demolish', cost: 0, desc: 'Remove a power plant. You get half its price back.' },
-  };
-  const KINDS = {
-    home:   { name: 'Home', need: 2, income: 6 },
-    school: { name: 'School', need: 3, income: 8 },
-    clinic: { name: 'Health clinic', need: 3, income: 8 },
-  };
+const litCount = () => lvl.objs.filter(o => o.t === 'house' && o.lit).length;
+const housesSoFar = () => lvl.objs.filter(o => o.t === 'house' && o.x < run.p.x + 200).length;
 
-  const FACTS = [
-    ['Around 670 million people still lived without electricity in the early 2020s, most of them in sub-Saharan Africa.', 'SDG 7.1 · Universal access'],
-    ['Target 7.2 asks countries to substantially increase the share of renewable energy in the global energy mix by 2030.', 'SDG 7.2 · Renewables'],
-    ['Target 7.3 asks the world to double the global rate of improvement in energy efficiency by 2030.', 'SDG 7.3 · Efficiency'],
-    ['The price of electricity from solar panels fell by roughly 90% between 2010 and 2020.', 'Renewables'],
-    ['About 2.3 billion people still cook with polluting fuels like wood, charcoal and kerosene, which harms health indoors.', 'SDG 7.1 · Clean cooking'],
-    ['Off-grid solar kits and mini-grids are often the fastest way to bring power to remote villages.', 'Access'],
-    ['Energy is the largest source of greenhouse gas emissions, about three quarters of the global total.', 'Climate link · SDG 13'],
-    ['Reliable power lets clinics keep vaccines cold and lets schools run lights and computers.', 'Why it matters'],
-    ['Target 7.b is about expanding infrastructure and upgrading technology for modern energy in developing countries.', 'SDG 7.b · Infrastructure'],
-    ['LED bulbs use up to 80% less electricity than old incandescent bulbs and last much longer.', 'SDG 7.3 · Efficiency'],
-  ];
+function snapshot() {
+  return { x: run.p.x, energy: run.energy, lit: lvl.objs.filter(o => o.lit), facts: lvl.objs.filter(o => o.t === 'fact' && o.got), broken: lvl.objs.filter(o => o.broken) };
+}
 
-  const EVENTS = [
-    { t: 'Sunny year! Solar farms produce more.', k: 'good', fx: s => { s.sun = 1.3; } },
-    { t: 'A cloudy, rainy year. Solar is weaker, but the river runs high.', k: 'warn', fx: s => { s.sun = 0.6; s.river = 1.2; } },
-    { t: 'Drought. The river is low and hydro output drops.', k: 'warn', fx: s => { s.river = 0.6; } },
-    { t: 'Strong winds all year. Turbines spin fast.', k: 'good', fx: s => { s.wind = 1.4; } },
-    { t: 'A still year with little wind.', k: 'warn', fx: s => { s.wind = 0.5; } },
-    { t: 'A climate fund grants the valley $40k for clean energy.', k: 'good', fx: s => { s.money += 40; } },
-    { t: 'Coal prices spike. Coal plants cost $3k more to run this year.', k: 'bad', fx: s => { s.coalExtra = 3; } },
-    { t: 'A new road opens. Two more families move in.', k: 'warn', fx: () => { addBuildings('home', 2); } },
-    { t: 'A calm, ordinary year.', k: '', fx: () => {} },
-  ];
+function die() {
+  const p = run.p; if (!p.alive) return;
+  p.alive = false; run.deadT = 0; run.deaths++;
+  if (!demo) { save.stats.attempts++; persist(); checkAch(); }
+  for (let i = 0; i < 26; i++) { const a = Math.random() * Math.PI * 2, s = 120 + Math.random() * 320; run.particles.push({ x: p.x, y: p.y - 26, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 120, life: .8, c: ['#5b6496', '#fdca39', '#ff4401', '#427f12'][i % 4], r: 3 + Math.random() * 4 }); }
+  sfx('die');
+}
 
-  // Energy detective: appliances from the presentation, left wasting power.
-  const WASTERS = [
-    { img: 'ac',      t: 'The air conditioner is running in an empty house!', tip: 'Switch the AC off when nobody is home, and set it a few degrees warmer.' },
-    { img: 'lamp',    t: 'Lights are on in the middle of the day.', tip: 'Turn off lights you are not using, and swap old bulbs for LEDs.' },
-    { img: 'pc',      t: 'A computer was left on all night.', tip: 'Shut computers down at night instead of leaving them on.' },
-    { img: 'fan',     t: 'A fan is blowing in an empty room.', tip: 'Fans cool people, not rooms. Switch them off when you leave.' },
-    { img: 'toaster', t: 'The toaster is plugged in all day.', tip: 'Many appliances use standby power. Unplug the ones you rarely use.' },
-    { img: 'phone',   t: 'A charger is plugged in with no phone on it.', tip: 'Unplug chargers when you are done. Standby power adds up.' },
-  ];
+function flash(msg) { run.flash = msg; run.flashT = 1.4; }
 
-  const MISSIONS = [
-    { id: 'solar',   t: 'Build your first solar farm', reward: 10, check: () => has('solar') },
-    { id: 'power5',  t: 'Give power to 5 buildings at once', reward: 15, check: st => st.lit.size >= 5 },
-    { id: 'detect',  t: 'Switch off 3 energy wasters', reward: 15, check: () => S.fixed >= 3 },
-    { id: 'hydro',   t: 'Build a small hydro by the river', reward: 15, check: () => has('hydro') },
-    { id: 'eff3',    t: 'Give 3 buildings an efficient upgrade', reward: 15, check: () => S.tiles.filter(t => t.house && t.house.eff).length >= 3 },
-    { id: 'school',  t: 'Power the new school', reward: 20, check: st => litKind(st, 'school') },
-    { id: 'nocoal',  t: 'End a year with no coal and 80% of buildings powered', reward: 20, year: true, check: st => st.coal === 0 && st.access >= 0.8 && st.homes >= 6 },
-    { id: 'clean60', t: 'Reach 60% clean power with 10 or more buildings', reward: 20, check: st => st.cleanShare >= 0.6 && st.homes >= 10 },
-    { id: 'clinic',  t: 'Power the health clinic', reward: 25, check: st => litKind(st, 'clinic') },
-    { id: 'all',     t: 'Power every building, with 14 or more', reward: 30, check: st => st.access >= 1 && st.homes >= 14 },
-    { id: 'air',     t: 'Reach 2030 with pollution under 20', reward: 0, final: true, check: () => S.poll < 20 },
-  ];
+function step(dt, bot) {
+  const p = run.p;
+  if (!p.alive) return;
+  if (endless) {
+    run.speed = Math.min(440, 320 + p.x / 400); B.v = run.speed;
+    while (B.x < p.x + 1800) B.more();
+    if (lvl.objs.length > 400) { lvl.objs = lvl.objs.filter(o => o.x > p.x - 600); B.o = lvl.objs; B.groups = B.groups.filter(g => g.b > p.x - 600); lvl.groups = B.groups; }
+  }
+  const v = run.speed;
+  run.time += dt;
+  const inp = bot ? bot : input;
 
-  const SKINS = [
-    { id: 'classic', name: 'Classic', cost: 0, look: { shirt: '#5b6496', hat: '#fdca39' } },
-    { id: 'sunny',   name: 'Sunny', cost: 3, look: { shirt: '#fdca39', hat: '#ff4401' } },
-    { id: 'ranger',  name: 'Forest ranger', cost: 5, look: { shirt: '#427f12', hat: 'ranger', skin: '#b1741e' } },
-    { id: 'sunset',  name: 'Sunset', cost: 8, look: { shirt: '#ff4401', hat: '#5b6496', skin: '#8a5a3c' } },
-    { id: 'glow',    name: 'Night glow', cost: 12, look: { shirt: '#2f3664', hat: '#5b6496', lamp: true } },
-  ];
-  const MAPS = [
-    { id: 'sketchbook', name: 'Sketchbook', cost: 0, swatch: '#f1ebc4' },
-    { id: 'autumn',     name: 'Autumn', cost: 4, swatch: '#f3dfb8' },
-    { id: 'blueprint',  name: 'Blueprint', cost: 6, swatch: '#e3e9f6' },
-  ];
-  const VILLAGER_SHIRTS = ['#427f12', '#ff4401', '#fdca39', '#b1741e', '#7c83ad'];
-  const SKIN_TONES = ['#dab680', '#b1741e', '#8a5a3c', '#f0d2a8'];
+  p.x += v * dt;
+  p.dash = Math.max(0, p.dash - dt); p.dashCd = Math.max(0, p.dashCd - dt); p.slideT = Math.max(0, p.slideT - dt);
 
-  /* ---------- State ---------- */
-  let S;
-  const has = b => S.tiles.some(t => t.b === b);
-  const litKind = (st, k) => [...st.lit].some(t => t.house.kind === k);
-  const tileAt = (r, c) => S.tiles[r * COLS + c];
-  const pos = t => ({ x: (t.c + 0.5) / COLS * 100, y: (t.r + 0.9) / ROWS * 100 });
-
-  function newGame() {
-    const tiles = [];
-    let rc = 6;
-    for (let r = 0; r < ROWS; r++) {
-      for (let c = 0; c < COLS; c++) tiles.push({ r, c, river: false, b: null, house: null, waste: null });
-      tiles[r * COLS + rc].river = true;
-      if (r < ROWS - 1) { const nc = Math.min(COLS - 2, Math.max(4, rc + [-1, 0, 1][rnd(3)])); if (nc !== rc) { tiles[r * COLS + nc].river = true; rc = nc; } }
+  // dash (right arrow)
+  if (inp.dash) {
+    inp.dash = false;
+    if (run.energy > 0 && p.dashCd <= 0) { run.energy--; p.dash = .45; p.dashCd = .55; sfx('dash'); }
+    else if (run.energy <= 0) flash(t('noEnergy'));
+  }
+  // light a home (left arrow)
+  if (inp.light) {
+    inp.light = false;
+    const h = lvl.objs.find(o => o.t === 'house' && !o.lit && Math.abs(o.x + 45 - p.x) < 140);
+    if (h) {
+      if (run.energy > 0) {
+        run.energy--; h.lit = true; if (!demo) save.stats.houses++; sfx('light');
+        for (let i = 0; i < 16; i++) { const a = Math.random() * Math.PI * 2; run.particles.push({ x: h.x + 45, y: G - 50, vx: Math.cos(a) * 160, vy: Math.sin(a) * 160 - 60, life: .9, c: '#fdca39', r: 3 + Math.random() * 3 }); }
+      } else flash(t('noEnergy'));
     }
-    S = { year: START_YEAR, money: 100, poll: 0, tiles, tool: 'solar', sun: 1, wind: 1, river: 1, coalExtra: 0,
-          log: [], fact: 0, over: false, busy: false, done: new Set(), fixed: 0, wasted: 0, sparksEarned: 0 };
-    S.me = tileAt(5, 0);
-    $('toast').hidden = true;
-    addBuildings('home', 5);
-    rollYear(true);
-    buildBoard();
-    spawnActors();
-    scheduleWaster();
-    say('Hi, I\'m <b>Watt!</b> Five families have no electricity. Pick <b>Solar farm</b> and tap an empty tile. Your engineer will walk over and build it.');
-    $('info').textContent = TOOLS.solar.desc;
-    render();
   }
 
-  function addBuildings(kind, n) {
-    const free = S.tiles.filter(t => !t.river && !t.b && !t.house && t !== S.me);
-    for (let i = 0; i < n && free.length; i++) {
-      const t = free.splice(rnd(free.length), 1)[0];
-      t.house = { kind, eff: false }; t.fresh = true;
+  const sliding = (inp.down || p.slideT > 0) && p.ground;
+  const h = sliding ? SH : PH;
+
+  // jump: hold to keep jumping on the ground; orbs need a fresh press
+  if (p.ground && (inp.up || inp.jumpBuf > 0)) { p.vy = -JUMP; p.ground = false; inp.jumpBuf = 0; sfx('jump'); }
+  else if (!p.ground && inp.jumpBuf > 0) {
+    const orb = lvl.objs.find(o => o.t === 'orb' && !o.used && Math.hypot(o.x - p.x, o.y - (p.y - h / 2)) < o.r + 22);
+    if (orb) { p.vy = -ORBV; orb.used = true; inp.jumpBuf = 0; sfx('orb'); }
+  }
+  inp.jumpBuf = Math.max(0, inp.jumpBuf - dt);
+
+  if (!p.ground && inp.down) p.vy = Math.max(p.vy, FASTFALL);
+
+  const prevY = p.y, prevTop = p.y - h;
+  p.vy += GRAV * dt; p.y += p.vy * dt;
+  let support = false;
+
+  const overPit = lvl.objs.some(o => o.t === 'pit' && p.x > o.x && p.x < o.x + o.w);
+  if (!overPit) {
+    if (p.y >= G && prevY <= G + 1) { p.y = G; support = true; }
+    else if (p.y > G + 2) return die(); // hit the wall of a pit
+  }
+  const tol = Math.abs(p.vy * dt) + 6;
+  for (const o of lvl.objs) {
+    if (o.t !== 'block' || o.x > p.x + 40 || o.x + o.w < p.x - 40) continue;
+    if (p.x + PW / 2 > o.x && p.x - PW / 2 < o.x + o.w) {
+      const top = o.top, bot = o.top + o.h;
+      if (p.y > top && p.y - h < bot) {
+        if (prevY <= top + tol && p.vy >= 0) { p.y = top; support = true; }
+        else if (prevTop >= bot - tol && p.vy < 0) { p.y = bot + h; p.vy = 0; }
+        else return die();
+      }
     }
   }
+  if (support) { p.vy = 0; if (!p.ground) sfx('land'); }
+  p.ground = support;
+  if (inp.downPressed) { inp.downPressed = false; p.slideT = .3; }
 
-  const nearRiver = t => [[1,0],[-1,0],[0,1],[0,-1]].some(([dr, dc]) => {
-    const r = t.r + dr, c = t.c + dc;
-    return r >= 0 && r < ROWS && c >= 0 && c < COLS && tileAt(r, c).river;
-  });
+  // pads
+  for (const o of lvl.objs) if (o.t === 'pad' && p.ground && p.y === G && p.x + 10 > o.x && p.x - 10 < o.x + o.w) { p.vy = -PADV; p.ground = false; sfx('pad'); }
 
-  function output(b) {
-    if (b === 'solar') return 3 * S.sun;
-    if (b === 'wind') return 5 * S.wind;
-    if (b === 'hydro') return 9 * S.river;
-    if (b === 'coal') return 8;
-    return 0;
-  }
-  const need = t => KINDS[t.house.kind].need - (t.house.eff ? 1 : 0) + (t.waste ? 1 : 0);
-  const prio = t => (t.house.kind === 'clinic' ? 0 : t.house.kind === 'school' ? 10 : 20) + need(t);
-
-  function compute() {
-    let supply = 0, clean = 0, coal = 0;
-    for (const t of S.tiles) if (t.b) {
-      const o = output(t.b); supply += o;
-      if (TOOLS[t.b].clean) clean += o; else coal++;
+  // hazards and pickups
+  const hh = ((inp.down || p.slideT > 0) && p.ground) ? SH : h;
+  const bx = { l: p.x - PW / 2 + 3, r: p.x + PW / 2 - 3, t: p.y - hh + 3, b: p.y - 1 };
+  const hit = (l, r, tp, bt) => bx.r > l && bx.l < r && bx.b > tp && bx.t < bt;
+  for (const o of lvl.objs) {
+    if (o.x > p.x + 80) break;
+    if (o.x + (o.w || 40) < p.x - 80) continue;
+    switch (o.t) {
+      case 'spike': if (hit(o.x + 10, o.x + o.w - 10, o.base - o.h + 15, o.base)) return die(); break;
+      case 'cloud': if (!o.broken && hit(o.x + 6, o.x + o.w - 6, G - 112, G - 32)) { if (p.dash > 0) breakSmog(o); else return die(); } break;
+      case 'wall': if (!o.broken && hit(o.x, o.x + o.w, G - 340, G)) { if (p.dash > 0) breakSmog(o); else return die(); } break;
+      case 'energy': if (!o.got && hit(o.x - 14, o.x + 14, o.y - 14, o.y + 14)) { o.got = true; run.energy = Math.min(9, run.energy + 1); if (!demo) save.stats.energy++; sfx('coin'); } break;
+      case 'fact': if (!o.got && hit(o.x - 18, o.x + 18, o.y - 18, o.y + 18)) { o.got = true; sfx('star'); if (!demo) toast('★', FACTS[o.id][save.lang].slice(0, 64) + '…'); } break;
+      case 'check': if (save.practice && !endless && (!run.cp || run.cp.x < o.x) && p.x > o.x) { run.cp = { x: o.x, snap: snapshot() }; sfx('coin'); } break;
     }
-    const homes = S.tiles.filter(t => t.house);
-    const demand = homes.reduce((a, t) => a + need(t), 0);
-    let left = supply; const lit = new Set();
-    [...homes].sort((a, b) => prio(a) - prio(b)).forEach(t => {
-      if (left + 1e-9 >= need(t)) { left -= need(t); lit.add(t); }
-    });
-    return { supply, clean, coal, demand, homes: homes.length, lit, access: homes.length ? lit.size / homes.length : 0, cleanShare: supply ? clean / supply : 0 };
   }
+  if (p.y > H + 80) return die();
+  if (!endless && p.x >= lvl.len) { run.done = true; }
+  if (endless && !demo) { const m = Math.floor(p.x / 50); if (m > (save.stats.bestM || 0)) save.stats.bestM = m; }
+}
 
-  function rollYear(first) {
-    S.sun = 0.8 + Math.random() * 0.4;
-    S.wind = 0.7 + Math.random() * 0.6;
-    S.river = 1; S.coalExtra = 0;
-    let headline = 'A new decade starts';
-    if (!first) {
-      const e = pick(EVENTS);
-      e.fx(S); log(`${S.year}: ${e.t}`, e.k); headline = e.t;
-    } else {
-      log(`${S.year}: Five families in the valley have no electricity. Bring them clean, affordable power by ${END_YEAR}.`, 'warn');
+function breakSmog(o) {
+  o.broken = true; if (o.t === 'wall') { if (!demo) save.stats.walls++; run.wallsBroken++; }
+  for (let i = 0; i < 20; i++) run.particles.push({ x: o.x + 20, y: G - 40 - Math.random() * (o.t === 'wall' ? 260 : 70), vx: 120 + Math.random() * 240, vy: (Math.random() - .5) * 200, life: .7, c: '#9b9682', r: 5 + Math.random() * 7 });
+  sfx('smash');
+}
+
+/* =========================================================
+   Autopilot (demo on the menu, and level testing)
+   ========================================================= */
+function autopilot() {
+  const p = run.p, v = run.speed, D = (2 * JUMP / GRAV) * v, front = p.x + PW / 2;
+  const a = { up: false, down: false, jumpBuf: 0, light: false, dash: false };
+  for (const o of lvl.objs) {
+    if (o.x > p.x + 400) break;
+    if (o.t === 'house' && !o.lit && run.energy > 1 && Math.abs(o.x + 45 - p.x) < 120) a.light = true;
+    if ((o.t === 'wall') && !o.broken && o.x - front < v * 0.05 + 4 && o.x + o.w > p.x - 14) a.dash = p.dashCd <= 0 && p.dash <= 0;
+    if (o.t === 'cloud' && !o.broken && o.x - front < v * 0.09 && o.x + o.w > p.x - PW) a.down = true;
+    if (o.t === 'orb' && !o.used && !p.ground && Math.abs(o.x - p.x) < 14) a.jumpBuf = .05;
+  }
+  if (p.ground) {
+    for (const g of lvl.groups) {
+      if (g.b < p.x - 14) continue;
+      if (g.a > p.x + 400) break;
+      if (g.kind === 'step') {
+        if (g.top < p.y - 4) { const rise = p.y - g.top; const lead = v * (0.05 + rise / 650); if (g.a - front < lead && g.a - front > -4) a.up = true; }
+        continue;
+      }
+      if (g.base !== G && p.y !== g.base) continue;
+      const fall = Math.max(0, g.base - p.y); // jumping from a higher block lands later
+      const air = (JUMP + Math.sqrt(JUMP * JUMP + 2 * GRAV * fall)) / GRAV * v;
+      const T = Math.min((g.a + g.b) / 2 - (fall > 0 ? air * .45 : D / 2), g.a - 30);
+      if (p.x >= T - 2 && p.x < g.a - 2) { a.up = true; break; }
     }
-    if (S.year === 2023) { addBuildings('school', 1); log('2023: A school opens. It needs 3 MW for lights and computers.', 'warn'); headline += ' A new school opens!'; }
-    if (S.year === 2026) { addBuildings('clinic', 1); log('2026: A health clinic opens. Its fridge keeps vaccines cold, so it gets power first.', 'warn'); headline += ' A clinic opens!'; }
-    S.fact = (S.year - START_YEAR) % FACTS.length;
-    return headline;
+    // walking off a block straight onto spikes: jump from the block edge
+    for (const o of lvl.objs) {
+      if (o.t === 'block' && p.y === o.top && o.top < G) {
+        const edge = o.x + o.w;
+        const after = lvl.groups.find(g => g.a >= edge - 1 && g.a < edge + 60 && g.kind === 'hop');
+        if (after && p.x > edge - 34 && p.x < edge - 4) a.up = true;
+      }
+    }
   }
+  return a;
+}
 
-  function log(text, kind) { S.log.unshift({ text, kind }); S.log = S.log.slice(0, 40); }
-  function say(html) { $('watt').innerHTML = html; }
-  let toastTimer;
-  function toast(html) {
-    const el = $('toast'); el.innerHTML = html; el.hidden = false;
+/* =========================================================
+   Rendering
+   ========================================================= */
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+let scale = 1;
+function resize() {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  scale = cv.width / W;
+}
+new ResizeObserver(resize).observe(cv);
+
+const IMG = {};
+['house', 'led', 'star-yellow', 'star-green', 'star-orange', 'solar'].forEach(n => { const i = new Image(); i.src = `assets/${n}.png`; IMG[n] = i; });
+let houseDark = null;
+IMG.house.onload = () => {
+  const c = document.createElement('canvas'); c.width = IMG.house.width; c.height = IMG.house.height;
+  const x = c.getContext('2d'); x.drawImage(IMG.house, 0, 0);
+  x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(52,56,92,.62)'; x.fillRect(0, 0, c.width, c.height);
+  houseDark = c;
+};
+
+const C = { paper: '#f8f4d9', paper2: '#f1ebc4', indigo: '#5b6496', deep: '#3d4470', green: '#427f12', yellow: '#fdca39', orange: '#ff4401', brown: '#b1741e', smog: '#8a8572' };
+const FONT_D = '"Biro Script Plus", "Caveat", cursive';
+const FONT_B = '"Linotype Feltpen", "Patrick Hand", "Neucha", cursive';
+
+function line(c, pts, w = 2, col = C.indigo) { c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); }
+
+function drawPerson(c, sk, time, pose) {
+  // origin at the feet, facing right, 52px tall
+  const ph = time * 14, sw = pose === 'run' ? Math.sin(ph) : pose === 'air' ? .9 : 0;
+  c.save();
+  if (pose === 'slide') { c.translate(-6, 0); c.rotate(-1.15); }
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  const hip = [0, -22];
+  // legs
+  const leg = (s, col) => line(c, [hip, [s * 9, -11 + Math.abs(s) * 2], [s * 14 + (pose === 'air' ? -4 : 0), 0 - (pose === 'air' ? 6 : 0)]], 4.5, col);
+  leg(-sw, C.deep); leg(sw, sk.pants);
+  // body
+  c.fillStyle = sk.shirt; c.strokeStyle = C.indigo; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(-8, -22); c.lineTo(-9, -36); c.quadraticCurveTo(0, -42, 9, -36); c.lineTo(8, -22); c.closePath(); c.fill(); c.stroke();
+  if (sk.id === 'li') { line(c, [[-6, -34], [-6, -23]], 2.5, C.yellow); line(c, [[6, -34], [6, -23]], 2.5, C.yellow); }
+  // arms
+  const arm = (s, col) => line(c, [[0, -35], [s * -9, -28], [s * -12, -20 + (pose === 'air' ? -14 : 0)]], 3.5, col);
+  arm(sw, C.deep); arm(-sw, sk.shirt === '#ffffff' ? '#e8e8e8' : sk.shirt);
+  // head
+  if (sk.style === 'led') {
+    if (IMG.led.complete && IMG.led.naturalWidth) c.drawImage(IMG.led, -11, -64, 22, 26);
+    c.restore(); return;
+  }
+  if (sk.style === 'long') { c.fillStyle = sk.hair; c.beginPath(); c.ellipse(-3, -42, 9, 11, 0, 0, Math.PI * 2); c.fill(); }
+  c.fillStyle = sk.skin; c.beginPath(); c.arc(1, -47, 8, 0, Math.PI * 2); c.fill(); c.lineWidth = 1.8; c.strokeStyle = C.indigo; c.stroke();
+  c.fillStyle = C.deep; c.beginPath(); c.arc(4.5, -48, 1.3, 0, Math.PI * 2); c.fill();
+  c.fillStyle = sk.hair; c.strokeStyle = C.indigo; c.lineWidth = 1.5;
+  switch (sk.style) {
+    case 'bun': c.beginPath(); c.arc(1, -50, 8.2, Math.PI * 1.02, Math.PI * 1.98); c.fill(); c.beginPath(); c.arc(-7, -53, 4, 0, Math.PI * 2); c.fill(); break;
+    case 'curly': for (let i = 0; i < 6; i++) { c.beginPath(); c.arc(-6 + i * 2.6, -54 + (i % 2) * 1.5, 3.4, 0, Math.PI * 2); c.fill(); } c.beginPath(); c.arc(-6, -47, 3.4, 0, Math.PI * 2); c.fill(); break;
+    case 'long': c.beginPath(); c.arc(1, -50, 8.4, Math.PI, Math.PI * 2); c.fill(); break;
+    case 'cap': c.fillStyle = sk.hat; c.beginPath(); c.arc(1, -50, 8.4, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[3, -50.5], [13, -50]], 3, sk.hat); break;
+    case 'helmet': c.fillStyle = sk.hat; c.beginPath(); c.ellipse(1, -52, 9.5, 6.5, 0, Math.PI, Math.PI * 2); c.fill(); c.stroke(); break;
+    case 'hardhat': case 'headlamp':
+      c.fillStyle = sk.hat; c.beginPath(); c.arc(1, -51, 8.6, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[-9, -51], [12, -51]], 2.5, C.indigo);
+      if (sk.style === 'headlamp') { c.fillStyle = 'rgba(253,202,57,.35)'; c.beginPath(); c.moveTo(8, -54); c.lineTo(44, -66); c.lineTo(44, -40); c.closePath(); c.fill(); c.fillStyle = '#fff6b0'; c.beginPath(); c.arc(8, -54, 2.6, 0, Math.PI * 2); c.fill(); c.stroke(); }
+      break;
+    default: c.beginPath(); c.arc(1, -50, 8.2, Math.PI, Math.PI * 2); c.fill();
+  }
+  if (sk.goggles) { c.strokeStyle = C.indigo; c.lineWidth = 1.5; c.fillStyle = 'rgba(180,220,240,.8)'; c.beginPath(); c.arc(5, -48, 3, 0, Math.PI * 2); c.fill(); c.stroke(); }
+  if (sk.crown) { c.fillStyle = C.yellow; c.beginPath(); for (let i = 0; i < 5; i++) { const a = Math.PI + i * Math.PI / 4; c.lineTo(1 + Math.cos(a) * 15, -50 + Math.sin(a) * 15); c.lineTo(1 + Math.cos(a + Math.PI / 8) * 9, -50 + Math.sin(a + Math.PI / 8) * 9); } c.closePath(); c.fill(); }
+  c.restore();
+}
+
+function drawSun(c, x, y, r, rays = 8, rot = 0) {
+  c.save(); c.translate(x, y); c.rotate(rot);
+  c.strokeStyle = C.orange; c.lineWidth = 2;
+  for (let i = 0; i < rays; i++) { const a = i * Math.PI * 2 / rays; line(c, [[Math.cos(a) * (r + 3), Math.sin(a) * (r + 3)], [Math.cos(a) * (r + 8), Math.sin(a) * (r + 8)]], 2, C.orange); }
+  c.fillStyle = C.yellow; c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill(); c.strokeStyle = C.orange; c.stroke();
+  c.restore();
+}
+function drawBolt(c, x, y, s = 1, col = C.yellow) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  c.fillStyle = col; c.strokeStyle = C.indigo; c.lineWidth = 1.6;
+  c.beginPath(); c.moveTo(3, -10); c.lineTo(-6, 2); c.lineTo(0, 2); c.lineTo(-3, 11); c.lineTo(7, -2); c.lineTo(1, -2); c.closePath(); c.fill(); c.stroke();
+  c.restore();
+}
+function drawEnergy(c, o, time) {
+  const bob = Math.sin(time * 4 + o.x) * 3;
+  if (o.k === 0) drawSun(c, o.x, o.y + bob, 8, 8, time);
+  else if (o.k === 1) { // wind swirl
+    c.save(); c.translate(o.x, o.y + bob); c.rotate(time * 3);
+    for (let i = 0; i < 3; i++) { c.rotate(Math.PI * 2 / 3); c.fillStyle = C.green; c.beginPath(); c.ellipse(0, -7, 3.5, 7, 0, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = C.yellow; c.beginPath(); c.arc(0, 0, 3, 0, Math.PI * 2); c.fill(); c.restore();
+  } else { // water drop
+    c.save(); c.translate(o.x, o.y + bob); c.fillStyle = '#8fb3e6'; c.strokeStyle = C.indigo; c.lineWidth = 1.6;
+    c.beginPath(); c.moveTo(0, -11); c.quadraticCurveTo(9, 2, 0, 9); c.quadraticCurveTo(-9, 2, 0, -11); c.fill(); c.stroke(); c.restore();
+  }
+}
+
+function drawSmogBlob(c, x, y, w, h, time, seed) {
+  c.fillStyle = 'rgba(138,133,114,.88)'; c.strokeStyle = '#5f5a4c'; c.lineWidth = 1.6;
+  const n = Math.max(3, Math.round(w / 22)), m = Math.max(1, Math.round(h / 34));
+  for (let j = 0; j < m; j++) for (let i = 0; i < n; i++) {
+    const cx = x + (i + .5) * w / n + Math.sin(time * 2 + i + j + seed) * 2;
+    const cy = y + (j + .5) * h / m + Math.cos(time * 1.6 + i * 2 + seed) * 2;
+    c.beginPath(); c.arc(cx, cy, Math.max(w / n, h / m) * .62, 0, Math.PI * 2); c.fill(); c.stroke();
+  }
+}
+
+let bgTime = 0;
+function render(dt) {
+  bgTime += dt;
+  const c = ctx; c.setTransform(scale, 0, 0, scale, 0, 0);
+  const p = run.p, cam = p.x - PX, time = run.time;
+  const lit = litCount(), seen = Math.max(1, endless ? Math.max(lit, housesSoFar()) : lvl.houses);
+  const clean = Math.min(1, lit / seen);
+
+  // sky
+  c.fillStyle = C.paper; c.fillRect(0, 0, W, H);
+  drawSun(c, 680, 70, 28 + clean * 6, 12, bgTime * .2);
+  // far hills
+  c.fillStyle = '#e4e8c0'; c.beginPath(); c.moveTo(0, G);
+  for (let x = 0; x <= W; x += 20) { const wx = x + cam * .2; c.lineTo(x, G - 90 - Math.sin(wx / 160) * 30 - Math.sin(wx / 57) * 10); }
+  c.lineTo(W, G); c.fill();
+  c.strokeStyle = 'rgba(66,127,18,.35)'; c.lineWidth = 1.5; c.stroke();
+  // mid wind turbines
+  for (let k = -1; k < 6; k++) {
+    const wx = Math.floor(cam * .45 / 260) * 260 + k * 260, sx = wx - cam * .45 + 60;
+    if (((wx / 260) | 0) % 2 === 0) continue;
+    line(c, [[sx, G - 20], [sx, G - 120]], 2.5, 'rgba(91,100,150,.5)');
+    c.save(); c.translate(sx, G - 120); c.rotate(bgTime * (1 + clean * 2));
+    for (let i = 0; i < 3; i++) { c.rotate(Math.PI * 2 / 3); line(c, [[0, 0], [0, -30]], 3, 'rgba(66,127,18,.55)'); }
+    c.restore();
+  }
+  // smog haze lifts as homes get light
+  c.fillStyle = `rgba(120,116,100,${.32 * (1 - clean)})`; c.fillRect(0, 0, W, G);
+
+  // ground with pit gaps
+  const pits = lvl.objs.filter(o => o.t === 'pit' && o.x + o.w > cam - 50 && o.x < cam + W + 50);
+  let gx = -10; c.fillStyle = C.paper2;
+  const seg = (a, b) => { c.fillStyle = C.paper2; c.fillRect(a, G, b - a, H - G); line(c, [[a, G], [b, G]], 3, C.brown); };
+  for (const pt of pits) { seg(gx, pt.x - cam); c.fillStyle = 'rgba(61,68,112,.85)'; c.fillRect(pt.x - cam, G + 6, pt.w, H - G); gx = pt.x - cam + pt.w; }
+  seg(gx, W + 10);
+  c.strokeStyle = 'rgba(66,127,18,.5)'; c.lineWidth = 1.5;
+  for (let x = -(cam % 18); x < W; x += 18) { if (pits.some(pt => x + cam > pt.x && x + cam < pt.x + pt.w)) continue; line(c, [[x, G + 3], [x + 4, G + 11]], 1.5, 'rgba(66,127,18,.5)'); }
+
+  // world objects
+  c.save(); c.translate(-cam, 0);
+  for (const o of lvl.objs) {
+    if (o.x > cam + W + 120) break;
+    if (o.x + (o.w || 100) < cam - 120) continue;
+    switch (o.t) {
+      case 'house': {
+        if (o.lit) { const g = c.createRadialGradient(o.x + 45, G - 40, 5, o.x + 45, G - 40, 90); g.addColorStop(0, 'rgba(253,202,57,.65)'); g.addColorStop(1, 'rgba(253,202,57,0)'); c.fillStyle = g; c.fillRect(o.x - 50, G - 130, 190, 140); }
+        const img = o.lit ? IMG.house : houseDark;
+        if (img && (img.width || img.naturalWidth)) c.drawImage(img, o.x, G - 78, 92, 80);
+        if (!o.lit && Math.abs(o.x + 45 - p.x) < 140 && p.alive) {
+          const pulse = 1 + Math.sin(time * 10) * .08;
+          c.save(); c.translate(o.x + 46, G - 104); c.scale(pulse, pulse);
+          c.fillStyle = '#fff'; c.strokeStyle = C.orange; c.lineWidth = 2.5; c.beginPath(); c.roundRect(-24, -17, 48, 32, 12); c.fill(); c.stroke();
+          c.fillStyle = C.orange; c.font = `700 26px ${FONT_B}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('←', 0, 0);
+          c.restore();
+        }
+        break;
+      }
+      case 'sign':
+        line(c, [[o.x + 40, G], [o.x + 40, G - 60]], 4, C.brown);
+        c.font = `22px ${FONT_D}`; { const w = c.measureText(t(o.key)).width + 24;
+        c.fillStyle = '#fff8dc'; c.strokeStyle = C.brown; c.lineWidth = 2.5; c.beginPath(); c.roundRect(o.x + 40 - w / 2, G - 100, w, 40, 6); c.fill(); c.stroke();
+        c.fillStyle = C.indigo; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t(o.key), o.x + 40, G - 80); }
+        break;
+      case 'block':
+        c.fillStyle = '#efe2b8'; c.strokeStyle = C.indigo; c.lineWidth = 2.5; c.beginPath(); c.roundRect(o.x, o.top, o.w, o.h, 4); c.fill(); c.stroke();
+        c.save(); c.beginPath(); c.rect(o.x, o.top, o.w, o.h); c.clip();
+        for (let x = o.x - o.h; x < o.x + o.w; x += 14) line(c, [[x, o.top + o.h], [x + o.h, o.top]], 1, 'rgba(177,116,30,.45)');
+        c.restore();
+        line(c, [[o.x, o.top + 2], [o.x + o.w, o.top + 2]], 3, C.green);
+        break;
+      case 'spike': {
+        c.fillStyle = '#4a3f3a'; c.strokeStyle = '#2b2522'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(o.x + 2, o.base); c.lineTo(o.x + 10, o.base - o.h * .55); c.lineTo(o.x + o.w / 2, o.base - o.h); c.lineTo(o.x + o.w - 9, o.base - o.h * .5); c.lineTo(o.x + o.w - 2, o.base); c.closePath(); c.fill(); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.moveTo(o.x + 12, o.base - 8); c.lineTo(o.x + o.w / 2, o.base - o.h + 6); c.lineTo(o.x + o.w / 2 + 2, o.base - 10); c.fill();
+        break;
+      }
+      case 'cloud': if (!o.broken) drawSmogBlob(c, o.x, G - 112, o.w, 76, time, o.x); break;
+      case 'wall':
+        if (!o.broken) {
+          drawSmogBlob(c, o.x - 6, G - 340, o.w + 12, 340, time, o.x);
+          c.fillStyle = '#4a3f3a'; c.fillRect(o.x + 10, G - 40, 24, 40);
+        }
+        break;
+      case 'pad':
+        c.fillStyle = 'rgba(253,202,57,.5)'; c.beginPath(); c.ellipse(o.x + o.w / 2, G - 4, o.w * .8, 10 + Math.sin(time * 8) * 2, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#5577c0'; c.strokeStyle = C.indigo; c.lineWidth = 2; c.beginPath(); c.moveTo(o.x, G); c.lineTo(o.x + 6, G - 14); c.lineTo(o.x + o.w - 2, G - 18); c.lineTo(o.x + o.w, G); c.closePath(); c.fill(); c.stroke();
+        line(c, [[o.x + 16, G - 1], [o.x + 18, G - 15]], 1, '#cfe0ff'); line(c, [[o.x + 30, G - 1], [o.x + 31, G - 16]], 1, '#cfe0ff');
+        break;
+      case 'orb':
+        c.globalAlpha = o.used ? .35 : 1;
+        c.fillStyle = 'rgba(253,202,57,.35)'; c.beginPath(); c.arc(o.x, o.y, o.r + 8 + Math.sin(time * 9) * 3, 0, Math.PI * 2); c.fill();
+        drawSun(c, o.x, o.y, o.r - 4, 10, time * 2);
+        c.globalAlpha = 1;
+        break;
+      case 'energy': if (!o.got) drawEnergy(c, o, time); break;
+      case 'fact':
+        if (!o.got) { const im = IMG[['star-yellow', 'star-green', 'star-orange'][o.id % 3]]; const s = 30 + Math.sin(time * 5) * 3; if (im.complete) { c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(time * 2) * .2); c.drawImage(im, -s / 2, -s / 2, s, s); c.restore(); } }
+        break;
+      case 'check':
+        if (save.practice) { line(c, [[o.x, G], [o.x, G - 70]], 3, C.indigo); c.fillStyle = run.cp && run.cp.x >= o.x ? C.green : C.paper2; c.beginPath(); c.moveTo(o.x, G - 70); c.lineTo(o.x + 30, G - 60); c.lineTo(o.x, G - 50); c.fill(); c.stroke(); }
+        break;
+    }
+  }
+  // finish gate
+  if (!endless && lvl.len - cam < W + 100) {
+    const fx = lvl.len;
+    line(c, [[fx, G], [fx, G - 170]], 5, C.indigo); line(c, [[fx + 120, G], [fx + 120, G - 170]], 5, C.indigo);
+    c.fillStyle = C.yellow; c.strokeStyle = C.indigo; c.lineWidth = 2.5; c.beginPath(); c.roundRect(fx - 10, G - 200, 140, 46, 8); c.fill(); c.stroke();
+    c.fillStyle = C.indigo; c.font = `30px ${FONT_D}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('2030', fx + 60, G - 177);
+  }
+  // attempt label in the world, like the classic runners
+  if (!endless || true) {
+    c.fillStyle = 'rgba(91,100,150,.75)'; c.font = `44px ${FONT_D}`; c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+    c.fillText(`${t('attempt')} ${run.attempt}`, run.startX + 260, 150);
+  }
+  // runner
+  if (p.alive) {
+    const sk = skinById(save.skin);
+    const sliding = (input.down || p.slideT > 0 || ((demo || autoPlay) && demoInp.down)) && p.ground;
+    const pose = !p.ground ? 'air' : sliding ? 'slide' : 'run';
+    if (p.dash > 0) for (let k = 1; k <= 3; k++) { c.globalAlpha = .18 * (4 - k); c.save(); c.translate(p.x - k * 18, p.y); drawPerson(c, sk, time, pose); c.restore(); }
+    c.globalAlpha = 1;
+    if (p.dash > 0) { c.fillStyle = 'rgba(253,202,57,.45)'; c.beginPath(); c.ellipse(p.x + 6, p.y - 26, 36, 30, 0, 0, Math.PI * 2); c.fill(); }
+    c.save(); c.translate(p.x, p.y); drawPerson(c, sk, time, pose); c.restore();
+  }
+  // particles
+  for (const q of run.particles) { c.globalAlpha = Math.max(0, q.life / .8); c.fillStyle = q.c; c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI * 2); c.fill(); }
+  c.globalAlpha = 1;
+  c.restore();
+
+  // HUD
+  c.textBaseline = 'middle';
+  if (!endless) {
+    const pr = Math.max(0, Math.min(1, p.x / lvl.len)), hk = Math.min(1.7, Math.max(1, .75 / scale));
+    const bx0 = Math.max(250, 12 + 200 * hk + 14), bw = Math.min(300, W - bx0 - 70 * hk - 90);
+    c.fillStyle = 'rgba(255,255,255,.7)'; c.strokeStyle = C.indigo; c.lineWidth = 2; c.beginPath(); c.roundRect(bx0, 14, bw, 16 * hk, 8); c.fill(); c.stroke();
+    c.fillStyle = C.green; c.beginPath(); c.roundRect(bx0 + 2, 16, (bw - 4) * pr, 16 * hk - 4, 6); c.fill();
+    c.fillStyle = C.indigo; c.font = `${20 * hk}px ${FONT_B}`; c.textAlign = 'left'; c.fillText(`${Math.floor(pr * 100)}%`, bx0 + bw + 8, 14 + 8 * hk);
+  } else {
+    c.fillStyle = C.indigo; c.font = `30px ${FONT_D}`; c.textAlign = 'center';
+    c.fillText(`${Math.floor(p.x / 50)} ${t('meters')}`, W / 2, 24);
+    c.font = `16px ${FONT_B}`; c.fillText(`${t('best')}: ${save.stats.bestM || 0} ${t('meters')}`, W / 2, 46);
+  }
+  // energy meter (bigger on small screens)
+  c.textAlign = 'left';
+  const k = Math.min(1.7, Math.max(1, .75 / scale)); c.save(); c.scale(k, k);
+  c.fillStyle = 'rgba(255,255,255,.75)'; c.strokeStyle = C.indigo; c.lineWidth = 2; c.beginPath(); c.roundRect(12, 10, 196, 30, 10); c.fill(); c.stroke();
+  drawBolt(c, 28, 25, 1.1);
+  for (let i = 0; i < 9; i++) { c.fillStyle = i < run.energy ? C.yellow : 'rgba(91,100,150,.18)'; c.beginPath(); c.roundRect(44 + i * 17, 18, 13, 14, 3); c.fill(); }
+  // homes
+  c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.roundRect(12, 46, 120, 30, 10); c.fill(); c.stroke();
+  if (IMG.house.complete) c.drawImage(IMG.house, 18, 49, 28, 24);
+  c.fillStyle = C.indigo; c.font = `20px ${FONT_B}`; c.fillText(endless ? `${lit}` : `${lit} / ${lvl.houses}`, 52, 62);
+  if (save.practice && !endless) { c.fillStyle = C.green; c.font = `17px ${FONT_B}`; c.fillText(t('practice'), 140, 62); }
+  c.restore();
+  if (run.flashT > 0) { c.globalAlpha = Math.min(1, run.flashT); c.fillStyle = C.orange; c.font = `26px ${FONT_D}`; c.textAlign = 'center'; c.fillText(run.flash, W / 2, 110); c.globalAlpha = 1; }
+}
+
+/* =========================================================
+   Sound (tiny synth, starts after the first key press)
+   ========================================================= */
+let ac = null;
+function sfx(kind) {
+  if (save.mute || demo) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain(), n = ac.currentTime;
+    const set = { jump: [520, 760, .09, 'square', .05], orb: [700, 1100, .12, 'square', .05], pad: [300, 900, .2, 'square', .05], coin: [880, 1320, .08, 'triangle', .08],
+      star: [660, 1760, .35, 'triangle', .1], light: [440, 880, .3, 'triangle', .1], dash: [200, 600, .15, 'sawtooth', .04], smash: [160, 60, .2, 'sawtooth', .06],
+      die: [300, 70, .35, 'sawtooth', .07], land: [140, 100, .04, 'triangle', .03], win: [523, 1046, .6, 'triangle', .1] }[kind];
+    if (!set) return;
+    o.type = set[3]; o.frequency.setValueAtTime(set[0], n); o.frequency.exponentialRampToValueAtTime(set[1], n + set[2]);
+    g.gain.setValueAtTime(set[4], n); g.gain.exponentialRampToValueAtTime(.0001, n + set[2] + .05);
+    o.connect(g).connect(ac.destination); o.start(n); o.stop(n + set[2] + .06);
+  } catch (e) {}
+}
+
+/* =========================================================
+   Achievements
+   ========================================================= */
+function unlock(id) {
+  if (save.ach.includes(id)) return;
+  save.ach.push(id); persist();
+  const a = ACH.find(x => x.id === id);
+  toast(t('achGot'), a[save.lang][0]);
+  const sk = SKINS.find(s => s.need === id);
+  if (sk) setTimeout(() => toast(t('skinGot'), sk[save.lang]), 2200);
+}
+function checkAch() {
+  const s = save.stats;
+  if (s.energy >= 100) unlock('e100');
+  if (s.walls >= 10) unlock('dash10');
+  if (s.houses >= 50) unlock('h50');
+  if (s.attempts >= 50) unlock('att50');
+  if ((s.bestM || 0) >= 1000) unlock('m1000');
+  if ((s.bestM || 0) >= 2030) unlock('m2030');
+  if (s.skinChanged) unlock('style');
+  const facts = save.lv.reduce((a, l) => a + ((l.facts || []).length), 0);
+  if (facts >= 9) unlock('facts');
+}
+
+/* =========================================================
+   Screens
+   ========================================================= */
+const screen = document.getElementById('screen');
+let state = 'menu', demo = true, demoInp = {}, autoPlay = false;
+let toastQ = [], toastBusy = false;
+function toast(title, sub) {
+  toastQ.push([title, sub]); if (toastBusy) return;
+  const next = () => {
+    const it = toastQ.shift(); if (!it) { toastBusy = false; return; }
+    toastBusy = true; const el = document.getElementById('toast');
+    el.innerHTML = `${it[0]}${it[1] ? `<small>${it[1]}</small>` : ''}`; el.hidden = false;
     el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
-  }
-  function floatText(t, text, bad) {
-    const p = pos(t), el = document.createElement('div');
-    el.className = 'float' + (bad ? ' bad' : ''); el.textContent = text;
-    el.style.left = p.x + '%'; el.style.top = (p.y - 6) + '%';
-    $('actors').appendChild(el); setTimeout(() => el.remove(), 1400);
-  }
+    setTimeout(() => { el.hidden = true; next(); }, 2000);
+  };
+  next();
+}
 
-  /* ---------- Characters ---------- */
-  let me, villagers = [];
-  function placeActor(a, t, ms) {
-    const p = pos(t), cur = a.tile ? pos(a.tile) : p;
-    a.el.style.transition = `left ${ms}ms linear, top ${ms}ms linear, filter .6s`;
-    a.el.classList.toggle('left', p.x < cur.x - 0.1);
-    a.el.classList.toggle('walking', ms > 0);
-    a.el.style.left = p.x + '%'; a.el.style.top = p.y + '%';
-    a.tile = t;
-    clearTimeout(a.stop); a.stop = setTimeout(() => a.el.classList.remove('walking'), ms);
-  }
-  const dist = (a, b) => Math.hypot(a.r - b.r, a.c - b.c);
+function show(html) { screen.innerHTML = html; screen.hidden = false; const f = screen.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
+function hide() { screen.hidden = true; }
+const on = (sel, fn) => screen.querySelectorAll(sel).forEach(el => el.addEventListener('click', fn));
 
-  function spawnActors() {
-    villagers.forEach(v => clearTimeout(v.next));
-    $('actors').innerHTML = '';
-    me = { el: document.createElement('div') };
-    me.el.className = 'actor me';
-    me.el.innerHTML = person(SKINS.find(s => s.id === save.skin).look);
-    $('actors').appendChild(me.el);
-    placeActor(me, S.me, 0);
-    villagers = [];
-    syncVillagers();
-  }
-  function dressMe() { if (me) me.el.innerHTML = person(SKINS.find(s => s.id === save.skin).look); }
+function startDemo() {
+  demo = true; endless = false; lvl = { idx: 0 }; run = null; newRun(false);
+}
 
-  function syncVillagers() {
-    const want = Math.max(2, Math.min(9, Math.floor(S.tiles.filter(t => t.house).length / 2)));
-    while (villagers.length < want) {
-      const home = pick(S.tiles.filter(t => t.house) .concat(S.tiles.filter(t => !t.river)));
-      const v = { el: document.createElement('div') };
-      v.el.className = 'actor';
-      v.el.innerHTML = person({ shirt: pick(VILLAGER_SHIRTS), hat: Math.random() < 0.4 ? pick(['#fdca39', '#427f12', '#ff4401']) : 'none', skin: pick(SKIN_TONES), kid: Math.random() < 0.35 });
-      $('actors').appendChild(v.el);
-      placeActor(v, home, 0);
-      villagers.push(v);
-      wander(v);
+function menu() {
+  state = 'menu'; if (!demo) startDemo();
+  show(`<h2 class="menu-title">Light <span>Dash</span></h2>
+    <p class="sub">${t('menuSub')}</p>
+    <div class="row">
+      <button class="btn" id="mPlay">${t('play')}</button>
+      <button class="btn alt" id="mSkins">${t('skins')}</button>
+      <button class="btn alt" id="mAch">${t('achievements')}</button>
+      <button class="btn alt" id="mLang">${t('lang')}</button>
+    </div>
+    <h3>${t('controls')}</h3>
+    <div class="keys">
+      <span><kbd>↑</kbd>${t('kj')}</span><span><kbd>↓</kbd>${t('ks')}</span>
+      <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
+    </div>`);
+  on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements);
+  on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; persist(); applyLang(); menu(); });
+}
+
+function levels() {
+  state = 'menu';
+  const cards = LEVEL_TXT.map((L, i) => {
+    const s = save.lv[i] || {}, open = i === 0 || (save.lv[i - 1] || {}).done, tx = L[save.lang];
+    return `<button class="card${open ? '' : ' locked'}" data-l="${i}" ${open ? '' : 'aria-disabled="true"'}>
+      <span class="k">${t('goal')} ${tx[1]}</span><span class="n">${i + 1}. ${tx[0]}</span>
+      <span class="st">${open ? `${s.done ? '✓ ' : ''}${Math.floor(s.best || 0)}% · ⌂ ${s.houses || 0}/${s.total || '?'} · ★ ${(s.facts || []).length}/3` : t('locked')}</span></button>`;
+  }).join('');
+  show(`<h2>${t('levels')}</h2><div class="cards">${cards}
+    <button class="card" data-l="e"><span class="k">∞</span><span class="n">${t('endless')}</span><span class="d">${t('endlessD')}</span><span class="st">${t('best')}: ${save.stats.bestM || 0} ${t('meters')}</span></button></div>
+    <div class="row"><button class="btn alt" id="lPr">${save.practice ? t('practiceOn') : t('practiceOff')}</button><button class="btn alt" id="lBack">${t('back')}</button></div>`);
+  on('.card', e => {
+    const d = e.currentTarget.dataset.l;
+    if (d === 'e') return intro(-1);
+    const i = +d; if (!(i === 0 || (save.lv[i - 1] || {}).done)) return;
+    intro(i);
+  });
+  on('#lPr', () => { save.practice = !save.practice; persist(); levels(); });
+  on('#lBack', menu);
+}
+
+function intro(i) {
+  demo = false; endless = i < 0; lvl = { idx: Math.max(0, i) }; run = null; newRun(false);
+  state = 'intro';
+  if (endless) {
+    show(`<h2>${t('endless')}</h2><p>${t('endlessD')}</p><p class="sub">${t('best')}: ${save.stats.bestM || 0} ${t('meters')}</p>
+      <div class="row"><button class="btn" id="iGo">${t('start')}</button><button class="btn alt" id="iBack">${t('back')}</button></div>`);
+  } else {
+    const tx = LEVEL_TXT[i][save.lang];
+    show(`<span class="sub">${t('goal')} ${tx[1]}</span><h2>${i + 1}. ${tx[0]}</h2><p>${tx[2]}</p>
+      <div class="row"><button class="btn" id="iGo">${t('start')}</button><button class="btn alt" id="iBack">${t('back')}</button></div>`);
+  }
+  on('#iGo', go); on('#iBack', levels);
+}
+function go() { hide(); state = 'play'; input.jumpBuf = 0; input.up = false; if (endless) save.stats.attempts++; }
+
+function pause() {
+  if (state !== 'play') return;
+  state = 'pause';
+  show(`<h2>${t('paused')}</h2><div class="row"><button class="btn" id="pRes">${t('resume')}</button><button class="btn alt" id="pRe">${t('retry')}</button><button class="btn alt" id="pMenu">${t('menu')}</button></div>`);
+  on('#pRes', () => { hide(); state = 'play'; });
+  on('#pRe', () => { run.sameLevel = true; newRun(false); hide(); state = 'play'; });
+  on('#pMenu', () => { demo = false; startDemo(); menu(); });
+}
+
+function complete() {
+  state = 'done'; sfx('win');
+  const i = lvl.idx, s = save.lv[i] = save.lv[i] || {};
+  const lit = litCount(), got = lvl.objs.filter(o => o.t === 'fact' && o.got).map(o => o.id);
+  s.done = true; s.best = 100; s.total = lvl.houses; s.houses = Math.max(s.houses || 0, lit);
+  s.facts = [...new Set([...(s.facts || []), ...got])];
+  persist();
+  unlock(['l1', 'l2', 'l3'][i]);
+  if (lit === lvl.houses) unlock('allhouses');
+  if (run.deaths === 0) unlock('clean');
+  checkAch();
+  const factHtml = got.map(id => `<div class="fact"><b>★ ${t('newFacts')}</b>${FACTS[id][save.lang]}</div>`).join('');
+  show(`<h2>${t('complete')}</h2>
+    <div class="stats"><span>${t('housesLit')}: <b>${lit} ${t('of')} ${lvl.houses}</b></span><span>${t('facts')}: <b>${got.length} / 3</b></span><span>${t('attempts')}: <b>${run.attempt}</b></span></div>
+    ${factHtml}
+    <div class="row">${i < 2 ? `<button class="btn" id="dNext">${t('next')}</button>` : ''}<button class="btn alt" id="dRe">${t('retry')}</button><button class="btn alt" id="dMenu">${t('levels')}</button></div>`);
+  on('#dNext', () => intro(i + 1)); on('#dRe', () => intro(i)); on('#dMenu', () => { startDemo(); levels(); });
+}
+
+function skins() {
+  state = 'menu';
+  const cards = SKINS.map(s => {
+    const open = skinOpen(s), need = s.need ? ACH.find(a => a.id === s.need)[save.lang] : null;
+    return `<button class="card${open ? '' : ' locked'}" data-s="${s.id}" aria-pressed="${save.skin === s.id}"><canvas width="140" height="168" data-p="${s.id}"></canvas>
+      <span class="n">${s[save.lang]}</span><span class="d">${open ? (save.skin === s.id ? t('wear') : '') : `${t('unlock')}: ${need[1]}`}</span></button>`;
+  }).join('');
+  show(`<h2>${t('choose')}</h2><div class="cards">${cards}</div><div class="row"><button class="btn alt" id="sBack">${t('back')}</button></div>`);
+  screen.querySelectorAll('canvas[data-p]').forEach(cn => {
+    const x = cn.getContext('2d'), sk = skinById(cn.dataset.p);
+    x.setTransform(2, 0, 0, 2, 0, 0); x.translate(35, 76); x.scale(1.2, 1.2);
+    if (!skinOpen(sk)) x.globalAlpha = .45;
+    drawPerson(x, sk, .3, 'run');
+  });
+  on('.card', e => {
+    const s = skinById(e.currentTarget.dataset.s); if (!skinOpen(s)) return;
+    if (save.skin !== s.id) save.stats.skinChanged = 1;
+    save.skin = s.id; persist(); checkAch(); skins();
+  });
+  on('#sBack', menu);
+}
+
+function achievements() {
+  state = 'menu';
+  const list = ACH.map(a => `<div class="${save.ach.includes(a.id) ? 'got' : ''}"><img src="assets/star-${save.ach.includes(a.id) ? 'yellow' : 'indigo'}.png" alt=""><span><b>${a[save.lang][0]}</b>${a[save.lang][1]}</span></div>`).join('');
+  show(`<h2>${t('achievements')} · ${save.ach.length}/${ACH.length}</h2><div class="ach">${list}</div><div class="row"><button class="btn alt" id="aBack">${t('back')}</button></div>`);
+  on('#aBack', menu);
+}
+
+function endlessOver() {
+  state = 'done';
+  checkAch(); persist();
+  const m = Math.floor(run.p.x / 50);
+  show(`<h2>${t('runOver')}</h2><div class="stats"><span>${t('distance')}: <b>${m} ${t('meters')}</b></span><span>${t('best')}: <b>${save.stats.bestM} ${t('meters')}</b></span><span>${t('housesLit')}: <b>${litCount()}</b></span></div>
+    <div class="fact"><b>★</b>${FACTS[Math.floor(Math.random() * FACTS.length)][save.lang]}</div>
+    <div class="row"><button class="btn" id="eRe">${t('retry')}</button><button class="btn alt" id="eMenu">${t('levels')}</button></div>`);
+  on('#eRe', () => { newRun(false); go(); }); on('#eMenu', () => { startDemo(); levels(); });
+}
+
+/* =========================================================
+   Main loop
+   ========================================================= */
+let last = performance.now(), acc = 0;
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  if (state === 'play' || demo) {
+    acc += dt;
+    while (acc >= STEP) {
+      acc -= STEP;
+      if (demo || autoPlay) { demoInp = autopilot(); step(STEP, demoInp); } else step(STEP);
+      if (run.done) break;
     }
-  }
-  function wander(v) {
-    const land = S.tiles.filter(t => !t.river && dist(t, v.tile) <= 3 && t !== v.tile);
-    const target = pick(land.length ? land : S.tiles.filter(t => !t.river));
-    const ms = Math.round(dist(v.tile, target) * 900 + 300);
-    placeActor(v, target, reduced ? 0 : ms);
-    v.next = setTimeout(() => wander(v), ms + 1200 + rnd(3500));
-  }
-
-  function walkMe(t) {
-    return new Promise(res => {
-      const ms = reduced ? 0 : Math.round(Math.min(1100, Math.max(250, dist(me.tile, t) * 170)));
-      placeActor(me, t, ms); S.me = t;
-      setTimeout(res, ms);
-    });
-  }
-
-  /* ---------- Energy detective ---------- */
-  let wasteTimer;
-  function scheduleWaster() {
-    clearTimeout(wasteTimer);
-    wasteTimer = setTimeout(() => { spawnWaster(); scheduleWaster(); }, 8000 + rnd(7000));
-  }
-  function spawnWaster() {
-    if (S.over || S.busy || !$('overlay').hidden || document.hidden) return;
-    if (S.tiles.filter(t => t.waste).length >= 2) return;
-    const st = compute();
-    const lit = [...st.lit].filter(t => !t.waste);
-    const pool = lit.length ? lit : S.tiles.filter(t => t.house && !t.waste);
-    if (!pool.length) return;
-    const t = pick(pool), w = pick(WASTERS);
-    t.waste = w;
-    const el = document.createElement('button');
-    el.type = 'button'; el.className = 'waster';
-    el.setAttribute('aria-label', `Energy waster: ${w.t} Tap to switch it off.`);
-    el.innerHTML = `<img src="assets/${w.img}.png" alt="">`;
-    const p = pos(t); el.style.left = p.x + '%'; el.style.top = (p.y - 70 / ROWS) + '%';
-    el.addEventListener('click', () => fixWaster(t, el));
-    t.wasteEl = el; $('actors').appendChild(el);
-    say(`<b>Energy waster!</b> ${w.t} It is using an extra 1 MW. Tap the bubble to send your engineer.`);
-    render();
-  }
-  async function fixWaster(t, el) {
-    if (S.busy || !t.waste) return;
-    S.busy = true;
-    await walkMe(t);
-    const w = t.waste; t.waste = null; el.remove(); t.wasteEl = null;
-    S.fixed++; S.money += 2;
-    me.el.classList.add('cheer'); setTimeout(() => me.el.classList.remove('cheer'), 1100);
-    floatText(t, 'Switched off! +$2k');
-    say(`<b>Nice detective work!</b> ${w.tip}`);
-    log(`${S.year}: Switched off a wasting ${w.img === 'pc' ? 'computer' : w.img === 'ac' ? 'air conditioner' : w.img}.`, 'good');
-    S.busy = false;
-    render();
-  }
-  function clearWasters() {
-    let n = 0;
-    for (const t of S.tiles) if (t.waste) { n++; t.waste = null; if (t.wasteEl) t.wasteEl.remove(); t.wasteEl = null; }
-    return n;
-  }
-
-  /* ---------- Actions ---------- */
-  async function place(t) {
-    if (S.over || S.busy) return;
-    const tool = S.tool, cfg = TOOLS[tool];
-    const sayInfo = m => { $('info').textContent = m; };
-    let apply;
-    if (tool === 'remove') {
-      if (!t.b) return sayInfo('There is no power plant here to remove.');
-      apply = () => { S.money += Math.floor(TOOLS[t.b].cost / 2); floatText(t, `+$${Math.floor(TOOLS[t.b].cost / 2)}k`); sayInfo(`Removed the ${TOOLS[t.b].name.toLowerCase()}.`); t.b = null; };
-    } else if (tool === 'insulate') {
-      if (!t.house) return sayInfo('Upgrades go on buildings. Tap a home, school or clinic.');
-      if (t.house.eff) return sayInfo('This building is already efficient.');
-      if (S.money < cfg.cost) return sayInfo(`You need $${cfg.cost}k for an upgrade.`);
-      S.money -= cfg.cost;
-      apply = () => { t.house.eff = true; t.pop = true; floatText(t, '-1 MW'); sayInfo('Upgraded. It now needs 1 MW less. It gets a green star.'); };
+    if (run.p.alive) {
+      for (const q of run.particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 600 * dt; q.life -= dt; }
     } else {
-      if (t.river) return sayInfo('You cannot build on the river.');
-      if (t.house || t.b) return sayInfo('This tile is taken. Pick an empty land tile.');
-      if (tool === 'hydro' && !nearRiver(t)) return sayInfo('Small hydro must be right next to the river. Look for the green outlines.');
-      if (S.money < cfg.cost) return sayInfo(`Not enough budget. A ${cfg.name.toLowerCase()} costs $${cfg.cost}k. End the year to earn more.`);
-      S.money -= cfg.cost;
-      apply = () => { t.b = tool; t.pop = true; floatText(t, `+${output(tool).toFixed(0)} MW`, tool === 'coal'); sayInfo(`Built a ${cfg.name.toLowerCase()}.`); };
-    }
-    S.busy = true; render();
-    await walkMe(t);
-    apply();
-    S.busy = false;
-    if (tool === 'coal') say('Coal is cheap and steady, but <b>every coal plant adds 7 pollution a year</b>. At 100 the valley fills with smog.');
-    render();
-  }
-
-  function checkMissions(st, phase) {
-    for (const m of MISSIONS) {
-      if (S.done.has(m.id)) continue;
-      if (m.final && phase !== 'final') continue;
-      if (m.year && phase !== 'year') continue;
-      if (!m.check(st)) continue;
-      S.done.add(m.id);
-      S.money += m.reward; save.sparks += 1; S.sparksEarned += 1; persist();
-      toast(`Mission complete!<small>${m.t} · ${m.reward ? `+$${m.reward}k · ` : ''}+1 spark</small>`);
-      log(`Mission complete: ${m.t}.`, 'good');
-      if (me) { me.el.classList.add('cheer'); setTimeout(() => me.el.classList.remove('cheer'), 1100); }
-      S.justDone = m.id;
-    }
-  }
-
-  async function endYear() {
-    if (S.over || S.busy) return;
-    S.busy = true; render();
-    const st = compute();
-
-    // Night falls: which buildings glow?
-    const stage = $('stage');
-    S.tiles.forEach((t, i) => tileEls[i].classList.toggle('glow', st.lit.has(t)));
-    stage.classList.add('night');
-    const ban = document.createElement('div');
-    ban.className = 'banner rough';
-    ban.innerHTML = `Night of ${S.year}<small>${st.lit.size} of ${st.homes} buildings have light</small>`;
-    stage.appendChild(ban);
-    await new Promise(r => setTimeout(r, reduced ? 900 : 1900));
-    stage.classList.remove('night'); ban.remove();
-
-    const litHomes = [...st.lit];
-    const income = 15 + litHomes.reduce((a, t) => a + KINDS[t.house.kind].income, 0);
-    const upkeep = st.coal * (3 + S.coalExtra);
-    const wasted = clearWasters();
-    S.money += income - upkeep - wasted * 2;
-    S.poll = Math.max(0, S.poll + st.coal * 7 - 3);
-    log(`${S.year} result: ${st.lit.size}/${st.homes} buildings powered. Earned $${income}k${upkeep ? `, coal running costs $${upkeep}k` : ''}${wasted ? `, $${wasted * 2}k lost to energy wasters` : ''}.`, st.access >= 1 ? 'good' : st.access >= .5 ? 'warn' : 'bad');
-    checkMissions(st, 'year');
-    S.busy = false;
-
-    if (S.poll >= POLL_MAX) return finish(st, true);
-    if (S.year >= END_YEAR) return finish(st, false);
-
-    S.year++;
-    addBuildings('home', S.year >= 2026 ? 3 : 2);
-    const headline = rollYear(false);
-    syncVillagers();
-    const st2 = compute();
-    if (st2.lit.size < st2.homes) say(`<b>${S.year}:</b> ${headline} ${st2.homes - st2.lit.size} building${st2.homes - st2.lit.size > 1 ? 's are' : ' is'} in the dark. Build more power or make buildings efficient.`);
-    else say(`<b>${S.year}:</b> ${headline} Every building has power right now. Keep an eye on pollution.`);
-    render();
-  }
-
-  function finish(st, smog) {
-    S.over = true; clearTimeout(wasteTimer); clearWasters();
-    if (!smog) checkMissions(st, 'final');
-    render();
-    let title, stars = 0, body;
-    if (smog) {
-      title = 'The valley is choking on smog';
-      body = `<p>Air pollution hit ${POLL_MAX} in ${S.year}. Coal kept the lights on but made people sick. Try mixing in solar, wind and hydro.</p>`;
-    } else {
-      stars = (st.access >= 1 ? 1 : 0) + (st.cleanShare >= 0.8 ? 1 : 0) + (S.poll < 30 ? 1 : 0);
-      title = stars === 3 ? 'SDG 7 achieved in the valley!' : stars ? 'Good progress by 2030' : 'The valley is still in the dark';
-      body = `<div class="stars" aria-label="${stars} of 3 stars">${['yellow', 'green', 'orange'].map((c, i) => `<img class="${i < stars ? '' : 'off'}" src="assets/star-${c}.png" alt="">`).join('')}</div>
-        <p>Buildings with power: <b>${Math.round(st.access * 100)}%</b> (goal 100%)<br>
-        Clean share of power: <b>${Math.round(st.cleanShare * 100)}%</b> (goal 80%)<br>
-        Air pollution: <b>${S.poll}</b> (goal under 30)<br>
-        Missions done: <b>${S.done.size} of ${MISSIONS.length}</b> · Energy wasters fixed: <b>${S.fixed}</b></p>`;
-    }
-    save.sparks += stars; S.sparksEarned += stars; save.best = Math.max(save.best || 0, stars); persist();
-    body += `<p>You earned <b>${S.sparksEarned} spark${S.sparksEarned === 1 ? '' : 's'}</b> this game. Spend them in the wardrobe on new outfits and maps.</p>`;
-    const show = () => openModal(title, body, [
-      { label: 'Play again', primary: true, on: () => { closeModal(); newGame(); } },
-      { label: 'Wardrobe', on: () => openWardrobe(show) },
-    ]);
-    show();
-  }
-
-  /* ---------- Modals ---------- */
-  function openModal(title, html, buttons) {
-    $('mTitle').textContent = title;
-    $('mBody').innerHTML = html;
-    const row = $('mBtns'); row.innerHTML = '';
-    buttons.forEach(b => {
-      const el = document.createElement('button');
-      el.type = 'button'; el.className = 'btn' + (b.primary ? '' : ' alt'); el.textContent = b.label;
-      el.addEventListener('click', b.on); row.appendChild(el);
-    });
-    $('overlay').hidden = false;
-    row.firstChild && row.firstChild.focus();
-  }
-  function closeModal() { $('overlay').hidden = true; }
-
-  function openWardrobe(back) {
-    const card = (it, kind) => {
-      const owned = save.owned.includes(it.id), worn = (kind === 'skin' ? save.skin : save.map) === it.id;
-      const art = kind === 'skin' ? person(it.look) : `<span class="swatch" style="background:${it.swatch}"></span>`;
-      const price = worn ? 'Wearing' : owned ? 'Owned' : `${it.cost} sparks`;
-      return `<button type="button" class="skin${owned ? '' : ' locked'}" data-kind="${kind}" data-id="${it.id}" aria-pressed="${worn}">${art}<span>${it.name}</span><span class="price">${kind === 'map' && worn ? 'In use' : price}</span></button>`;
-    };
-    const html = `<p>You have <b>${save.sparks} spark${save.sparks === 1 ? '' : 's'}</b>. Earn them from missions and end-of-game stars.</p>
-      <h3>Engineer outfits</h3><div class="skins">${SKINS.map(s => card(s, 'skin')).join('')}</div>
-      <h3>Map styles</h3><div class="skins">${MAPS.map(m => card(m, 'map')).join('')}</div>
-      <p id="wMsg" style="color:var(--green)"></p>`;
-    openModal('Wardrobe', html, [{ label: 'Done', primary: true, on: back }]);
-    $('mBody').onclick = e => {
-      const b = e.target.closest('.skin'); if (!b) return;
-      const list = b.dataset.kind === 'skin' ? SKINS : MAPS, it = list.find(x => x.id === b.dataset.id);
-      if (!save.owned.includes(it.id)) {
-        if (save.sparks < it.cost) { $('wMsg').textContent = `${it.name} needs ${it.cost} sparks. You have ${save.sparks}. Complete missions to earn more.`; return; }
-        save.sparks -= it.cost; save.owned.push(it.id);
-      }
-      if (b.dataset.kind === 'skin') { save.skin = it.id; dressMe(); } else { save.map = it.id; document.body.dataset.map = it.id; }
-      persist(); render(); openWardrobe(back);
-      const again = document.querySelector(`.skin[data-id="${it.id}"]`); again && again.focus();
-    };
-  }
-
-  /* ---------- Render ---------- */
-  let tileEls = [], tileKeys = [];
-  function buildBoard() {
-    const board = $('board'); board.innerHTML = ''; tileEls = []; tileKeys = [];
-    S.tiles.forEach(t => {
-      const el = document.createElement('button');
-      el.type = 'button'; el.className = 'tile' + (t.river ? ' river' : '');
-      el.addEventListener('click', () => place(t));
-      board.appendChild(el); tileEls.push(el); tileKeys.push('');
-    });
-  }
-
-  function render() {
-    checkMissions(compute(), 'action');
-    const st = compute();
-    $('hYear').textContent = S.year;
-    $('hMoney').textContent = `$${S.money}k`;
-    $('hAccess').textContent = `${Math.round(st.access * 100)}%`;
-    $('hClean').textContent = `${Math.round(st.cleanShare * 100)}%`;
-    $('hPoll').textContent = `${S.poll} / ${POLL_MAX}`;
-    $('mAccess').style.width = `${st.access * 100}%`;
-    $('mClean').style.width = `${st.cleanShare * 100}%`;
-    const mp = $('mPoll'); mp.style.width = `${Math.min(100, S.poll)}%`;
-    mp.style.backgroundColor = S.poll >= 60 ? 'var(--orange)' : S.poll >= 30 ? 'var(--brown)' : 'var(--green)';
-    $('lSupply').textContent = st.supply.toFixed(1);
-    $('lDemand').textContent = st.demand;
-    $('sparkCount').textContent = `${save.sparks} spark${save.sparks === 1 ? '' : 's'}`;
-    document.body.dataset.map = save.map;
-
-    const pct = x => `${Math.round(x * 100)}%`;
-    $('weather').innerHTML = `<span>Sun <b>${pct(S.sun)}</b></span><span>Wind <b>${pct(S.wind)}</b></span><span>River <b>${pct(S.river)}</b></span><span>Years left <b>${END_YEAR - S.year + 1}</b></span>`;
-
-    S.tiles.forEach((t, i) => {
-      const el = tileEls[i];
-      let label = t.river ? 'River' : 'Empty land', html = '', key = '';
-      if (t.b) {
-        const o = output(t.b);
-        html = ICON[t.b] + `<span class="badge">${o.toFixed(0)}</span>`;
-        label = `${TOOLS[t.b].name}, ${o.toFixed(1)} MW`; key = t.b + o.toFixed(1);
-      } else if (t.house) {
-        const lit = st.lit.has(t), k = KINDS[t.house.kind];
-        html = `<img class="bldg${lit ? ' lit' : ''}" src="${BLDG_IMG[t.house.kind]}" alt="">${t.house.eff ? '<img class="eff" src="assets/star-green.png" alt="">' : ''}${t.house.kind !== 'home' ? `<span class="lbl">${k.name}</span>` : ''}`;
-        label = `${k.name}, needs ${need(t)} MW, ${lit ? 'has power' : 'no power'}${t.house.eff ? ', efficient' : ''}${t.waste ? ', wasting energy' : ''}`;
-        key = t.house.kind + lit + t.house.eff;
-      }
-      if (key !== tileKeys[i]) {
-        el.innerHTML = html; tileKeys[i] = key;
-        if (t.pop || t.fresh) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); t.pop = t.fresh = false; }
-      }
-      if (t.b === 'wind') el.style.setProperty('--spin', `${(3.6 / S.wind).toFixed(2)}s`);
-      el.classList.toggle('can', S.tool === 'hydro' && !t.river && !t.b && !t.house && nearRiver(t));
-      el.setAttribute('aria-label', `Row ${t.r + 1}, column ${t.c + 1}: ${label}`);
-    });
-
-    const tools = $('tools');
-    if (!tools.children.length) {
-      for (const [k, cfg] of Object.entries(TOOLS)) {
-        const b = document.createElement('button');
-        b.type = 'button'; b.className = 'tool'; b.dataset.k = k;
-        b.innerHTML = `${ICON[k]}<span class="n">${cfg.name}</span><span class="c">${cfg.cost ? `$${cfg.cost}k` : 'refund ½'}</span>`;
-        b.addEventListener('click', () => { S.tool = k; $('info').textContent = cfg.desc; render(); });
-        tools.appendChild(b);
+      run.deadT += dt;
+      for (const q of run.particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 600 * dt; q.life -= dt; }
+      if (run.deadT > .75) {
+        if (endless && !demo) endlessOver();
+        else { const best = save.lv[lvl.idx]; if (!demo && best) { best.best = Math.max(best.best || 0, run.p.x / lvl.len * 100); persist(); } newRun(save.practice && !demo); }
       }
     }
-    for (const b of tools.children) {
-      b.setAttribute('aria-pressed', S.tool === b.dataset.k);
-      b.disabled = S.over;
-    }
-
-    const open = MISSIONS.filter(m => !S.done.has(m.id)).slice(0, 3);
-    const just = S.justDone ? MISSIONS.find(m => m.id === S.justDone) : null;
-    const show = just ? [just, ...open].slice(0, 4) : open;
-    $('missions').innerHTML = show.map(m => `<li class="${S.done.has(m.id) ? 'done' : ''}"><span class="box">${S.done.has(m.id) ? '✓' : ''}</span><span class="t">${m.t}</span><span class="rw">${m.reward ? `+$${m.reward}k` : ''} +1 ✦</span></li>`).join('') || '<li><span class="box">✓</span><span class="t">All missions complete. Amazing!</span><span></span></li>';
-    if (just && !S.justTimer) S.justTimer = setTimeout(() => { S.justDone = null; S.justTimer = null; render(); }, 1600);
-    $('mCount').textContent = `${S.done.size} / ${MISSIONS.length}`;
-
-    const [ft, fs] = FACTS[S.fact];
-    $('fact').innerHTML = `<img src="assets/star-indigo.png" alt=""><div class="src">Did you know? · ${fs}</div><p style="margin:6px 0 0">${ft}</p>`;
-    $('log').innerHTML = S.log.map(l => `<li class="${l.kind}">${l.text}</li>`).join('');
-    $('endYear').textContent = S.year >= END_YEAR ? 'Finish 2030' : `End ${S.year}`;
-    $('endYear').disabled = S.over || S.busy;
+    run.particles = run.particles.filter(q => q.life > 0);
+    run.flashT = Math.max(0, run.flashT - dt);
+    if (run.done) { if (demo) { run = null; newRun(false); } else complete(); }
   }
+  if (run) render(dt);
+  requestAnimationFrame(frame);
+}
 
-  $('endYear').addEventListener('click', endYear);
-  $('sparks').addEventListener('click', () => { if ($('overlay').hidden) openWardrobe(closeModal); });
-  window.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('overlay').hidden && !S.over) closeModal(); });
+/* =========================================================
+   Input
+   ========================================================= */
+function press(k, down) {
+  if (state === 'intro' && down && (k === 'up')) return go();
+  if (state !== 'play') return;
+  if (k === 'up') { if (down && !input.up) input.jumpBuf = .12; input.up = down; }
+  if (k === 'down') { if (down && !input.down) input.downPressed = true; input.down = down; }
+  if (k === 'right' && down) input.dash = true;
+  if (k === 'left' && down) input.light = true;
+}
+const KEYMAP = { ArrowUp: 'up', KeyW: 'up', Space: 'up', ArrowDown: 'down', KeyS: 'down', ArrowRight: 'right', KeyD: 'right', ArrowLeft: 'left', KeyA: 'left' };
+window.addEventListener('keydown', e => {
+  if ((e.code === 'Escape' || e.code === 'KeyP') && state === 'play') { e.preventDefault(); return pause(); }
+  const k = KEYMAP[e.code]; if (!k) return;
+  if (state === 'play' || state === 'intro' || e.code.startsWith('Arrow')) {
+    if (screen.hidden || state === 'intro') e.preventDefault();
+  }
+  if (e.repeat) return;
+  press(k, true);
+});
+window.addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) press(k, false); });
+document.querySelectorAll('.key').forEach(b => {
+  const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); b.classList.add('on'); try { b.setPointerCapture(e.pointerId); } catch (_) {} press(k, true); });
+  const up = () => { b.classList.remove('on'); press(k, false); };
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
+  b.addEventListener('contextmenu', e => e.preventDefault());
+});
+cv.addEventListener('pointerdown', e => { if (state === 'play') { e.preventDefault(); press('up', true); } });
+cv.addEventListener('pointerup', () => press('up', false));
+document.getElementById('bPause').addEventListener('click', pause);
+const bSound = document.getElementById('bSound');
+bSound.addEventListener('click', () => { save.mute = !save.mute; persist(); bSound.style.opacity = save.mute ? .4 : 1; });
+bSound.style.opacity = save.mute ? .4 : 1;
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 
-  newGame();
-  openModal('Hi, I\'m Watt!', `<div class="intro"><img src="assets/led.png" alt=""><p>It's 2021. The families in this valley have no electricity. You are the valley's energy engineer. By 2030, give every home, the school and the clinic <b>clean, affordable power</b> without filling the air with smog.</p></div>
-    <p>Tap a building tool, then a tile: your engineer walks over and builds it. Watch for <b>energy wasters</b> popping up over houses and tap them to switch them off. Complete <b>missions</b> to earn sparks for new outfits.</p>`,
-    [{ label: 'Start playing', primary: true, on: closeModal },
-     { label: 'Wardrobe', on: () => openWardrobe(closeModal) }]);
+function applyLang() {
+  document.documentElement.lang = save.lang;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+}
+
+/* Test hook: run a level with the autopilot, without drawing */
+window.__lightDash = {
+  autoplay(v) { autoPlay = !!v; },
+  simulate(i, jitter = 0) {
+    const keep = { demo, endless, lvl, run, state };
+    demo = true; endless = false; lvl = { idx: i }; run = null; newRun(false);
+    let n = 0, delay = [];
+    while (!run.done && run.p.alive && n < 120 * 200) {
+      let a = autopilot();
+      if (jitter) { delay.push(a); a = delay.length > jitter ? delay.shift() : {}; }
+      step(STEP, a); n++;
+    }
+    const res = { level: i, done: run.done, x: Math.round(run.p.x), len: lvl.len, pct: Math.round(run.p.x / lvl.len * 100), houses: litCount() + '/' + lvl.houses, facts: lvl.objs.filter(o => o.t === 'fact' && o.got).map(o => o.id).join(','), factsAll: lvl.objs.filter(o => o.t === 'fact').map(o => o.id + '@' + Math.round(o.x) + ',' + (G - o.y)).join(' '), energy: run.energy, sec: (n / 120).toFixed(1) };
+    Object.assign(window, {}); demo = keep.demo; endless = keep.endless; lvl = keep.lvl; run = keep.run; state = keep.state;
+    return res;
+  },
+};
+
+applyLang();
+startDemo();
+menu();
+requestAnimationFrame(frame);
 })();
 </script>
 </body>
