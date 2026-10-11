@@ -47,16 +47,16 @@ h1 span { color: var(--green); }
 h1 img { width: .4em; vertical-align: top; margin-left: .1em; }
 .tag { color: var(--green); font-size: 18px; }
 
-.game { position: relative; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; background: var(--paper); overflow: hidden; touch-action: manipulation; }
-.game > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.game { position: relative; width: 100%; height: 0; padding-top: 56.25%; max-width: 100%; background: var(--paper); overflow: hidden; touch-action: manipulation; }
+.game > canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; display: block; }
 .hudbtns { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; z-index: 2; }
 .hudbtns button { width: 38px; height: 38px; display: grid; place-items: center; cursor: pointer; background: var(--paper); border: 2px solid var(--indigo); border-radius: 12px 4px 12px 4px; font-size: 18px; }
 
 .screen {
-  position: absolute; inset: 0; z-index: 5; overflow: auto; padding: 18px 22px;
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 5; overflow: auto; padding: 18px 22px;
   background: rgba(248, 244, 217, .9); display: grid; align-content: start; gap: 12px;
 }
-@media (max-width: 700px) { .screen { position: fixed; inset: 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); padding-top: calc(18px + env(safe-area-inset-top, 0px)); background: rgba(248, 244, 217, .97); } }
+@media (max-width: 700px) { .screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); padding-top: calc(18px + env(safe-area-inset-top, 0px)); background: rgba(248, 244, 217, .97); } }
 .screen h2 { font: 400 clamp(34px, 5.5vw, 52px)/1 var(--font-display); margin: 0; text-wrap: balance; }
 .screen h3 { font: 400 26px/1 var(--font-display); margin: 0; }
 .screen p { margin: 0; max-width: 60ch; }
@@ -154,6 +154,20 @@ h1 img { width: .4em; vertical-align: top; margin-left: .1em; }
 <script>
 (() => {
 'use strict';
+/* Older browsers (e.g. Safari on iOS 15, older Firefox) lack these: add simple fallbacks */
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    r = Math.max(0, Math.min(typeof r === 'number' ? r : 0, Math.abs(w) / 2, Math.abs(h) / 2));
+    this.moveTo(x + r, y); this.lineTo(x + w - r, y); this.quadraticCurveTo(x + w, y, x + w, y + r);
+    this.lineTo(x + w, y + h - r); this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    this.lineTo(x + r, y + h); this.quadraticCurveTo(x, y + h, x, y + h - r);
+    this.lineTo(x, y + r); this.quadraticCurveTo(x, y, x + r, y); this.closePath();
+  };
+}
+window.addEventListener('error', e => {
+  const sc = document.getElementById('screen');
+  if (sc && !sc.dataset.err) { sc.dataset.err = 1; sc.hidden = false; sc.innerHTML = '<h2>Oops!</h2><p>Something went wrong in this browser. Please try updating it, or open the game in Chrome.</p><p style="font-size:14px;opacity:.7">' + String(e.message).replace(/</g, '&lt;') + '</p>'; }
+});
 /* =========================================================
    Text (Russian + English)
    ========================================================= */
@@ -249,7 +263,7 @@ try {
   if (!save.langChosen) save.lang = 'en';
 } catch (e) {}
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
-const t = k => T[save.lang][k] ?? k;
+const t = k => (T[save.lang][k] !== undefined ? T[save.lang][k] : k);
 
 /* =========================================================
    Characters (people) and skins
@@ -602,7 +616,8 @@ function resize() {
   cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
   scale = cv.width / W;
 }
-new ResizeObserver(resize).observe(cv);
+if (window.ResizeObserver) new ResizeObserver(resize).observe(cv); else { window.addEventListener('resize', resize); setTimeout(resize, 50); }
+resize();
 
 const IMG = {};
 ['house', 'led', 'star-yellow', 'star-green', 'star-orange', 'solar'].forEach(n => { const i = new Image(); i.src = `assets/${n}.png`; IMG[n] = i; });
