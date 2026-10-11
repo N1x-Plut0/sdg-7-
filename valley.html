@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Light the Valley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: a hand-drawn valley map with walking characters, beside a sketchbook control panel; stacks on phones.
+   Styled after the "SDG 7 Affordable and clean energy" deck: cream paper, colored-pencil drawings,
+   indigo handwriting, green highlights, yellow / orange / indigo stars. Single light look by choice. */
+
+/* Biro Script Plus (headings) and Linotype Feltpen (text) are licensed fonts. They load from the
+   player's computer if installed, or from assets/fonts/ if the licensed files are placed there.
+   Caveat and Patrick Hand are free look-alikes used as fallbacks. */
+@font-face {
+  font-family: "Biro Script Plus";
+  src: local("Biro Script Plus"), local("BiroScriptPlus-Regular"), url("assets/fonts/BiroScriptPlus.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Linotype Feltpen";
+  src: local("Linotype Feltpen"), local("LinotypeFeltpen-Regular"), local("Feltpen"), url("assets/fonts/LinotypeFeltpen.woff2") format("woff2");
+  font-display: swap;
+}
+:root {
+  --paper: #f8f4d9;
+  --paper-2: #f1ebc4;
+  --tile-line: rgba(91,100,150,.35);
+  --indigo: #5b6496;
+  --green: #427f12;
+  --yellow: #fdca39;
+  --orange: #ff4401;
+  --brown: #b1741e;
+  --water: #c9d0ec;
+  --ink-soft: #7c83ad;
+  --night: rgba(38,42,78,.72);
+  --font-display: "Biro Script Plus", "Caveat", "Segoe Print", cursive;
+  --font-body: "Linotype Feltpen", "Patrick Hand", "Segoe Print", "Comic Sans MS", cursive;
+  color-scheme: light;
+}
+body[data-map="blueprint"] { --paper-2: #e3e9f6; --tile-line: rgba(91,100,150,.55); --water: #aebde6; }
+body[data-map="autumn"] { --paper-2: #f3dfb8; --tile-line: rgba(177,116,30,.45); --water: #c4d6d9; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--paper); color: var(--indigo);
+  font: 19px/1.35 var(--font-body);
+  padding: 20px 16px 40px;
+}
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1140px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 20px; }
+h1 { font: 400 clamp(46px, 8vw, 80px)/.95 var(--font-display); margin: 0; text-wrap: balance; }
+h1 span { color: var(--green); }
+h1 img { width: .42em; vertical-align: top; margin-left: .12em; }
+h1 img.s2 { width: .26em; vertical-align: middle; transform: rotate(14deg); }
+header .sq { display: block; width: 200px; max-width: 60%; margin-top: 2px; }
+.head-right { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.tag { font-size: 19px; color: var(--green); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; cursor: pointer; background: var(--paper);
+  border: 2px solid var(--indigo); border-radius: 14px 4px 14px 4px / 4px 14px 4px 14px; font-size: 18px;
+}
+.chip img { width: 22px; }
+.chip:hover { background: #fff3c4; }
+.chip:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+.rough { border: 2px solid var(--indigo); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+
+.hud { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.stat { background: var(--paper); padding: 8px 14px 10px; }
+.stat:nth-child(even) { border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px; }
+.stat .k { font-size: 17px; color: var(--green); }
+.stat .v { font: 400 32px/1.1 var(--font-body); font-variant-numeric: tabular-nums; }
+@media (max-width: 520px) { .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; } .stat { padding: 6px 10px 8px; } .stat .k { font-size: 15px; } .stat .v { font-size: 24px; } }
+.meter { height: 10px; border: 1.5px solid var(--indigo); border-radius: 8px 3px 8px 3px; overflow: hidden; margin-top: 6px; }
+.meter i { display: block; height: 100%; width: 0; background-color: var(--green); transition: width .4s;
+  background-image: repeating-linear-gradient(-55deg, transparent 0 3px, rgba(248,244,217,.45) 3px 5px); }
+
+.main { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.board-wrap { padding: 14px; background: var(--paper); display: grid; gap: 10px; }
+.weather { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 18px; }
+.weather b { font: 400 21px var(--font-body); color: var(--green); }
+.stage { position: relative; }
+.board { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.tile {
+  aspect-ratio: 1; max-width: 100%; padding: 0; cursor: pointer; position: relative;
+  display: grid; place-items: center; background: var(--paper-2);
+  border: 1.5px dashed var(--tile-line);
+  border-radius: 12px 4px 10px 5px / 5px 10px 4px 12px;
+  transition: filter .6s, box-shadow .6s;
+}
+.tile:nth-child(3n) { border-radius: 5px 12px 4px 10px / 10px 4px 12px 5px; }
+.tile.river {
+  background: var(--water); border-style: solid; border-color: transparent;
+  background-image: repeating-radial-gradient(circle at 30% 120%, transparent 0 7px, rgba(91,100,150,.35) 7px 8.5px);
+  animation: flow 6s linear infinite;
+}
+@keyframes flow { to { background-position: 0 -34px; } }
+body[data-map="blueprint"] .tile:not(.river) {
+  background-image: linear-gradient(rgba(255,255,255,.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.7) 1px, transparent 1px);
+  background-size: 25% 25%;
+}
+.tile:hover { border: 2px solid var(--orange); }
+.tile:focus-visible { outline: 3px solid var(--orange); outline-offset: 1px; }
+.tile.can { border: 2.5px solid var(--green); }
+.tile > svg, .tile > img { width: 86%; height: 86%; object-fit: contain; }
+.tile img.bldg { filter: grayscale(1) brightness(.75) opacity(.7); transition: filter .3s; }
+.tile img.bldg.lit { filter: drop-shadow(0 0 6px var(--yellow)); }
+.tile .eff { position: absolute; top: 1px; left: 2px; width: 34%; height: auto; }
+.tile .badge { position: absolute; right: 3px; bottom: 0; font: 400 15px var(--font-body); color: var(--green); }
+.tile .lbl { position: absolute; left: 0; right: 0; bottom: -2px; text-align: center; font-size: 12px; color: var(--indigo); }
+.tile.pop > * { animation: pop .5s cubic-bezier(.3,1.6,.5,1); }
+@keyframes pop { from { transform: scale(.2) rotate(-10deg); opacity: 0; } }
+
+/* Night reveal at the end of each year */
+.stage.night .tile { filter: brightness(.38) saturate(.5); }
+.stage.night .tile.glow { filter: none; box-shadow: 0 0 22px 4px var(--yellow); background: #fff4c0; }
+.stage.night .actor { filter: brightness(.45); }
+.banner {
+  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%) rotate(-3deg); z-index: 6; pointer-events: none;
+  background: var(--paper); padding: 8px 22px 10px; font: 400 clamp(26px, 5vw, 42px)/1.05 var(--font-display);
+  text-align: center; white-space: nowrap; animation: bannerIn .45s cubic-bezier(.3,1.5,.5,1);
+}
+.banner small { display: block; font: 18px var(--font-body); color: var(--green); white-space: normal; }
+@keyframes bannerIn { from { transform: translate(-50%, -50%) rotate(-12deg) scale(.4); opacity: 0; } }
+
+/* Characters */
+.actors { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.actor {
+  position: absolute; width: calc(100% / 9 * .5); transform: translate(-50%, -100%);
+  transition-property: left, top; transition-timing-function: linear; transition: filter .6s;
+}
+.actor svg { width: 100%; height: auto; display: block; }
+.actor .body { transform-origin: 50% 100%; }
+.actor.walking .body { animation: bob .32s ease-in-out infinite alternate; }
+.actor.left .body { transform: scaleX(-1); }
+.actor.left.walking .body { animation-name: bobL; }
+@keyframes bob { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-8%) rotate(3deg); } }
+@keyframes bobL { from { transform: scaleX(-1) translateY(0) rotate(-3deg); } to { transform: scaleX(-1) translateY(-8%) rotate(3deg); } }
+.actor.me { width: calc(100% / 9 * .62); z-index: 2; }
+.actor.me::after {
+  content: "you"; position: absolute; left: 50%; top: -18px; transform: translateX(-50%);
+  font: 15px var(--font-body); color: var(--orange);
+}
+.actor.cheer .body { animation: cheer .25s ease-in-out 4 alternate; }
+@keyframes cheer { to { transform: translateY(-25%); } }
+
+.waster {
+  position: absolute; z-index: 4; pointer-events: auto; transform: translate(-50%, -100%);
+  width: calc(100% / 9 * .9); aspect-ratio: 1; padding: 6%; cursor: pointer;
+  background: #fff; border: 2.5px solid var(--orange); border-radius: 50% 50% 50% 8px;
+  animation: wobble 1s ease-in-out infinite alternate;
+}
+.waster img { position: absolute; inset: 14%; width: 72%; height: 72%; object-fit: contain; }
+.waster:focus-visible { outline: 3px solid var(--indigo); }
+@keyframes wobble { from { transform: translate(-50%, -100%) rotate(-6deg); } to { transform: translate(-50%, -108%) rotate(6deg); } }
+
+.float {
+  position: absolute; z-index: 5; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap;
+  font: 400 22px var(--font-body); color: var(--green); animation: floatUp 1.3s ease-out forwards;
+  text-shadow: 0 0 3px var(--paper), 0 0 6px var(--paper);
+}
+.float.bad { color: var(--orange); }
+@keyframes floatUp { to { transform: translate(-50%, -260%); opacity: 0; } }
+
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 16px; }
+.legend b { color: var(--green); }
+.sw { display: inline-block; width: 14px; height: 14px; border-radius: 4px 2px 5px 2px; vertical-align: -1px; margin-right: 5px; border: 1.5px solid var(--indigo); }
+
+/* Watt, the guide */
+.watt { display: flex; gap: 10px; align-items: flex-start; }
+.watt img { width: 54px; flex: none; animation: hover 2.2s ease-in-out infinite alternate; }
+@keyframes hover { to { transform: translateY(-6px) rotate(4deg); } }
+.watt .say {
+  position: relative; flex: 1; min-width: 0; background: #fff; padding: 8px 12px; font-size: 17px; color: var(--green);
+  border: 2px solid var(--green); border-radius: 18px 18px 18px 4px;
+}
+.watt .say b { color: var(--indigo); font-weight: 400; font-family: var(--font-display); font-size: 21px; }
+
+.side { display: grid; gap: 14px; }
+.card { padding: 14px 16px; background: var(--paper); }
+.card h2 { font: 400 32px/1 var(--font-display); margin: 0 0 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card h2 small { font: 17px var(--font-body); color: var(--green); }
+.tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+.tool {
+  background: var(--paper); cursor: pointer; text-align: left; display: grid; padding: 6px 8px;
+  border: 1.5px solid var(--indigo); border-radius: 10px 3px 12px 4px / 4px 12px 3px 10px;
+}
+.tool svg, .tool img { width: 40px; height: 40px; object-fit: contain; }
+.tool .n { font-size: 17px; line-height: 1.1; }
+.tool .c { font: 400 19px var(--font-body); color: var(--green); }
+.tool[aria-pressed="true"] { background: #fff3c4; border: 2.5px solid var(--orange); }
+.tool:disabled { opacity: .45; cursor: not-allowed; }
+.tool:focus-visible, .btn:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.info { font-size: 17px; color: var(--green); margin: 10px 0 0; min-height: 2.8em; }
+.btn {
+  width: 100%; font: 400 32px/1.05 var(--font-display); padding: 10px 12px 12px; cursor: pointer;
+  background: var(--yellow); color: var(--indigo); border: 2.5px solid var(--indigo);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 3px 4px 0 var(--indigo);
+}
+.btn:hover { background: #ffd65c; }
+.btn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--indigo); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.alt { background: var(--paper); font-size: 26px; }
+
+.missions { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.missions li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; align-items: start; font-size: 17px; }
+.missions .box { width: 22px; height: 22px; border: 2px solid var(--indigo); border-radius: 6px 2px 7px 3px; margin-top: 2px; display: grid; place-items: center; color: var(--green); font-size: 20px; line-height: 1; }
+.missions .rw { font-size: 16px; color: var(--green); white-space: nowrap; }
+.missions li.done { animation: done 1.2s ease-out; }
+.missions li.done .t { text-decoration: line-through; text-decoration-color: var(--orange); text-decoration-thickness: 2px; }
+@keyframes done { 30% { background: #fff3c4; } }
+
+.fact { position: relative; }
+.fact .src { font: 400 22px var(--font-display); color: var(--orange); }
+.fact p { color: var(--green); font-size: 18px; }
+.fact > img { position: absolute; right: 10px; top: -14px; width: 46px; transform: rotate(10deg); }
+.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 17px; max-height: 170px; overflow: auto; }
+.log li { padding-left: 22px; position: relative; }
+.log li::before { content: "✦"; position: absolute; left: 2px; color: var(--ink-soft); }
+.log li.good::before { color: var(--green); } .log li.bad::before { color: var(--orange); } .log li.warn::before { color: var(--brown); }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 20;
+  background: var(--yellow); color: var(--indigo); padding: 8px 18px 10px; font: 400 26px/1.1 var(--font-display);
+  box-shadow: 3px 4px 0 var(--indigo); max-width: calc(100% - 32px); text-align: center; animation: bannerIn .4s;
+}
+.toast small { display: block; font: 17px var(--font-body); }
+
+.overlay { position: fixed; inset: 0; background: rgba(91,100,150,.55); display: grid; place-items: center; padding: 16px; z-index: 10; overflow: auto; }
+.modal { background: var(--paper); color: var(--indigo); padding: 20px 22px; max-width: 560px; width: 100%; display: grid; gap: 12px; }
+.modal h2 { font: 400 44px/1 var(--font-display); margin: 0; text-wrap: balance; }
+.modal p { margin: 0; }
+.modal b { color: var(--green); font-weight: 400; }
+.modal .row { display: flex; flex-wrap: wrap; gap: 10px; }
+.modal .row .btn { flex: 1 1 160px; width: auto; }
+.intro { display: flex; gap: 14px; align-items: center; }
+.intro img { width: 70px; flex: none; }
+.stars { display: flex; gap: 6px; }
+.stars img { width: 48px; }
+.stars img.off { filter: grayscale(1) opacity(.3); }
+.skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+.skin {
+  display: grid; justify-items: center; gap: 2px; padding: 8px 6px; cursor: pointer; background: var(--paper);
+  border: 1.5px solid var(--indigo); border-radius: 12px 4px 12px 4px / 4px 12px 4px 12px; font-size: 16px;
+}
+.skin svg { width: 46px; height: 60px; }
+.skin .swatch { width: 60px; height: 46px; border: 1.5px solid var(--indigo); border-radius: 6px; margin: 7px 0; }
+.skin .price { font-size: 16px; color: var(--green); }
+.skin[aria-pressed="true"] { background: #fff3c4; border: 2.5px solid var(--orange); }
+.skin.locked { opacity: .6; }
+.skin:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.modal h3 { font: 400 28px/1 var(--font-display); margin: 4px 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="pencil"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter>
+</svg>
+<div class="wrap">
+  <header>
+    <div><h1>Light the <span>Valley</span><img class="s1" src="assets/star-yellow.png" alt=""><img class="s2" src="assets/star-orange.png" alt=""></h1><img class="sq" src="assets/squiggle.png" alt=""></div>
+    <div class="head-right">
+      <span class="tag">SDG 7 · Affordable and clean energy</span>
+      <button class="chip" id="sparks" type="button" title="Open the wardrobe"><img src="assets/star-yellow.png" alt=""><span id="sparkCount">0 sparks</span> · Wardrobe</button>
+    </div>
+  </header>
+
+  <section class="hud" aria-label="Valley status">
+    <div class="stat rough"><div class="k">Year</div><div class="v" id="hYear">2021</div></div>
+    <div class="stat rough"><div class="k">Budget</div><div class="v" id="hMoney">$100k</div></div>
+    <div class="stat rough"><div class="k">Buildings with power</div><div class="v" id="hAccess">0%</div><div class="meter"><i id="mAccess"></i></div></div>
+    <div class="stat rough"><div class="k">Clean share</div><div class="v" id="hClean">0%</div><div class="meter"><i id="mClean"></i></div></div>
+    <div class="stat rough"><div class="k">Air pollution</div><div class="v" id="hPoll">0</div><div class="meter"><i id="mPoll"></i></div></div>
+  </section>
+
+  <div class="main">
+    <section class="board-wrap rough" aria-label="Valley map">
+      <div class="weather" id="weather"></div>
+      <div class="stage" id="stage">
+        <div class="board" id="board"></div>
+        <div class="actors" id="actors"></div>
+      </div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--water)"></i>River</span>
+        <span><i class="sw" style="background:var(--yellow)"></i>Has power</span>
+        <span><i class="sw" style="background:#bdb8a0"></i>In the dark</span>
+        <span>Supply <b id="lSupply">0</b> MW · Demand <b id="lDemand">0</b> MW</span>
+      </div>
+      <div class="watt" aria-live="polite">
+        <img src="assets/led.png" alt="Watt the LED bulb">
+        <div class="say" id="watt"></div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="card rough">
+        <h2>Missions <small id="mCount">0 / 0</small></h2>
+        <ul class="missions" id="missions"></ul>
+      </div>
+      <div class="card rough">
+        <h2>Build</h2>
+        <div class="tools" id="tools"></div>
+        <p class="info" id="info"></p>
+      </div>
+      <button class="btn" id="endYear" type="button">End year</button>
+      <div class="card rough fact" id="fact"></div>
+      <div class="card rough">
+        <h2>Valley news</h2>
+        <ul class="log" id="log"></ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="modal rough" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h2 id="mTitle"></h2>
+    <div id="mBody"></div>
+    <div class="row" id="mBtns"></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const COLS = 9, ROWS = 6, START_YEAR = 2021, END_YEAR = 2030, POLL_MAX = 100;
+  const $ = id => document.getElementById(id);
+  const rnd = n => Math.floor(Math.random() * n);
+  const pick = a => a[rnd(a.length)];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- Saved progress: sparks and skins (per browser, optional) ---------- */
+  const SAVE_KEY = 'light-the-valley-v1';
+  let save = { sparks: 0, owned: ['classic', 'sketchbook'], skin: 'classic', map: 'sketchbook', best: 0 };
+  try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY)) || {}); } catch (e) {}
+  const persist = () => {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
+    const el = document.getElementById('sparkCount'); if (el) el.textContent = `${save.sparks} spark${save.sparks === 1 ? '' : 's'}`;
+  };
+
+  /* ---------- Drawings ---------- */
+  const P = 'filter="url(#pencil)" fill="none" stroke-linecap="round" stroke-linejoin="round"';
+  function person({ shirt, hat, skin = '#dab680', lamp = false, kid = false }) {
+    const hatSvg = hat === 'none' ? '' : hat === 'ranger'
+      ? `<path d="M8 13h24M12 13c0-6 4-8 8-8s8 2 8 8" stroke="#5b6496" stroke-width="1.6" fill="#b1741e"/>`
+      : `<path d="M10 13c0-6 4-9 10-9s10 3 10 9z" stroke="#5b6496" stroke-width="1.6" fill="${hat}"/><path d="M8 13h24" stroke="#5b6496" stroke-width="2"/>`;
+    const lampSvg = lamp ? `<circle cx="20" cy="8" r="6" fill="#fdca39" opacity=".45"/><circle cx="20" cy="8" r="2.4" fill="#fff6b0" stroke="#5b6496" stroke-width="1"/>` : '';
+    const s = kid ? 'transform="translate(5 14) scale(.75)"' : '';
+    return `<svg viewBox="0 0 40 60"><g class="body"><g ${s} ${P}>
+      <path d="M15 42 13 58M25 42l2 16" stroke="#5b6496" stroke-width="3"/>
+      <path d="M11 24c0-4 4-6 9-6s9 2 9 6v18H11z" stroke="#5b6496" stroke-width="1.8" fill="${shirt}"/>
+      <path d="M11 26 6 38M29 26l5 12" stroke="#5b6496" stroke-width="2.6"/>
+      <circle cx="20" cy="12" r="7" stroke="#5b6496" stroke-width="1.6" fill="${skin}"/>
+      ${hatSvg}${lampSvg}
+      <path d="M17 13h.1M23 13h.1" stroke="#5b6496" stroke-width="2"/>
+    </g></g></svg>`;
+  }
+  const SPECIAL_SVG = {
+    school: `<svg viewBox="0 0 48 48"><g ${P}><path d="M6 44V22L24 10l18 12v22z" stroke="#5b6496" stroke-width="2.2" fill="#ff4401" fill-opacity=".35"/><path d="M24 10V2l8 3-8 3" stroke="#427f12" stroke-width="2" fill="#427f12"/><path d="M20 44V34h8v10" stroke="#5b6496" stroke-width="2" fill="#b1741e"/><path d="M11 26h6v5h-6zM31 26h6v5h-6z" stroke="#5b6496" stroke-width="1.6" fill="#fdca39"/><path d="M4 44h40" stroke="#b1741e" stroke-width="2"/></g></svg>`,
+    clinic: `<svg viewBox="0 0 48 48"><g ${P}><path d="M6 44V16h36v28z" stroke="#5b6496" stroke-width="2.2" fill="#ffffff" fill-opacity=".8"/><path d="M4 16 24 6l20 10" stroke="#5b6496" stroke-width="2"/><path d="M21 21h6v6h6v6h-6v6h-6v-6h-6v-6h6z" stroke="#ff4401" stroke-width="1.8" fill="#ff4401" fill-opacity=".7"/><path d="M4 44h40" stroke="#b1741e" stroke-width="2"/></g></svg>`,
+  };
+  const svgImg = svg => 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ').replace('url(#pencil)', 'none'));
+  const ICON = {
+    solar: '<img src="assets/solar.png" alt="">',
+    wind: `<svg viewBox="0 0 48 48"><g ${P}><path d="M23 22 21 46h6l-2-24" stroke="#5b6496" stroke-width="2"/><g class="rotor" style="transform-origin:24px 21px"><path d="M24 21C22 14 22 8 24 3c2 5 2 11 0 18Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/><path d="M24 21c-6 4-12 6-18 6 4-4 10-6 18-6Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/><path d="M24 21c6 4 11 9 13 15-5-2-10-7-13-15Z" stroke="#427f12" stroke-width="2.2" fill="#427f12" fill-opacity=".55"/></g><circle cx="24" cy="21" r="2.6" fill="#fdca39" stroke="#5b6496" stroke-width="1.5"/><path d="M14 46h20" stroke="#b1741e" stroke-width="2"/></g></svg>`,
+    hydro: `<svg viewBox="0 0 48 48"><g ${P}><path d="M5 12h38v26H5z" stroke="#5b6496" stroke-width="2.2" fill="#5b6496" fill-opacity=".25"/><path d="M5 12l6-5h26l6 5" stroke="#5b6496" stroke-width="2"/><path d="M8 32c4-3 7 3 11 0s7 3 11 0 7 3 11 0" stroke="#5b6496" stroke-width="2"/><path d="M8 38c4-3 7 3 11 0s7 3 11 0 7 3 11 0" stroke="#5b6496" stroke-width="1.6"/><path d="M26 15l-6 9h6l-4 8" stroke="#ff4401" stroke-width="2.4" fill="#fdca39"/></g></svg>`,
+    coal: `<svg viewBox="0 0 48 48"><g ${P}><path d="M5 44V26l10-6v6l10-6v6l10-6v24z" stroke="#5b6496" stroke-width="2.2" fill="#8a8572" fill-opacity=".55"/><path d="M36 44V10h6v34" stroke="#5b6496" stroke-width="2.2" fill="#8a8572" fill-opacity=".55"/><circle class="smoke" cx="40" cy="6" r="3.5" stroke="#8a8572" stroke-width="2" fill="#bdb8a0"/><circle class="smoke s2" cx="33" cy="4" r="2.5" stroke="#8a8572" stroke-width="1.6" fill="#bdb8a0"/><path d="M5 44h38" stroke="#b1741e" stroke-width="2"/><path d="M10 34h4M20 34h4M30 34h2" stroke="#fdca39" stroke-width="3"/></g></svg>`,
+    insulate: '<img src="assets/led.png" alt="">',
+    remove: `<svg viewBox="0 0 48 48"><g ${P}><path d="M10 10 38 38M38 10 10 38" stroke="#ff4401" stroke-width="4"/></g></svg>`,
+  };
+  const BLDG_IMG = { home: 'assets/house.png', school: svgImg(SPECIAL_SVG.school), clinic: svgImg(SPECIAL_SVG.clinic) };
+  // Spinning turbines and drifting smoke, only when motion is allowed.
+  if (!reduced) document.head.insertAdjacentHTML('beforeend', `<style>
+    .tile .rotor { animation: spin var(--spin, 3s) linear infinite; } @keyframes spin { to { transform: rotate(360deg); } }
+    .tile .smoke { animation: smoke 2.4s ease-in infinite; } .tile .smoke.s2 { animation-delay: 1.2s; }
+    @keyframes smoke { to { transform: translate(4px, -6px); opacity: 0; } }</style>`);
+
+  /* ---------- Game data ---------- */
+  const TOOLS = {
+    solar:    { name: 'Solar farm', cost: 20, clean: true,  desc: 'Makes 3 MW in a normal year. Output follows the sunshine.' },
+    wind:     { name: 'Wind turbine', cost: 35, clean: true, desc: 'Makes about 5 MW. Output swings with the wind each year.' },
+    hydro:    { name: 'Small hydro', cost: 60, clean: true, desc: 'Steady 9 MW. Must sit on a land tile next to the river (green outline).' },
+    coal:     { name: 'Coal plant', cost: 15, clean: false, desc: 'Cheap, steady 8 MW. Costs $3k a year to run and adds 7 pollution every year.' },
+    insulate: { name: 'Efficient upgrade', cost: 8, desc: 'LED bulbs and insulation: the building needs 1 MW less. Tap a home, school or clinic.' },
+    remove:   { name: 'Demolish', cost: 0, desc: 'Remove a power plant. You get half its price back.' },
+  };
+  const KINDS = {
+    home:   { name: 'Home', need: 2, income: 6 },
+    school: { name: 'School', need: 3, income: 8 },
+    clinic: { name: 'Health clinic', need: 3, income: 8 },
+  };
+
+  const FACTS = [
+    ['Around 670 million people still lived without electricity in the early 2020s, most of them in sub-Saharan Africa.', 'SDG 7.1 · Universal access'],
+    ['Target 7.2 asks countries to substantially increase the share of renewable energy in the global energy mix by 2030.', 'SDG 7.2 · Renewables'],
+    ['Target 7.3 asks the world to double the global rate of improvement in energy efficiency by 2030.', 'SDG 7.3 · Efficiency'],
+    ['The price of electricity from solar panels fell by roughly 90% between 2010 and 2020.', 'Renewables'],
+    ['About 2.3 billion people still cook with polluting fuels like wood, charcoal and kerosene, which harms health indoors.', 'SDG 7.1 · Clean cooking'],
+    ['Off-grid solar kits and mini-grids are often the fastest way to bring power to remote villages.', 'Access'],
+    ['Energy is the largest source of greenhouse gas emissions, about three quarters of the global total.', 'Climate link · SDG 13'],
+    ['Reliable power lets clinics keep vaccines cold and lets schools run lights and computers.', 'Why it matters'],
+    ['Target 7.b is about expanding infrastructure and upgrading technology for modern energy in developing countries.', 'SDG 7.b · Infrastructure'],
+    ['LED bulbs use up to 80% less electricity than old incandescent bulbs and last much longer.', 'SDG 7.3 · Efficiency'],
+  ];
+
+  const EVENTS = [
+    { t: 'Sunny year! Solar farms produce more.', k: 'good', fx: s => { s.sun = 1.3; } },
+    { t: 'A cloudy, rainy year. Solar is weaker, but the river runs high.', k: 'warn', fx: s => { s.sun = 0.6; s.river = 1.2; } },
+    { t: 'Drought. The river is low and hydro output drops.', k: 'warn', fx: s => { s.river = 0.6; } },
+    { t: 'Strong winds all year. Turbines spin fast.', k: 'good', fx: s => { s.wind = 1.4; } },
+    { t: 'A still year with little wind.', k: 'warn', fx: s => { s.wind = 0.5; } },
+    { t: 'A climate fund grants the valley $40k for clean energy.', k: 'good', fx: s => { s.money += 40; } },
+    { t: 'Coal prices spike. Coal plants cost $3k more to run this year.', k: 'bad', fx: s => { s.coalExtra = 3; } },
+    { t: 'A new road opens. Two more families move in.', k: 'warn', fx: () => { addBuildings('home', 2); } },
+    { t: 'A calm, ordinary year.', k: '', fx: () => {} },
+  ];
+
+  // Energy detective: appliances from the presentation, left wasting power.
+  const WASTERS = [
+    { img: 'ac',      t: 'The air conditioner is running in an empty house!', tip: 'Switch the AC off when nobody is home, and set it a few degrees warmer.' },
+    { img: 'lamp',    t: 'Lights are on in the middle of the day.', tip: 'Turn off lights you are not using, and swap old bulbs for LEDs.' },
+    { img: 'pc',      t: 'A computer was left on all night.', tip: 'Shut computers down at night instead of leaving them on.' },
+    { img: 'fan',     t: 'A fan is blowing in an empty room.', tip: 'Fans cool people, not rooms. Switch them off when you leave.' },
+    { img: 'toaster', t: 'The toaster is plugged in all day.', tip: 'Many appliances use standby power. Unplug the ones you rarely use.' },
+    { img: 'phone',   t: 'A charger is plugged in with no phone on it.', tip: 'Unplug chargers when you are done. Standby power adds up.' },
+  ];
+
+  const MISSIONS = [
+    { id: 'solar',   t: 'Build your first solar farm', reward: 10, check: () => has('solar') },
+    { id: 'power5',  t: 'Give power to 5 buildings at once', reward: 15, check: st => st.lit.size >= 5 },
+    { id: 'detect',  t: 'Switch off 3 energy wasters', reward: 15, check: () => S.fixed >= 3 },
+    { id: 'hydro',   t: 'Build a small hydro by the river', reward: 15, check: () => has('hydro') },
+    { id: 'eff3',    t: 'Give 3 buildings an efficient upgrade', reward: 15, check: () => S.tiles.filter(t => t.house && t.house.eff).length >= 3 },
+    { id: 'school',  t: 'Power the new school', reward: 20, check: st => litKind(st, 'school') },
+    { id: 'nocoal',  t: 'End a year with no coal and 80% of buildings powered', reward: 20, year: true, check: st => st.coal === 0 && st.access >= 0.8 && st.homes >= 6 },
+    { id: 'clean60', t: 'Reach 60% clean power with 10 or more buildings', reward: 20, check: st => st.cleanShare >= 0.6 && st.homes >= 10 },
+    { id: 'clinic',  t: 'Power the health clinic', reward: 25, check: st => litKind(st, 'clinic') },
+    { id: 'all',     t: 'Power every building, with 14 or more', reward: 30, check: st => st.access >= 1 && st.homes >= 14 },
+    { id: 'air',     t: 'Reach 2030 with pollution under 20', reward: 0, final: true, check: () => S.poll < 20 },
+  ];
+
+  const SKINS = [
+    { id: 'classic', name: 'Classic', cost: 0, look: { shirt: '#5b6496', hat: '#fdca39' } },
+    { id: 'sunny',   name: 'Sunny', cost: 3, look: { shirt: '#fdca39', hat: '#ff4401' } },
+    { id: 'ranger',  name: 'Forest ranger', cost: 5, look: { shirt: '#427f12', hat: 'ranger', skin: '#b1741e' } },
+    { id: 'sunset',  name: 'Sunset', cost: 8, look: { shirt: '#ff4401', hat: '#5b6496', skin: '#8a5a3c' } },
+    { id: 'glow',    name: 'Night glow', cost: 12, look: { shirt: '#2f3664', hat: '#5b6496', lamp: true } },
+  ];
+  const MAPS = [
+    { id: 'sketchbook', name: 'Sketchbook', cost: 0, swatch: '#f1ebc4' },
+    { id: 'autumn',     name: 'Autumn', cost: 4, swatch: '#f3dfb8' },
+    { id: 'blueprint',  name: 'Blueprint', cost: 6, swatch: '#e3e9f6' },
+  ];
+  const VILLAGER_SHIRTS = ['#427f12', '#ff4401', '#fdca39', '#b1741e', '#7c83ad'];
+  const SKIN_TONES = ['#dab680', '#b1741e', '#8a5a3c', '#f0d2a8'];
+
+  /* ---------- State ---------- */
+  let S;
+  const has = b => S.tiles.some(t => t.b === b);
+  const litKind = (st, k) => [...st.lit].some(t => t.house.kind === k);
+  const tileAt = (r, c) => S.tiles[r * COLS + c];
+  const pos = t => ({ x: (t.c + 0.5) / COLS * 100, y: (t.r + 0.9) / ROWS * 100 });
+
+  function newGame() {
+    const tiles = [];
+    let rc = 6;
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) tiles.push({ r, c, river: false, b: null, house: null, waste: null });
+      tiles[r * COLS + rc].river = true;
+      if (r < ROWS - 1) { const nc = Math.min(COLS - 2, Math.max(4, rc + [-1, 0, 1][rnd(3)])); if (nc !== rc) { tiles[r * COLS + nc].river = true; rc = nc; } }
+    }
+    S = { year: START_YEAR, money: 100, poll: 0, tiles, tool: 'solar', sun: 1, wind: 1, river: 1, coalExtra: 0,
+          log: [], fact: 0, over: false, busy: false, done: new Set(), fixed: 0, wasted: 0, sparksEarned: 0 };
+    S.me = tileAt(5, 0);
+    $('toast').hidden = true;
+    addBuildings('home', 5);
+    rollYear(true);
+    buildBoard();
+    spawnActors();
+    scheduleWaster();
+    say('Hi, I\'m <b>Watt!</b> Five families have no electricity. Pick <b>Solar farm</b> and tap an empty tile. Your engineer will walk over and build it.');
+    $('info').textContent = TOOLS.solar.desc;
+    render();
+  }
+
+  function addBuildings(kind, n) {
+    const free = S.tiles.filter(t => !t.river && !t.b && !t.house && t !== S.me);
+    for (let i = 0; i < n && free.length; i++) {
+      const t = free.splice(rnd(free.length), 1)[0];
+      t.house = { kind, eff: false }; t.fresh = true;
+    }
+  }
+
+  const nearRiver = t => [[1,0],[-1,0],[0,1],[0,-1]].some(([dr, dc]) => {
+    const r = t.r + dr, c = t.c + dc;
+    return r >= 0 && r < ROWS && c >= 0 && c < COLS && tileAt(r, c).river;
+  });
+
+  function output(b) {
+    if (b === 'solar') return 3 * S.sun;
+    if (b === 'wind') return 5 * S.wind;
+    if (b === 'hydro') return 9 * S.river;
+    if (b === 'coal') return 8;
+    return 0;
+  }
+  const need = t => KINDS[t.house.kind].need - (t.house.eff ? 1 : 0) + (t.waste ? 1 : 0);
+  const prio = t => (t.house.kind === 'clinic' ? 0 : t.house.kind === 'school' ? 10 : 20) + need(t);
+
+  function compute() {
+    let supply = 0, clean = 0, coal = 0;
+    for (const t of S.tiles) if (t.b) {
+      const o = output(t.b); supply += o;
+      if (TOOLS[t.b].clean) clean += o; else coal++;
+    }
+    const homes = S.tiles.filter(t => t.house);
+    const demand = homes.reduce((a, t) => a + need(t), 0);
+    let left = supply; const lit = new Set();
+    [...homes].sort((a, b) => prio(a) - prio(b)).forEach(t => {
+      if (left + 1e-9 >= need(t)) { left -= need(t); lit.add(t); }
+    });
+    return { supply, clean, coal, demand, homes: homes.length, lit, access: homes.length ? lit.size / homes.length : 0, cleanShare: supply ? clean / supply : 0 };
+  }
+
+  function rollYear(first) {
+    S.sun = 0.8 + Math.random() * 0.4;
+    S.wind = 0.7 + Math.random() * 0.6;
+    S.river = 1; S.coalExtra = 0;
+    let headline = 'A new decade starts';
+    if (!first) {
+      const e = pick(EVENTS);
+      e.fx(S); log(`${S.year}: ${e.t}`, e.k); headline = e.t;
+    } else {
+      log(`${S.year}: Five families in the valley have no electricity. Bring them clean, affordable power by ${END_YEAR}.`, 'warn');
+    }
+    if (S.year === 2023) { addBuildings('school', 1); log('2023: A school opens. It needs 3 MW for lights and computers.', 'warn'); headline += ' A new school opens!'; }
+    if (S.year === 2026) { addBuildings('clinic', 1); log('2026: A health clinic opens. Its fridge keeps vaccines cold, so it gets power first.', 'warn'); headline += ' A clinic opens!'; }
+    S.fact = (S.year - START_YEAR) % FACTS.length;
+    return headline;
+  }
+
+  function log(text, kind) { S.log.unshift({ text, kind }); S.log = S.log.slice(0, 40); }
+  function say(html) { $('watt').innerHTML = html; }
+  let toastTimer;
+  function toast(html) {
+    const el = $('toast'); el.innerHTML = html; el.hidden = false;
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  }
+  function floatText(t, text, bad) {
+    const p = pos(t), el = document.createElement('div');
+    el.className = 'float' + (bad ? ' bad' : ''); el.textContent = text;
+    el.style.left = p.x + '%'; el.style.top = (p.y - 6) + '%';
+    $('actors').appendChild(el); setTimeout(() => el.remove(), 1400);
+  }
+
+  /* ---------- Characters ---------- */
+  let me, villagers = [];
+  function placeActor(a, t, ms) {
+    const p = pos(t), cur = a.tile ? pos(a.tile) : p;
+    a.el.style.transition = `left ${ms}ms linear, top ${ms}ms linear, filter .6s`;
+    a.el.classList.toggle('left', p.x < cur.x - 0.1);
+    a.el.classList.toggle('walking', ms > 0);
+    a.el.style.left = p.x + '%'; a.el.style.top = p.y + '%';
+    a.tile = t;
+    clearTimeout(a.stop); a.stop = setTimeout(() => a.el.classList.remove('walking'), ms);
+  }
+  const dist = (a, b) => Math.hypot(a.r - b.r, a.c - b.c);
+
+  function spawnActors() {
+    villagers.forEach(v => clearTimeout(v.next));
+    $('actors').innerHTML = '';
+    me = { el: document.createElement('div') };
+    me.el.className = 'actor me';
+    me.el.innerHTML = person(SKINS.find(s => s.id === save.skin).look);
+    $('actors').appendChild(me.el);
+    placeActor(me, S.me, 0);
+    villagers = [];
+    syncVillagers();
+  }
+  function dressMe() { if (me) me.el.innerHTML = person(SKINS.find(s => s.id === save.skin).look); }
+
+  function syncVillagers() {
+    const want = Math.max(2, Math.min(9, Math.floor(S.tiles.filter(t => t.house).length / 2)));
+    while (villagers.length < want) {
+      const home = pick(S.tiles.filter(t => t.house) .concat(S.tiles.filter(t => !t.river)));
+      const v = { el: document.createElement('div') };
+      v.el.className = 'actor';
+      v.el.innerHTML = person({ shirt: pick(VILLAGER_SHIRTS), hat: Math.random() < 0.4 ? pick(['#fdca39', '#427f12', '#ff4401']) : 'none', skin: pick(SKIN_TONES), kid: Math.random() < 0.35 });
+      $('actors').appendChild(v.el);
+      placeActor(v, home, 0);
+      villagers.push(v);
+      wander(v);
+    }
+  }
+  function wander(v) {
+    const land = S.tiles.filter(t => !t.river && dist(t, v.tile) <= 3 && t !== v.tile);
+    const target = pick(land.length ? land : S.tiles.filter(t => !t.river));
+    const ms = Math.round(dist(v.tile, target) * 900 + 300);
+    placeActor(v, target, reduced ? 0 : ms);
+    v.next = setTimeout(() => wander(v), ms + 1200 + rnd(3500));
+  }
+
+  function walkMe(t) {
+    return new Promise(res => {
+      const ms = reduced ? 0 : Math.round(Math.min(1100, Math.max(250, dist(me.tile, t) * 170)));
+      placeActor(me, t, ms); S.me = t;
+      setTimeout(res, ms);
+    });
+  }
+
+  /* ---------- Energy detective ---------- */
+  let wasteTimer;
+  function scheduleWaster() {
+    clearTimeout(wasteTimer);
+    wasteTimer = setTimeout(() => { spawnWaster(); scheduleWaster(); }, 8000 + rnd(7000));
+  }
+  function spawnWaster() {
+    if (S.over || S.busy || !$('overlay').hidden || document.hidden) return;
+    if (S.tiles.filter(t => t.waste).length >= 2) return;
+    const st = compute();
+    const lit = [...st.lit].filter(t => !t.waste);
+    const pool = lit.length ? lit : S.tiles.filter(t => t.house && !t.waste);
+    if (!pool.length) return;
+    const t = pick(pool), w = pick(WASTERS);
+    t.waste = w;
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'waster';
+    el.setAttribute('aria-label', `Energy waster: ${w.t} Tap to switch it off.`);
+    el.innerHTML = `<img src="assets/${w.img}.png" alt="">`;
+    const p = pos(t); el.style.left = p.x + '%'; el.style.top = (p.y - 70 / ROWS) + '%';
+    el.addEventListener('click', () => fixWaster(t, el));
+    t.wasteEl = el; $('actors').appendChild(el);
+    say(`<b>Energy waster!</b> ${w.t} It is using an extra 1 MW. Tap the bubble to send your engineer.`);
+    render();
+  }
+  async function fixWaster(t, el) {
+    if (S.busy || !t.waste) return;
+    S.busy = true;
+    await walkMe(t);
+    const w = t.waste; t.waste = null; el.remove(); t.wasteEl = null;
+    S.fixed++; S.money += 2;
+    me.el.classList.add('cheer'); setTimeout(() => me.el.classList.remove('cheer'), 1100);
+    floatText(t, 'Switched off! +$2k');
+    say(`<b>Nice detective work!</b> ${w.tip}`);
+    log(`${S.year}: Switched off a wasting ${w.img === 'pc' ? 'computer' : w.img === 'ac' ? 'air conditioner' : w.img}.`, 'good');
+    S.busy = false;
+    render();
+  }
+  function clearWasters() {
+    let n = 0;
+    for (const t of S.tiles) if (t.waste) { n++; t.waste = null; if (t.wasteEl) t.wasteEl.remove(); t.wasteEl = null; }
+    return n;
+  }
+
+  /* ---------- Actions ---------- */
+  async function place(t) {
+    if (S.over || S.busy) return;
+    const tool = S.tool, cfg = TOOLS[tool];
+    const sayInfo = m => { $('info').textContent = m; };
+    let apply;
+    if (tool === 'remove') {
+      if (!t.b) return sayInfo('There is no power plant here to remove.');
+      apply = () => { S.money += Math.floor(TOOLS[t.b].cost / 2); floatText(t, `+$${Math.floor(TOOLS[t.b].cost / 2)}k`); sayInfo(`Removed the ${TOOLS[t.b].name.toLowerCase()}.`); t.b = null; };
+    } else if (tool === 'insulate') {
+      if (!t.house) return sayInfo('Upgrades go on buildings. Tap a home, school or clinic.');
+      if (t.house.eff) return sayInfo('This building is already efficient.');
+      if (S.money < cfg.cost) return sayInfo(`You need $${cfg.cost}k for an upgrade.`);
+      S.money -= cfg.cost;
+      apply = () => { t.house.eff = true; t.pop = true; floatText(t, '-1 MW'); sayInfo('Upgraded. It now needs 1 MW less. It gets a green star.'); };
+    } else {
+      if (t.river) return sayInfo('You cannot build on the river.');
+      if (t.house || t.b) return sayInfo('This tile is taken. Pick an empty land tile.');
+      if (tool === 'hydro' && !nearRiver(t)) return sayInfo('Small hydro must be right next to the river. Look for the green outlines.');
+      if (S.money < cfg.cost) return sayInfo(`Not enough budget. A ${cfg.name.toLowerCase()} costs $${cfg.cost}k. End the year to earn more.`);
+      S.money -= cfg.cost;
+      apply = () => { t.b = tool; t.pop = true; floatText(t, `+${output(tool).toFixed(0)} MW`, tool === 'coal'); sayInfo(`Built a ${cfg.name.toLowerCase()}.`); };
+    }
+    S.busy = true; render();
+    await walkMe(t);
+    apply();
+    S.busy = false;
+    if (tool === 'coal') say('Coal is cheap and steady, but <b>every coal plant adds 7 pollution a year</b>. At 100 the valley fills with smog.');
+    render();
+  }
+
+  function checkMissions(st, phase) {
+    for (const m of MISSIONS) {
+      if (S.done.has(m.id)) continue;
+      if (m.final && phase !== 'final') continue;
+      if (m.year && phase !== 'year') continue;
+      if (!m.check(st)) continue;
+      S.done.add(m.id);
+      S.money += m.reward; save.sparks += 1; S.sparksEarned += 1; persist();
+      toast(`Mission complete!<small>${m.t} · ${m.reward ? `+$${m.reward}k · ` : ''}+1 spark</small>`);
+      log(`Mission complete: ${m.t}.`, 'good');
+      if (me) { me.el.classList.add('cheer'); setTimeout(() => me.el.classList.remove('cheer'), 1100); }
+      S.justDone = m.id;
+    }
+  }
+
+  async function endYear() {
+    if (S.over || S.busy) return;
+    S.busy = true; render();
+    const st = compute();
+
+    // Night falls: which buildings glow?
+    const stage = $('stage');
+    S.tiles.forEach((t, i) => tileEls[i].classList.toggle('glow', st.lit.has(t)));
+    stage.classList.add('night');
+    const ban = document.createElement('div');
+    ban.className = 'banner rough';
+    ban.innerHTML = `Night of ${S.year}<small>${st.lit.size} of ${st.homes} buildings have light</small>`;
+    stage.appendChild(ban);
+    await new Promise(r => setTimeout(r, reduced ? 900 : 1900));
+    stage.classList.remove('night'); ban.remove();
+
+    const litHomes = [...st.lit];
+    const income = 15 + litHomes.reduce((a, t) => a + KINDS[t.house.kind].income, 0);
+    const upkeep = st.coal * (3 + S.coalExtra);
+    const wasted = clearWasters();
+    S.money += income - upkeep - wasted * 2;
+    S.poll = Math.max(0, S.poll + st.coal * 7 - 3);
+    log(`${S.year} result: ${st.lit.size}/${st.homes} buildings powered. Earned $${income}k${upkeep ? `, coal running costs $${upkeep}k` : ''}${wasted ? `, $${wasted * 2}k lost to energy wasters` : ''}.`, st.access >= 1 ? 'good' : st.access >= .5 ? 'warn' : 'bad');
+    checkMissions(st, 'year');
+    S.busy = false;
+
+    if (S.poll >= POLL_MAX) return finish(st, true);
+    if (S.year >= END_YEAR) return finish(st, false);
+
+    S.year++;
+    addBuildings('home', S.year >= 2026 ? 3 : 2);
+    const headline = rollYear(false);
+    syncVillagers();
+    const st2 = compute();
+    if (st2.lit.size < st2.homes) say(`<b>${S.year}:</b> ${headline} ${st2.homes - st2.lit.size} building${st2.homes - st2.lit.size > 1 ? 's are' : ' is'} in the dark. Build more power or make buildings efficient.`);
+    else say(`<b>${S.year}:</b> ${headline} Every building has power right now. Keep an eye on pollution.`);
+    render();
+  }
+
+  function finish(st, smog) {
+    S.over = true; clearTimeout(wasteTimer); clearWasters();
+    if (!smog) checkMissions(st, 'final');
+    render();
+    let title, stars = 0, body;
+    if (smog) {
+      title = 'The valley is choking on smog';
+      body = `<p>Air pollution hit ${POLL_MAX} in ${S.year}. Coal kept the lights on but made people sick. Try mixing in solar, wind and hydro.</p>`;
+    } else {
+      stars = (st.access >= 1 ? 1 : 0) + (st.cleanShare >= 0.8 ? 1 : 0) + (S.poll < 30 ? 1 : 0);
+      title = stars === 3 ? 'SDG 7 achieved in the valley!' : stars ? 'Good progress by 2030' : 'The valley is still in the dark';
+      body = `<div class="stars" aria-label="${stars} of 3 stars">${['yellow', 'green', 'orange'].map((c, i) => `<img class="${i < stars ? '' : 'off'}" src="assets/star-${c}.png" alt="">`).join('')}</div>
+        <p>Buildings with power: <b>${Math.round(st.access * 100)}%</b> (goal 100%)<br>
+        Clean share of power: <b>${Math.round(st.cleanShare * 100)}%</b> (goal 80%)<br>
+        Air pollution: <b>${S.poll}</b> (goal under 30)<br>
+        Missions done: <b>${S.done.size} of ${MISSIONS.length}</b> · Energy wasters fixed: <b>${S.fixed}</b></p>`;
+    }
+    save.sparks += stars; S.sparksEarned += stars; save.best = Math.max(save.best || 0, stars); persist();
+    body += `<p>You earned <b>${S.sparksEarned} spark${S.sparksEarned === 1 ? '' : 's'}</b> this game. Spend them in the wardrobe on new outfits and maps.</p>`;
+    const show = () => openModal(title, body, [
+      { label: 'Play again', primary: true, on: () => { closeModal(); newGame(); } },
+      { label: 'Wardrobe', on: () => openWardrobe(show) },
+    ]);
+    show();
+  }
+
+  /* ---------- Modals ---------- */
+  function openModal(title, html, buttons) {
+    $('mTitle').textContent = title;
+    $('mBody').innerHTML = html;
+    const row = $('mBtns'); row.innerHTML = '';
+    buttons.forEach(b => {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'btn' + (b.primary ? '' : ' alt'); el.textContent = b.label;
+      el.addEventListener('click', b.on); row.appendChild(el);
+    });
+    $('overlay').hidden = false;
+    row.firstChild && row.firstChild.focus();
+  }
+  function closeModal() { $('overlay').hidden = true; }
+
+  function openWardrobe(back) {
+    const card = (it, kind) => {
+      const owned = save.owned.includes(it.id), worn = (kind === 'skin' ? save.skin : save.map) === it.id;
+      const art = kind === 'skin' ? person(it.look) : `<span class="swatch" style="background:${it.swatch}"></span>`;
+      const price = worn ? 'Wearing' : owned ? 'Owned' : `${it.cost} sparks`;
+      return `<button type="button" class="skin${owned ? '' : ' locked'}" data-kind="${kind}" data-id="${it.id}" aria-pressed="${worn}">${art}<span>${it.name}</span><span class="price">${kind === 'map' && worn ? 'In use' : price}</span></button>`;
+    };
+    const html = `<p>You have <b>${save.sparks} spark${save.sparks === 1 ? '' : 's'}</b>. Earn them from missions and end-of-game stars.</p>
+      <h3>Engineer outfits</h3><div class="skins">${SKINS.map(s => card(s, 'skin')).join('')}</div>
+      <h3>Map styles</h3><div class="skins">${MAPS.map(m => card(m, 'map')).join('')}</div>
+      <p id="wMsg" style="color:var(--green)"></p>`;
+    openModal('Wardrobe', html, [{ label: 'Done', primary: true, on: back }]);
+    $('mBody').onclick = e => {
+      const b = e.target.closest('.skin'); if (!b) return;
+      const list = b.dataset.kind === 'skin' ? SKINS : MAPS, it = list.find(x => x.id === b.dataset.id);
+      if (!save.owned.includes(it.id)) {
+        if (save.sparks < it.cost) { $('wMsg').textContent = `${it.name} needs ${it.cost} sparks. You have ${save.sparks}. Complete missions to earn more.`; return; }
+        save.sparks -= it.cost; save.owned.push(it.id);
+      }
+      if (b.dataset.kind === 'skin') { save.skin = it.id; dressMe(); } else { save.map = it.id; document.body.dataset.map = it.id; }
+      persist(); render(); openWardrobe(back);
+      const again = document.querySelector(`.skin[data-id="${it.id}"]`); again && again.focus();
+    };
+  }
+
+  /* ---------- Render ---------- */
+  let tileEls = [], tileKeys = [];
+  function buildBoard() {
+    const board = $('board'); board.innerHTML = ''; tileEls = []; tileKeys = [];
+    S.tiles.forEach(t => {
+      const el = document.createElement('button');
+      el.type = 'button'; el.className = 'tile' + (t.river ? ' river' : '');
+      el.addEventListener('click', () => place(t));
+      board.appendChild(el); tileEls.push(el); tileKeys.push('');
+    });
+  }
+
+  function render() {
+    checkMissions(compute(), 'action');
+    const st = compute();
+    $('hYear').textContent = S.year;
+    $('hMoney').textContent = `$${S.money}k`;
+    $('hAccess').textContent = `${Math.round(st.access * 100)}%`;
+    $('hClean').textContent = `${Math.round(st.cleanShare * 100)}%`;
+    $('hPoll').textContent = `${S.poll} / ${POLL_MAX}`;
+    $('mAccess').style.width = `${st.access * 100}%`;
+    $('mClean').style.width = `${st.cleanShare * 100}%`;
+    const mp = $('mPoll'); mp.style.width = `${Math.min(100, S.poll)}%`;
+    mp.style.backgroundColor = S.poll >= 60 ? 'var(--orange)' : S.poll >= 30 ? 'var(--brown)' : 'var(--green)';
+    $('lSupply').textContent = st.supply.toFixed(1);
+    $('lDemand').textContent = st.demand;
+    $('sparkCount').textContent = `${save.sparks} spark${save.sparks === 1 ? '' : 's'}`;
+    document.body.dataset.map = save.map;
+
+    const pct = x => `${Math.round(x * 100)}%`;
+    $('weather').innerHTML = `<span>Sun <b>${pct(S.sun)}</b></span><span>Wind <b>${pct(S.wind)}</b></span><span>River <b>${pct(S.river)}</b></span><span>Years left <b>${END_YEAR - S.year + 1}</b></span>`;
+
+    S.tiles.forEach((t, i) => {
+      const el = tileEls[i];
+      let label = t.river ? 'River' : 'Empty land', html = '', key = '';
+      if (t.b) {
+        const o = output(t.b);
+        html = ICON[t.b] + `<span class="badge">${o.toFixed(0)}</span>`;
+        label = `${TOOLS[t.b].name}, ${o.toFixed(1)} MW`; key = t.b + o.toFixed(1);
+      } else if (t.house) {
+        const lit = st.lit.has(t), k = KINDS[t.house.kind];
+        html = `<img class="bldg${lit ? ' lit' : ''}" src="${BLDG_IMG[t.house.kind]}" alt="">${t.house.eff ? '<img class="eff" src="assets/star-green.png" alt="">' : ''}${t.house.kind !== 'home' ? `<span class="lbl">${k.name}</span>` : ''}`;
+        label = `${k.name}, needs ${need(t)} MW, ${lit ? 'has power' : 'no power'}${t.house.eff ? ', efficient' : ''}${t.waste ? ', wasting energy' : ''}`;
+        key = t.house.kind + lit + t.house.eff;
+      }
+      if (key !== tileKeys[i]) {
+        el.innerHTML = html; tileKeys[i] = key;
+        if (t.pop || t.fresh) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); t.pop = t.fresh = false; }
+      }
+      if (t.b === 'wind') el.style.setProperty('--spin', `${(3.6 / S.wind).toFixed(2)}s`);
+      el.classList.toggle('can', S.tool === 'hydro' && !t.river && !t.b && !t.house && nearRiver(t));
+      el.setAttribute('aria-label', `Row ${t.r + 1}, column ${t.c + 1}: ${label}`);
+    });
+
+    const tools = $('tools');
+    if (!tools.children.length) {
+      for (const [k, cfg] of Object.entries(TOOLS)) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'tool'; b.dataset.k = k;
+        b.innerHTML = `${ICON[k]}<span class="n">${cfg.name}</span><span class="c">${cfg.cost ? `$${cfg.cost}k` : 'refund ½'}</span>`;
+        b.addEventListener('click', () => { S.tool = k; $('info').textContent = cfg.desc; render(); });
+        tools.appendChild(b);
+      }
+    }
+    for (const b of tools.children) {
+      b.setAttribute('aria-pressed', S.tool === b.dataset.k);
+      b.disabled = S.over;
+    }
+
+    const open = MISSIONS.filter(m => !S.done.has(m.id)).slice(0, 3);
+    const just = S.justDone ? MISSIONS.find(m => m.id === S.justDone) : null;
+    const show = just ? [just, ...open].slice(0, 4) : open;
+    $('missions').innerHTML = show.map(m => `<li class="${S.done.has(m.id) ? 'done' : ''}"><span class="box">${S.done.has(m.id) ? '✓' : ''}</span><span class="t">${m.t}</span><span class="rw">${m.reward ? `+$${m.reward}k` : ''} +1 ✦</span></li>`).join('') || '<li><span class="box">✓</span><span class="t">All missions complete. Amazing!</span><span></span></li>';
+    if (just && !S.justTimer) S.justTimer = setTimeout(() => { S.justDone = null; S.justTimer = null; render(); }, 1600);
+    $('mCount').textContent = `${S.done.size} / ${MISSIONS.length}`;
+
+    const [ft, fs] = FACTS[S.fact];
+    $('fact').innerHTML = `<img src="assets/star-indigo.png" alt=""><div class="src">Did you know? · ${fs}</div><p style="margin:6px 0 0">${ft}</p>`;
+    $('log').innerHTML = S.log.map(l => `<li class="${l.kind}">${l.text}</li>`).join('');
+    $('endYear').textContent = S.year >= END_YEAR ? 'Finish 2030' : `End ${S.year}`;
+    $('endYear').disabled = S.over || S.busy;
+  }
+
+  $('endYear').addEventListener('click', endYear);
+  $('sparks').addEventListener('click', () => { if ($('overlay').hidden) openWardrobe(closeModal); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('overlay').hidden && !S.over) closeModal(); });
+
+  newGame();
+  openModal('Hi, I\'m Watt!', `<div class="intro"><img src="assets/led.png" alt=""><p>It's 2021. The families in this valley have no electricity. You are the valley's energy engineer. By 2030, give every home, the school and the clinic <b>clean, affordable power</b> without filling the air with smog.</p></div>
+    <p>Tap a building tool, then a tile: your engineer walks over and builds it. Watch for <b>energy wasters</b> popping up over houses and tap them to switch them off. Complete <b>missions</b> to earn sparks for new outfits.</p>`,
+    [{ label: 'Start playing', primary: true, on: closeModal },
+     { label: 'Wardrobe', on: () => openWardrobe(closeModal) }]);
+})();
+</script>
+</body>
+</html>

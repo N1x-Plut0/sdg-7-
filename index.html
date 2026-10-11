@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Light Dash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Neucha&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: one wide game screen (canvas + menu overlays), arrow pad under it, then short explainer cards.
+   Styled after the "SDG 7 Affordable and clean energy" deck: cream paper, colored pencil, indigo handwriting. */
+@font-face {
+  font-family: "Biro Script Plus";
+  src: local("Biro Script Plus"), local("BiroScriptPlus-Regular"), url("assets/fonts/BiroScriptPlus.woff2") format("woff2");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Linotype Feltpen";
+  src: local("Linotype Feltpen"), local("LinotypeFeltpen-Regular"), local("Feltpen"), url("assets/fonts/LinotypeFeltpen.woff2") format("woff2");
+  font-display: swap;
+}
+:root {
+  --paper: #f8f4d9;
+  --paper-2: #f1ebc4;
+  --indigo: #5b6496;
+  --indigo-deep: #3d4470;
+  --green: #427f12;
+  --yellow: #fdca39;
+  --orange: #ff4401;
+  --brown: #b1741e;
+  --font-display: "Biro Script Plus", "Caveat", "Segoe Print", cursive;
+  --font-body: "Linotype Feltpen", "Patrick Hand", "Neucha", "Segoe Print", cursive;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--indigo); font: 19px/1.35 var(--font-body); padding: 16px 16px 40px; }
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1000px; margin: 0 auto; display: grid; gap: 14px; }
+.rough { border: 2px solid var(--indigo); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; }
+
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 6px 16px; }
+h1 { font: 400 clamp(40px, 7vw, 64px)/.95 var(--font-display); margin: 0; }
+h1 span { color: var(--green); }
+h1 img { width: .4em; vertical-align: top; margin-left: .1em; }
+.tag { color: var(--green); font-size: 18px; }
+
+.game { position: relative; width: 100%; aspect-ratio: 16 / 9; max-width: 100%; background: var(--paper); overflow: hidden; touch-action: manipulation; }
+.game > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hudbtns { position: absolute; top: 8px; right: 10px; display: flex; gap: 6px; z-index: 2; }
+.hudbtns button { width: 38px; height: 38px; display: grid; place-items: center; cursor: pointer; background: var(--paper); border: 2px solid var(--indigo); border-radius: 12px 4px 12px 4px; font-size: 18px; }
+
+.screen {
+  position: absolute; inset: 0; z-index: 5; overflow: auto; padding: 18px 22px;
+  background: rgba(248, 244, 217, .9); display: grid; align-content: start; gap: 12px;
+}
+@media (max-width: 700px) { .screen { position: fixed; inset: 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); padding-top: calc(18px + env(safe-area-inset-top, 0px)); background: rgba(248, 244, 217, .97); } }
+.screen h2 { font: 400 clamp(34px, 5.5vw, 52px)/1 var(--font-display); margin: 0; text-wrap: balance; }
+.screen h3 { font: 400 26px/1 var(--font-display); margin: 0; }
+.screen p { margin: 0; max-width: 60ch; }
+.screen .sub { color: var(--green); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn {
+  font: 400 26px/1.05 var(--font-display); padding: 8px 18px 10px; cursor: pointer; background: var(--yellow); color: var(--indigo);
+  border: 2.5px solid var(--indigo); border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px; box-shadow: 3px 4px 0 var(--indigo);
+}
+.btn.alt { background: var(--paper); }
+.btn:hover { filter: brightness(1.04); }
+.btn:active { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--indigo); }
+.btn:focus-visible, .card:focus-visible, .key:focus-visible, .hudbtns button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.menu-title { font: 400 clamp(54px, 10vw, 96px)/.9 var(--font-display); margin: 4px 0 0; }
+.menu-title span { color: var(--green); }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.card {
+  text-align: left; cursor: pointer; background: var(--paper); padding: 10px 14px 12px; display: grid; gap: 4px;
+  border: 2px solid var(--indigo); border-radius: 14px 5px 16px 4px / 5px 16px 4px 14px;
+}
+.card .k { font-size: 15px; color: var(--orange); }
+.card .n { font: 400 26px/1 var(--font-display); }
+.card .d { font-size: 16px; color: var(--green); }
+.card .st { font-size: 16px; }
+.card.locked { opacity: .55; cursor: not-allowed; }
+.card[aria-pressed="true"] { background: #fff3c4; border: 2.5px solid var(--orange); }
+.card canvas { width: 70px; height: 84px; justify-self: center; }
+.ach { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.ach div { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center; padding: 6px 10px; border: 1.5px dashed rgba(91,100,150,.5); border-radius: 10px 4px 12px 4px; font-size: 16px; }
+.ach div.got { border-style: solid; border-color: var(--green); background: #f3f6dc; }
+.ach img { width: 30px; }
+.ach div:not(.got) img { filter: grayscale(1) opacity(.35); }
+.ach b { display: block; font: 400 21px/1 var(--font-display); }
+.fact { background: #fff; padding: 10px 14px; border: 2px solid var(--green); border-radius: 16px 16px 16px 4px; color: var(--green); }
+.fact b { font: 400 20px var(--font-display); color: var(--orange); display: block; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 20px; }
+.stats b { color: var(--green); font-weight: 400; }
+.keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 17px; max-width: 520px; }
+.keys kbd { display: inline-block; min-width: 30px; text-align: center; border: 2px solid var(--indigo); border-radius: 6px 3px 7px 3px; padding: 0 6px; margin-right: 6px; font-family: var(--font-body); background: #fff; }
+
+.toast { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); z-index: 6; background: var(--yellow); padding: 6px 16px 8px; font: 400 22px/1.1 var(--font-display); box-shadow: 3px 4px 0 var(--indigo); text-align: center; pointer-events: none; animation: tin .35s cubic-bezier(.3,1.5,.5,1); max-width: 90%; }
+.toast small { display: block; font: 15px var(--font-body); }
+@keyframes tin { from { transform: translateX(-50%) scale(.5); opacity: 0; } }
+
+.pad { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; user-select: none; -webkit-user-select: none; }
+.key {
+  touch-action: none; cursor: pointer; display: grid; justify-items: center; gap: 0; padding: 6px 4px 8px; background: var(--paper);
+  border: 2.5px solid var(--indigo); border-radius: 18px 6px 18px 6px / 6px 18px 6px 18px; box-shadow: 3px 4px 0 var(--indigo);
+}
+.key .a { font: 400 34px/1 var(--font-body); }
+.key .l { font-size: 15px; color: var(--green); }
+.key.on { transform: translate(2px, 3px); box-shadow: 1px 1px 0 var(--indigo); background: #fff3c4; }
+.key.up { background: var(--yellow); }
+
+.info { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.info section { padding: 12px 16px; }
+.info h2 { font: 400 30px/1 var(--font-display); margin: 0 0 6px; }
+.info p { margin: 0 0 6px; font-size: 17px; }
+.info a { color: var(--green); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Light <span>Dash</span><img src="assets/star-yellow.png" alt=""></h1>
+    <span class="tag" data-t="tagline"></span>
+  </header>
+
+  <div class="game rough" id="game">
+    <canvas id="cv" aria-label="Light Dash"></canvas>
+    <div class="hudbtns">
+      <button type="button" id="bPause" aria-label="Pause">II</button>
+      <button type="button" id="bSound" aria-label="Sound">♪</button>
+    </div>
+    <div class="screen" id="screen"></div>
+    <div class="toast" id="toast" hidden></div>
+  </div>
+
+  <div class="pad" id="pad">
+    <button type="button" class="key" data-k="left"><span class="a">←</span><span class="l" data-t="kLeft"></span></button>
+    <button type="button" class="key" data-k="down"><span class="a">↓</span><span class="l" data-t="kDown"></span></button>
+    <button type="button" class="key up" data-k="up"><span class="a">↑</span><span class="l" data-t="kUp"></span></button>
+    <button type="button" class="key" data-k="right"><span class="a">→</span><span class="l" data-t="kRight"></span></button>
+  </div>
+
+  <div class="info">
+    <section class="rough"><h2 data-t="whatTitle"></h2><p data-t="what1"></p><p data-t="what2"></p></section>
+    <section class="rough"><h2 data-t="howTitle"></h2><p data-t="how1"></p><p data-t="how2"></p></section>
+    <section class="rough"><h2 data-t="moreTitle"></h2><p data-t="more1"></p><p><a href="valley.html" data-t="moreLink"></a></p></section>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* =========================================================
+   Text (Russian + English)
+   ========================================================= */
+const T = {
+  ru: {
+    tagline: 'Беги, собирай чистую энергию и зажигай свет. SDG 7',
+    kLeft: 'зажечь дом', kDown: 'присесть', kUp: 'прыжок', kRight: 'рывок',
+    whatTitle: 'Что такое SDG 7?',
+    what1: 'Цель устойчивого развития № 7 (ООН): «Обеспечить доступ к недорогой, надёжной, устойчивой и современной энергии для всех» к 2030 году.',
+    what2: 'В игре ты собираешь энергию солнца, ветра и воды, отдаёшь её домам без света и пробиваешь угольный смог. Чем больше домов горит, тем чище небо.',
+    howTitle: 'Как играть',
+    how1: 'Бегун бежит сам. ↑ или пробел: прыжок (держи, чтобы прыгать снова). ↓: присесть под облако смога, в воздухе быстро упасть. →: рывок сквозь стену смога (−1 ⚡). ←: зажечь дом рядом (−1 ⚡).',
+    how2: 'Жёлтые солнышки в воздухе: нажми ↑, когда касаешься, и прыгнешь ещё раз. Синие панели на земле подбрасывают высоко. На телефоне используй кнопки под экраном.',
+    moreTitle: 'Ещё',
+    more1: 'В каждом уровне спрятаны 3 звезды-факта о SDG 7. Ачивки открывают новых персонажей. Прогресс сохраняется в этом браузере.',
+    moreLink: 'Первая игра: «Light the Valley» (стратегия) →',
+    play: 'Играть', levels: 'Уровни', skins: 'Персонажи', achievements: 'Ачивки', back: 'Назад', lang: 'English',
+    menuSub: 'Раннер про чистую энергию для всех. Цель 7 ООН.',
+    endless: 'Марафон 2030', endlessD: 'Бесконечный забег. Как далеко убежишь?',
+    best: 'Рекорд', meters: 'м', locked: 'Пройди прошлый уровень',
+    practice: 'Тренировка', practiceOn: 'Тренировка: вкл (возрождение на флажках)', practiceOff: 'Тренировка: выкл',
+    start: 'Старт (↑)', retry: 'Ещё раз', next: 'Следующий уровень', menu: 'Меню', resume: 'Продолжить',
+    paused: 'Пауза', attempt: 'Попытка', complete: 'Уровень пройден!',
+    housesLit: 'Домов со светом', facts: 'Звёзды-факты', attempts: 'Попыток', energyLeft: 'Энергии осталось',
+    newFacts: 'Найденные факты', noEnergy: 'Нет энергии! Собирай ⚡', distance: 'Дистанция',
+    runOver: 'Забег окончен', choose: 'Выбери персонажа', unlock: 'Как открыть', wear: 'Выбран',
+    achGot: 'Ачивка!', skinGot: 'Новый персонаж!', of: 'из',
+    controls: 'Управление',
+    kj: 'прыжок / прыжок с солнышка', ks: 'присесть, быстро упасть', kr: 'рывок сквозь смог (−1 ⚡)', kl: 'зажечь дом (−1 ⚡)', kp: 'пауза',
+    hintUp: '↑ прыжок', hintLeft: '← зажги дом!', hintDown: '↓ присядь под смог', hintRight: '→ рывок сквозь смог', hintOrb: '↑ на солнышке', hintPad: 'панель подбросит',
+    goal: 'Цель SDG',
+  },
+  en: {
+    tagline: 'Run, collect clean energy and light up homes. SDG 7',
+    kLeft: 'light home', kDown: 'duck', kUp: 'jump', kRight: 'dash',
+    whatTitle: 'What is SDG 7?',
+    what1: 'UN Sustainable Development Goal 7: "Ensure access to affordable, reliable, sustainable and modern energy for all" by 2030.',
+    what2: 'In the game you collect energy from sun, wind and water, give it to homes without light, and break through coal smog. The more homes glow, the clearer the sky gets.',
+    howTitle: 'How to play',
+    how1: 'Your runner runs on their own. ↑ or Space: jump (hold to keep jumping). ↓: duck under smog clouds, or drop fast in the air. →: dash through a smog wall (−1 ⚡). ←: light the home next to you (−1 ⚡).',
+    how2: 'Yellow suns in the air: press ↑ while touching one to jump again. Blue panels on the ground launch you high. On a phone, use the buttons under the screen.',
+    moreTitle: 'More',
+    more1: 'Each level hides 3 fact stars about SDG 7. Achievements unlock new runners. Progress is saved in this browser.',
+    moreLink: 'Our first game: "Light the Valley" (strategy) →',
+    play: 'Play', levels: 'Levels', skins: 'Runners', achievements: 'Achievements', back: 'Back', lang: 'Русский',
+    menuSub: 'A runner about clean energy for everyone. UN Goal 7.',
+    endless: 'Marathon 2030', endlessD: 'Endless run. How far can you go?',
+    best: 'Best', meters: 'm', locked: 'Finish the previous level',
+    practice: 'Practice', practiceOn: 'Practice: on (respawn at flags)', practiceOff: 'Practice: off',
+    start: 'Start (↑)', retry: 'Retry', next: 'Next level', menu: 'Menu', resume: 'Resume',
+    paused: 'Paused', attempt: 'Attempt', complete: 'Level complete!',
+    housesLit: 'Homes with light', facts: 'Fact stars', attempts: 'Attempts', energyLeft: 'Energy left',
+    newFacts: 'Facts you found', noEnergy: 'No energy! Collect ⚡', distance: 'Distance',
+    runOver: 'Run over', choose: 'Choose your runner', unlock: 'To unlock', wear: 'Selected',
+    achGot: 'Achievement!', skinGot: 'New runner!', of: 'of',
+    controls: 'Controls',
+    kj: 'jump / jump off a sun', ks: 'duck, drop fast', kr: 'dash through smog (−1 ⚡)', kl: 'light a home (−1 ⚡)', kp: 'pause',
+    hintUp: '↑ jump', hintLeft: '← light the home!', hintDown: '↓ duck under smog', hintRight: '→ dash through smog', hintOrb: '↑ on the sun', hintPad: 'panels launch you',
+    goal: 'SDG target',
+  },
+};
+
+const LEVEL_TXT = [
+  { ru: ['Деревня без света', '7.1 Доступ для всех', 'Около 685 миллионов человек живут без электричества. Пробеги через деревню и зажги свет в каждом доме.'],
+    en: ['Village in the dark', '7.1 Access for all', 'About 685 million people live without electricity. Run through the village and light every home.'] },
+  { ru: ['Ветреные холмы', '7.2 Возобновляемая энергия', 'Больше солнца, ветра и воды вместо угля. Прыгай по платформам, лови ветер и пробивай смог.'],
+    en: ['Windy hills', '7.2 Renewable energy', 'More sun, wind and water instead of coal. Jump across platforms, catch the wind and dash through smog.'] },
+  { ru: ['Умный город', '7.3 Энергоэффективность', 'Город тратит энергию впустую. Быстрее, выше, точнее: прыгай с солнышек и неси свет на крыши.'],
+    en: ['Smart city', '7.3 Energy efficiency', 'The city wastes energy. Faster, higher, sharper: bounce off suns and carry light across the rooftops.'] },
+];
+
+const FACTS = [
+  { ru: 'В 2022 году около 685 миллионов человек в мире жили без электричества.', en: 'In 2022, about 685 million people in the world lived without electricity.' },
+  { ru: 'Около 80% людей без электричества живут в Африке южнее Сахары.', en: 'About 80% of people without electricity live in sub-Saharan Africa.' },
+  { ru: 'Около 2,1 миллиарда человек готовят еду на дровах, угле или керосине. Этот дым вредит здоровью.', en: 'About 2.1 billion people cook with wood, coal or kerosene. The smoke harms their health.' },
+  { ru: 'С 2010 по 2020 год электричество от солнечных панелей подешевело примерно на 90%.', en: 'From 2010 to 2020, electricity from solar panels got about 90% cheaper.' },
+  { ru: 'Солнце, ветер, вода и другие возобновляемые источники дают около 30% электричества в мире.', en: 'Sun, wind, water and other renewables make about 30% of the world\'s electricity.' },
+  { ru: 'Производство энергии даёт около трёх четвертей всех парниковых газов. Поэтому SDG 7 связана с климатом (SDG 13).', en: 'Energy causes about three quarters of all greenhouse gases. That is why SDG 7 is linked to climate (SDG 13).' },
+  { ru: 'Цель 7.3: к 2030 году вдвое ускорить рост энергоэффективности во всём мире.', en: 'Target 7.3: double the global rate of improvement in energy efficiency by 2030.' },
+  { ru: 'LED-лампа тратит примерно на 75–80% меньше электричества, чем обычная лампа накаливания.', en: 'An LED bulb uses about 75–80% less electricity than an old incandescent bulb.' },
+  { ru: 'Приборы в режиме ожидания могут съедать от 5 до 10% электричества дома. Выключай их из розетки!', en: 'Devices on standby can use 5–10% of a home\'s electricity. Unplug them!' },
+];
+
+/* =========================================================
+   Save
+   ========================================================= */
+const SAVE_KEY = 'light-dash-v1';
+const save = { lang: 'en', langChosen: false, mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}], ach: [],
+  stats: { energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 } };
+try {
+  const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+  if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = [0, 1, 2].map(i => (s.lv && s.lv[i]) || {}); }
+  if (!save.langChosen) save.lang = 'en';
+} catch (e) {}
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+const t = k => T[save.lang][k] ?? k;
+
+/* =========================================================
+   Characters (people) and skins
+   ========================================================= */
+const SKINS = [
+  { id: 'anya',   ru: 'Аня',            en: 'Anya',            shirt: '#5b6496', pants: '#3d4470', skin: '#f0d2a8', hair: '#4a2f1b', style: 'bun' },
+  { id: 'timur',  ru: 'Тимур',          en: 'Timur',           shirt: '#427f12', pants: '#5b6496', skin: '#c48a5a', hair: '#1e1a16', style: 'cap', hat: '#ff4401', need: 'l1' },
+  { id: 'li',     ru: 'Инженер Ли',     en: 'Engineer Li',     shirt: '#ff4401', pants: '#5b6496', skin: '#e8c39a', hair: '#141414', style: 'hardhat', hat: '#fdca39', need: 'allhouses' },
+  { id: 'amara',  ru: 'Учёная Амара',   en: 'Scientist Amara', shirt: '#ffffff', pants: '#427f12', skin: '#8a5a3c', hair: '#1a1210', style: 'curly', goggles: true, need: 'e100' },
+  { id: 'niko',   ru: 'Велокурьер Нико', en: 'Courier Niko',   shirt: '#fdca39', pants: '#3d4470', skin: '#dab680', hair: '#b1741e', style: 'helmet', hat: '#427f12', need: 'dash10' },
+  { id: 'night',  ru: 'Ночная смена',   en: 'Night shift',     shirt: '#2f3664', pants: '#1f2447', skin: '#b1741e', hair: '#1a1210', style: 'headlamp', hat: '#5b6496', need: 'l3' },
+  { id: 'zara',   ru: 'Солнечная Зара', en: 'Sunny Zara',      shirt: '#fdca39', pants: '#ff4401', skin: '#6b4428', hair: '#1a1210', style: 'long', crown: true, need: 'm1000' },
+  { id: 'watt',   ru: 'Ватт',           en: 'Watt',            shirt: '#fdca39', pants: '#5b6496', skin: '#fdca39', hair: '#fdca39', style: 'led', need: 'facts' },
+];
+const skinById = id => SKINS.find(s => s.id === id) || SKINS[0];
+const skinOpen = s => !s.need || save.ach.includes(s.need);
+
+const ACH = [
+  { id: 'l1',        ru: ['Первый свет', 'Пройди уровень 1'], en: ['First light', 'Finish level 1'] },
+  { id: 'l2',        ru: ['Ветер в спину', 'Пройди уровень 2'], en: ['Tailwind', 'Finish level 2'] },
+  { id: 'l3',        ru: ['Умный город', 'Пройди уровень 3'], en: ['Smart city', 'Finish level 3'] },
+  { id: 'allhouses', ru: ['Свет для всех', 'Зажги все дома на уровне'], en: ['Light for all', 'Light every home in a level'] },
+  { id: 'e100',      ru: ['Сборщик энергии', 'Собери 100 ⚡ всего'], en: ['Energy collector', 'Collect 100 ⚡ in total'] },
+  { id: 'dash10',    ru: ['Сквозь смог', 'Пробей рывком 10 стен смога'], en: ['Through the smog', 'Dash through 10 smog walls'] },
+  { id: 'h50',       ru: ['50 окон', 'Зажги 50 домов всего'], en: ['50 windows', 'Light 50 homes in total'] },
+  { id: 'clean',     ru: ['Чистый забег', 'Пройди уровень с первой попытки'], en: ['Clean run', 'Finish a level on the first attempt'] },
+  { id: 'att50',     ru: ['Упорство', 'Сделай 50 попыток'], en: ['Never give up', 'Make 50 attempts'] },
+  { id: 'facts',     ru: ['Знаток SDG 7', 'Найди все 9 звёзд-фактов'], en: ['SDG 7 expert', 'Find all 9 fact stars'] },
+  { id: 'm1000',     ru: ['Марафонец', 'Пробеги 1000 м в Марафоне'], en: ['Marathoner', 'Run 1000 m in the Marathon'] },
+  { id: 'm2030',     ru: ['Цель 2030', 'Пробеги 2030 м в Марафоне'], en: ['Goal 2030', 'Run 2030 m in the Marathon'] },
+  { id: 'style',     ru: ['Новый образ', 'Смени персонажа'], en: ['New look', 'Change your runner'] },
+];
+
+/* =========================================================
+   Physics constants (logical screen 800 x 450)
+   ========================================================= */
+const W = 800, H = 450, G = 380, PX = 200;
+const GRAV = 2600, JUMP = 830, ORBV = 800, PADV = 1180, FASTFALL = 1000;
+const PW = 28, PH = 52, SH = 24;
+const STEP = 1 / 120;
+
+/* =========================================================
+   Level builder
+   ========================================================= */
+function Builder(speed) {
+  this.v = speed; this.x = 520; this.o = []; this.groups = [];
+  this.D = (2 * JUMP / GRAV) * speed;
+}
+Builder.prototype = {
+  add(o) { this.o.push(o); return o; },
+  gap(d) { this.x += d; return this; },
+  energy(n = 3, y = G - 30, step = 46) { for (let i = 0; i < n; i++) this.add({ t: 'energy', x: this.x + i * step, y, k: (this.o.length + i) % 3 }); this.x += n * step; return this; },
+  arc(n = 3, top = G - 105) { // energy along a jump arc over the next obstacle
+    const span = this.D * 0.7;
+    for (let i = 0; i < n; i++) { const f = n === 1 ? .5 : i / (n - 1); this.add({ t: 'energy', x: this.x + 30 + f * span, y: top + Math.pow((f - .5) * 2, 2) * 45, k: i % 3 }); }
+    return this;
+  },
+  spikes(n = 1, base = G) { const w = 36; for (let i = 0; i < n; i++) this.add({ t: 'spike', x: this.x + i * w, w, h: 38, base }); this.groups.push({ a: this.x, b: this.x + n * w, base, kind: 'hop' }); this.x += n * w; return this; },
+  pit(w) { this.add({ t: 'pit', x: this.x, w }); this.groups.push({ a: this.x, b: this.x + w, base: G, kind: 'hop' }); this.x += w; return this; },
+  block(w, h) { const top = G - h; this.add({ t: 'block', x: this.x, w, top, h }); this.groups.push({ a: this.x, b: this.x + w, base: G, top, kind: 'step' }); this.x += w; return this; },
+  plat(w, top, h = 22) { this.add({ t: 'block', x: this.x, w, top, h }); this.x += w; return this; },
+  cloud(w = 100) { this.add({ t: 'cloud', x: this.x, w }); this.x += w; return this; },
+  wall() { this.add({ t: 'wall', x: this.x, w: 44 }); this.x += 44; return this; },
+  pad() { this.add({ t: 'pad', x: this.x, w: 44 }); this.x += 44; return this; },
+  orb(dx, y) { this.add({ t: 'orb', x: this.x + dx, y, r: 18 }); return this; },
+  house() { this.add({ t: 'house', x: this.x }); return this; },
+  fact(id, dx, y) { this.add({ t: 'fact', x: this.x + dx, y, id }); return this; },
+  check() { this.add({ t: 'check', x: this.x }); return this; },
+  sign(key, dx = 0) { this.add({ t: 'sign', x: this.x + dx, key }); return this; },
+  finish(extra = 500) { this.x += extra; this.len = this.x; return this; },
+};
+
+function buildLevel(i) {
+  const L = [300, 340, 380][i], b = new Builder(L), D = b.D;
+  if (i === 0) {
+    b.gap(80).sign('hintUp', 40).gap(260)
+     .energy(3).gap(180).sign('hintLeft', -60).house().gap(300)
+     .spikes(1).gap(330).spikes(1).gap(300).energy(3).gap(170).spikes(2).gap(320)
+     .house().gap(220).energy(2).gap(160)
+     .pit(130).gap(320).energy(3).gap(120).spikes(2).gap(300)
+     .block(130, 45).gap(300).spikes(1).gap(280)
+     .house().gap(200).block(170, 70).gap(0);
+    b.fact(0, -110, G - 150);
+    b.gap(330).check()
+     .spikes(3).gap(320).energy(3).gap(170).pit(150).gap(320)
+     .sign('hintDown', -40).house().gap(200).cloud(110).gap(330).energy(3).gap(200)
+     .spikes(2).gap(260).cloud(110).gap(320);
+    b.fact(1, 75, G - 115); b.pit(150).gap(320)
+     .house().gap(150).energy(3).gap(120).sign('hintRight', 0).gap(200)
+     .wall().gap(330).check()
+     .block(110, 40).block(110, 80).gap(300).spikes(2).gap(300)
+     .energy(3).gap(120).house().gap(220).block(200, 60);
+    b.fact(2, -100, G - 180);
+    b.gap(300).spikes(1).gap(260).energy(3).finish(500);
+  } else if (i === 1) {
+    b.gap(200).energy(3).gap(200).house().gap(250)
+     .spikes(2).gap(300).block(270, 50).gap(0).spikes(2).gap(300)
+     .energy(3).gap(150).house().gap(150).cloud(120).gap(330)
+     .sign('hintPad', 0).gap(120).pad().gap(30).spikes(5).gap(330)
+     .energy(3).gap(150).wall().gap(320).house().gap(160)
+     .pit(170).gap(320);
+    b.fact(3, 40, G - 240); b.pad().gap(30).spikes(5).gap(330).check()
+     .block(120, 45).block(120, 90).gap(0).spikes(3).gap(320)
+     .energy(3).gap(100).house().gap(170).cloud(120).gap(110).energy(2).gap(170).cloud(120).gap(330)
+     .spikes(3).gap(300).energy(3).gap(170).wall().gap(150).energy(3).gap(170).house().gap(150)
+     .pit(180).gap(320).check()
+     .block(220, 60);
+    b.fact(4, -90, G - 170);
+    b.gap(0).spikes(2).gap(320).energy(3).gap(100).house().gap(170)
+     .pad().gap(40).spikes(4).gap(20).wall().gap(330).energy(3).gap(150).house().gap(200)
+     .spikes(2).gap(280).cloud(130).gap(330).pit(180).gap(330);
+    b.fact(5, 60, G - 120); b.spikes(3).gap(330).energy(3).gap(150).house().gap(150).finish(520);
+  } else {
+    b.gap(200).energy(3).gap(150).house().gap(260)
+     .spikes(2).gap(320).sign('hintOrb', 0).gap(80).pit(320);
+    b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
+    b.gap(330).energy(3).gap(120).house().gap(200)
+     .block(210, 60).block(210, 100).gap(0).spikes(4).gap(320)
+     .wall().gap(150).energy(3).gap(120).house().gap(200).cloud(130).gap(330)
+     .pit(320);
+    b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
+    b.fact(6, -320 + 235, G - 268);
+    b.gap(330).check()
+     .energy(3).gap(120).house().gap(160).spikes(3).gap(300)
+     .pad().gap(40).spikes(5).gap(330).energy(3).gap(150).wall().gap(140).house().gap(220)
+     .cloud(130).gap(120).energy(2).gap(160).cloud(130).gap(330)
+     .block(260, 70);
+    b.fact(7, -130, G - 170);
+    b.gap(0).spikes(3).gap(330).check()
+     .energy(3).gap(120).house().gap(160).pit(320);
+    b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
+    b.gap(330).spikes(2).gap(260).wall().gap(150).energy(3).gap(130).house().gap(200)
+     .block(210, 50).block(210, 95).gap(0).spikes(4).gap(330)
+     .energy(3).gap(120).house().gap(180).cloud(140).gap(330);
+    b.fact(8, 80, G - 118); b.pit(200).gap(340).spikes(3).gap(320).energy(3).gap(150).house().gap(150).finish(520);
+  }
+  b.o.sort((a, c) => a.x - c.x);
+  return { idx: i, speed: L, objs: b.o, groups: b.groups, len: b.len, houses: b.o.filter(o => o.t === 'house').length, D };
+}
+
+/* Endless: append random patterns ahead of the runner */
+function endlessBuilder() {
+  const b = new Builder(320); b.len = Infinity; b.n = 0;
+  b.more = function () {
+    const v = this.v; this.D = (2 * JUMP / GRAV) * v;
+    const g = () => Math.round(v * 0.95 + Math.random() * 120);
+    const r = Math.random();
+    this.n++;
+    if (this.n % 5 === 0) { this.energy(3).gap(120).house().gap(g()); return; }
+    if (r < .16) this.spikes(1 + Math.floor(Math.random() * 3)).gap(g());
+    else if (r < .28) this.energy(3).gap(g());
+    else if (r < .38) this.pit(130 + Math.floor(Math.random() * 50)).gap(g());
+    else if (r < .48) { this.block(280, 45 + Math.floor(Math.random() * 30)).gap(0).spikes(2).gap(g()); }
+    else if (r < .58) this.cloud(110 + Math.floor(Math.random() * 30)).gap(g());
+    else if (r < .66) { this.energy(2).gap(100).wall().gap(g()); }
+    else if (r < .74) { this.pad().gap(40).spikes(4).gap(g()); }
+    else if (r < .82) { this.pit(300); this.o.push({ t: 'orb', x: this.x - 300 + 115, y: G - 150, r: 18 }); this.gap(g()); }
+    else if (r < .9) { this.block(210, 45).block(210, 90).gap(0).spikes(2).gap(g()); }
+    else { this.spikes(2).gap(Math.round(v * .8)).spikes(2).gap(g()); }
+  };
+  return b;
+}
+
+/* =========================================================
+   Game state
+   ========================================================= */
+let lvl, B, run, endless = false;
+const input = { up: false, down: false, jumpBuf: 0, light: false, dash: false };
+
+function newRun(fromCheckpoint) {
+  const cp = fromCheckpoint && run && run.cp;
+  if (!cp) {
+    if (endless) { B = endlessBuilder(); for (let i = 0; i < 6; i++) B.more(); lvl = { idx: -1, speed: 320, objs: B.o, groups: B.groups, len: Infinity, houses: 0 }; }
+    else lvl = buildLevel(lvl.idx);
+  }
+  const attempt = run ? run.attempt + 1 : 1;
+  const base = cp ? cp.snap : { x: 0, energy: 0, lit: [], facts: [], broken: [] };
+  for (const o of lvl.objs) { o.lit = base.lit.includes(o); o.got = base.facts.includes(o) || (o.t === 'energy' && o.x < base.x); o.broken = base.broken.includes(o); o.used = false; }
+  run = {
+    p: { x: base.x, y: G, vy: 0, ground: true, slideT: 0, dash: 0, dashCd: 0, alive: true, ang: 0 },
+    energy: base.energy, time: 0, deadT: 0, attempt, cp: cp || null, fresh: !cp, deaths: run && run.sameLevel ? run.deaths : 0,
+    sameLevel: true, particles: [], flash: '', flashT: 0, done: false, speed: lvl.speed, startX: base.x, wallsBroken: 0,
+  };
+}
+
+const litCount = () => lvl.objs.filter(o => o.t === 'house' && o.lit).length;
+const housesSoFar = () => lvl.objs.filter(o => o.t === 'house' && o.x < run.p.x + 200).length;
+
+function snapshot() {
+  return { x: run.p.x, energy: run.energy, lit: lvl.objs.filter(o => o.lit), facts: lvl.objs.filter(o => o.t === 'fact' && o.got), broken: lvl.objs.filter(o => o.broken) };
+}
+
+function die() {
+  const p = run.p; if (!p.alive) return;
+  p.alive = false; run.deadT = 0; run.deaths++;
+  if (!demo) { save.stats.attempts++; persist(); checkAch(); }
+  for (let i = 0; i < 26; i++) { const a = Math.random() * Math.PI * 2, s = 120 + Math.random() * 320; run.particles.push({ x: p.x, y: p.y - 26, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 120, life: .8, c: ['#5b6496', '#fdca39', '#ff4401', '#427f12'][i % 4], r: 3 + Math.random() * 4 }); }
+  sfx('die');
+}
+
+function flash(msg) { run.flash = msg; run.flashT = 1.4; }
+
+function step(dt, bot) {
+  const p = run.p;
+  if (!p.alive) return;
+  if (endless) {
+    run.speed = Math.min(440, 320 + p.x / 400); B.v = run.speed;
+    while (B.x < p.x + 1800) B.more();
+    if (lvl.objs.length > 400) { lvl.objs = lvl.objs.filter(o => o.x > p.x - 600); B.o = lvl.objs; B.groups = B.groups.filter(g => g.b > p.x - 600); lvl.groups = B.groups; }
+  }
+  const v = run.speed;
+  run.time += dt;
+  const inp = bot ? bot : input;
+
+  p.x += v * dt;
+  p.dash = Math.max(0, p.dash - dt); p.dashCd = Math.max(0, p.dashCd - dt); p.slideT = Math.max(0, p.slideT - dt);
+
+  // dash (right arrow)
+  if (inp.dash) {
+    inp.dash = false;
+    if (run.energy > 0 && p.dashCd <= 0) { run.energy--; p.dash = .45; p.dashCd = .55; sfx('dash'); }
+    else if (run.energy <= 0) flash(t('noEnergy'));
+  }
+  // light a home (left arrow)
+  if (inp.light) {
+    inp.light = false;
+    const h = lvl.objs.find(o => o.t === 'house' && !o.lit && Math.abs(o.x + 45 - p.x) < 140);
+    if (h) {
+      if (run.energy > 0) {
+        run.energy--; h.lit = true; if (!demo) save.stats.houses++; sfx('light');
+        for (let i = 0; i < 16; i++) { const a = Math.random() * Math.PI * 2; run.particles.push({ x: h.x + 45, y: G - 50, vx: Math.cos(a) * 160, vy: Math.sin(a) * 160 - 60, life: .9, c: '#fdca39', r: 3 + Math.random() * 3 }); }
+      } else flash(t('noEnergy'));
+    }
+  }
+
+  const sliding = (inp.down || p.slideT > 0) && p.ground;
+  const h = sliding ? SH : PH;
+
+  // jump: hold to keep jumping on the ground; orbs need a fresh press
+  if (p.ground && (inp.up || inp.jumpBuf > 0)) { p.vy = -JUMP; p.ground = false; inp.jumpBuf = 0; sfx('jump'); }
+  else if (!p.ground && inp.jumpBuf > 0) {
+    const orb = lvl.objs.find(o => o.t === 'orb' && !o.used && Math.hypot(o.x - p.x, o.y - (p.y - h / 2)) < o.r + 22);
+    if (orb) { p.vy = -ORBV; orb.used = true; inp.jumpBuf = 0; sfx('orb'); }
+  }
+  inp.jumpBuf = Math.max(0, inp.jumpBuf - dt);
+
+  if (!p.ground && inp.down) p.vy = Math.max(p.vy, FASTFALL);
+
+  const prevY = p.y, prevTop = p.y - h;
+  p.vy += GRAV * dt; p.y += p.vy * dt;
+  let support = false;
+
+  const overPit = lvl.objs.some(o => o.t === 'pit' && p.x > o.x && p.x < o.x + o.w);
+  if (!overPit) {
+    if (p.y >= G && prevY <= G + 1) { p.y = G; support = true; }
+    else if (p.y > G + 2) return die(); // hit the wall of a pit
+  }
+  const tol = Math.abs(p.vy * dt) + 6;
+  for (const o of lvl.objs) {
+    if (o.t !== 'block' || o.x > p.x + 40 || o.x + o.w < p.x - 40) continue;
+    if (p.x + PW / 2 > o.x && p.x - PW / 2 < o.x + o.w) {
+      const top = o.top, bot = o.top + o.h;
+      if (p.y > top && p.y - h < bot) {
+        if (prevY <= top + tol && p.vy >= 0) { p.y = top; support = true; }
+        else if (prevTop >= bot - tol && p.vy < 0) { p.y = bot + h; p.vy = 0; }
+        else return die();
+      }
+    }
+  }
+  if (support) { p.vy = 0; if (!p.ground) sfx('land'); }
+  p.ground = support;
+  if (inp.downPressed) { inp.downPressed = false; p.slideT = .3; }
+
+  // pads
+  for (const o of lvl.objs) if (o.t === 'pad' && p.ground && p.y === G && p.x + 10 > o.x && p.x - 10 < o.x + o.w) { p.vy = -PADV; p.ground = false; sfx('pad'); }
+
+  // hazards and pickups
+  const hh = ((inp.down || p.slideT > 0) && p.ground) ? SH : h;
+  const bx = { l: p.x - PW / 2 + 3, r: p.x + PW / 2 - 3, t: p.y - hh + 3, b: p.y - 1 };
+  const hit = (l, r, tp, bt) => bx.r > l && bx.l < r && bx.b > tp && bx.t < bt;
+  for (const o of lvl.objs) {
+    if (o.x > p.x + 80) break;
+    if (o.x + (o.w || 40) < p.x - 80) continue;
+    switch (o.t) {
+      case 'spike': if (hit(o.x + 10, o.x + o.w - 10, o.base - o.h + 15, o.base)) return die(); break;
+      case 'cloud': if (!o.broken && hit(o.x + 6, o.x + o.w - 6, G - 112, G - 32)) { if (p.dash > 0) breakSmog(o); else return die(); } break;
+      case 'wall': if (!o.broken && hit(o.x, o.x + o.w, G - 340, G)) { if (p.dash > 0) breakSmog(o); else return die(); } break;
+      case 'energy': if (!o.got && hit(o.x - 14, o.x + 14, o.y - 14, o.y + 14)) { o.got = true; run.energy = Math.min(9, run.energy + 1); if (!demo) save.stats.energy++; sfx('coin'); } break;
+      case 'fact': if (!o.got && hit(o.x - 18, o.x + 18, o.y - 18, o.y + 18)) { o.got = true; sfx('star'); if (!demo) toast('★', FACTS[o.id][save.lang].slice(0, 64) + '…'); } break;
+      case 'check': if (save.practice && !endless && (!run.cp || run.cp.x < o.x) && p.x > o.x) { run.cp = { x: o.x, snap: snapshot() }; sfx('coin'); } break;
+    }
+  }
+  if (p.y > H + 80) return die();
+  if (!endless && p.x >= lvl.len) { run.done = true; }
+  if (endless && !demo) { const m = Math.floor(p.x / 50); if (m > (save.stats.bestM || 0)) save.stats.bestM = m; }
+}
+
+function breakSmog(o) {
+  o.broken = true; if (o.t === 'wall') { if (!demo) save.stats.walls++; run.wallsBroken++; }
+  for (let i = 0; i < 20; i++) run.particles.push({ x: o.x + 20, y: G - 40 - Math.random() * (o.t === 'wall' ? 260 : 70), vx: 120 + Math.random() * 240, vy: (Math.random() - .5) * 200, life: .7, c: '#9b9682', r: 5 + Math.random() * 7 });
+  sfx('smash');
+}
+
+/* =========================================================
+   Autopilot (demo on the menu, and level testing)
+   ========================================================= */
+function autopilot() {
+  const p = run.p, v = run.speed, D = (2 * JUMP / GRAV) * v, front = p.x + PW / 2;
+  const a = { up: false, down: false, jumpBuf: 0, light: false, dash: false };
+  for (const o of lvl.objs) {
+    if (o.x > p.x + 400) break;
+    if (o.t === 'house' && !o.lit && run.energy > 1 && Math.abs(o.x + 45 - p.x) < 120) a.light = true;
+    if ((o.t === 'wall') && !o.broken && o.x - front < v * 0.05 + 4 && o.x + o.w > p.x - 14) a.dash = p.dashCd <= 0 && p.dash <= 0;
+    if (o.t === 'cloud' && !o.broken && o.x - front < v * 0.09 && o.x + o.w > p.x - PW) a.down = true;
+    if (o.t === 'orb' && !o.used && !p.ground && Math.abs(o.x - p.x) < 14) a.jumpBuf = .05;
+  }
+  if (p.ground) {
+    for (const g of lvl.groups) {
+      if (g.b < p.x - 14) continue;
+      if (g.a > p.x + 400) break;
+      if (g.kind === 'step') {
+        if (g.top < p.y - 4) { const rise = p.y - g.top; const lead = v * (0.08 + rise / 520); if (g.a - front < lead && g.a - front > -4) a.up = true; }
+        continue;
+      }
+      if (g.base !== G && p.y !== g.base) continue;
+      const fall = Math.max(0, g.base - p.y); // jumping from a higher block lands later
+      const air = (JUMP + Math.sqrt(JUMP * JUMP + 2 * GRAV * fall)) / GRAV * v;
+      const T = Math.min((g.a + g.b) / 2 - (fall > 0 ? air * .45 : D / 2), g.a - 30);
+      if (p.x >= T - 2 && p.x < g.a - 2) { a.up = true; break; }
+    }
+    // walking off a block straight onto spikes: jump from the block edge
+    for (const o of lvl.objs) {
+      if (o.t === 'block' && p.y === o.top && o.top < G) {
+        const edge = o.x + o.w;
+        const after = lvl.groups.find(g => g.a >= edge - 1 && g.a < edge + 60 && g.kind === 'hop');
+        if (after && p.x > edge - 34 && p.x < edge - 4) a.up = true;
+      }
+    }
+  }
+  return a;
+}
+
+/* =========================================================
+   Rendering
+   ========================================================= */
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+let scale = 1;
+function resize() {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  scale = cv.width / W;
+}
+new ResizeObserver(resize).observe(cv);
+
+const IMG = {};
+['house', 'led', 'star-yellow', 'star-green', 'star-orange', 'solar'].forEach(n => { const i = new Image(); i.src = `assets/${n}.png`; IMG[n] = i; });
+let houseDark = null;
+IMG.house.onload = () => {
+  const c = document.createElement('canvas'); c.width = IMG.house.width; c.height = IMG.house.height;
+  const x = c.getContext('2d'); x.drawImage(IMG.house, 0, 0);
+  x.globalCompositeOperation = 'source-atop'; x.fillStyle = 'rgba(52,56,92,.62)'; x.fillRect(0, 0, c.width, c.height);
+  houseDark = c;
+};
+
+const C = { paper: '#f8f4d9', paper2: '#f1ebc4', indigo: '#5b6496', deep: '#3d4470', green: '#427f12', yellow: '#fdca39', orange: '#ff4401', brown: '#b1741e', smog: '#8a8572' };
+const FONT_D = '"Biro Script Plus", "Caveat", cursive';
+const FONT_B = '"Linotype Feltpen", "Patrick Hand", "Neucha", cursive';
+
+function line(c, pts, w = 2, col = C.indigo) { c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); }
+
+function drawPerson(c, sk, time, pose) {
+  // origin at the feet, facing right, 52px tall
+  const ph = time * 14, sw = pose === 'run' ? Math.sin(ph) : pose === 'air' ? .9 : 0;
+  c.save();
+  if (pose === 'slide') { c.translate(-6, 0); c.rotate(-1.15); }
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  const hip = [0, -22];
+  // legs
+  const leg = (s, col) => line(c, [hip, [s * 9, -11 + Math.abs(s) * 2], [s * 14 + (pose === 'air' ? -4 : 0), 0 - (pose === 'air' ? 6 : 0)]], 4.5, col);
+  leg(-sw, C.deep); leg(sw, sk.pants);
+  // body
+  c.fillStyle = sk.shirt; c.strokeStyle = C.indigo; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(-8, -22); c.lineTo(-9, -36); c.quadraticCurveTo(0, -42, 9, -36); c.lineTo(8, -22); c.closePath(); c.fill(); c.stroke();
+  if (sk.id === 'li') { line(c, [[-6, -34], [-6, -23]], 2.5, C.yellow); line(c, [[6, -34], [6, -23]], 2.5, C.yellow); }
+  // arms
+  const arm = (s, col) => line(c, [[0, -35], [s * -9, -28], [s * -12, -20 + (pose === 'air' ? -14 : 0)]], 3.5, col);
+  arm(sw, C.deep); arm(-sw, sk.shirt === '#ffffff' ? '#e8e8e8' : sk.shirt);
+  // head
+  if (sk.style === 'led') {
+    if (IMG.led.complete && IMG.led.naturalWidth) c.drawImage(IMG.led, -11, -64, 22, 26);
+    c.restore(); return;
+  }
+  if (sk.style === 'long') { c.fillStyle = sk.hair; c.beginPath(); c.ellipse(-3, -42, 9, 11, 0, 0, Math.PI * 2); c.fill(); }
+  c.fillStyle = sk.skin; c.beginPath(); c.arc(1, -47, 8, 0, Math.PI * 2); c.fill(); c.lineWidth = 1.8; c.strokeStyle = C.indigo; c.stroke();
+  c.fillStyle = C.deep; c.beginPath(); c.arc(4.5, -48, 1.3, 0, Math.PI * 2); c.fill();
+  c.fillStyle = sk.hair; c.strokeStyle = C.indigo; c.lineWidth = 1.5;
+  switch (sk.style) {
+    case 'bun': c.beginPath(); c.arc(1, -50, 8.2, Math.PI * 1.02, Math.PI * 1.98); c.fill(); c.beginPath(); c.arc(-7, -53, 4, 0, Math.PI * 2); c.fill(); break;
+    case 'curly': for (let i = 0; i < 6; i++) { c.beginPath(); c.arc(-6 + i * 2.6, -54 + (i % 2) * 1.5, 3.4, 0, Math.PI * 2); c.fill(); } c.beginPath(); c.arc(-6, -47, 3.4, 0, Math.PI * 2); c.fill(); break;
+    case 'long': c.beginPath(); c.arc(1, -50, 8.4, Math.PI, Math.PI * 2); c.fill(); break;
+    case 'cap': c.fillStyle = sk.hat; c.beginPath(); c.arc(1, -50, 8.4, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[3, -50.5], [13, -50]], 3, sk.hat); break;
+    case 'helmet': c.fillStyle = sk.hat; c.beginPath(); c.ellipse(1, -52, 9.5, 6.5, 0, Math.PI, Math.PI * 2); c.fill(); c.stroke(); break;
+    case 'hardhat': case 'headlamp':
+      c.fillStyle = sk.hat; c.beginPath(); c.arc(1, -51, 8.6, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[-9, -51], [12, -51]], 2.5, C.indigo);
+      if (sk.style === 'headlamp') { c.fillStyle = 'rgba(253,202,57,.35)'; c.beginPath(); c.moveTo(8, -54); c.lineTo(44, -66); c.lineTo(44, -40); c.closePath(); c.fill(); c.fillStyle = '#fff6b0'; c.beginPath(); c.arc(8, -54, 2.6, 0, Math.PI * 2); c.fill(); c.stroke(); }
+      break;
+    default: c.beginPath(); c.arc(1, -50, 8.2, Math.PI, Math.PI * 2); c.fill();
+  }
+  if (sk.goggles) { c.strokeStyle = C.indigo; c.lineWidth = 1.5; c.fillStyle = 'rgba(180,220,240,.8)'; c.beginPath(); c.arc(5, -48, 3, 0, Math.PI * 2); c.fill(); c.stroke(); }
+  if (sk.crown) { c.fillStyle = C.yellow; c.beginPath(); for (let i = 0; i < 5; i++) { const a = Math.PI + i * Math.PI / 4; c.lineTo(1 + Math.cos(a) * 15, -50 + Math.sin(a) * 15); c.lineTo(1 + Math.cos(a + Math.PI / 8) * 9, -50 + Math.sin(a + Math.PI / 8) * 9); } c.closePath(); c.fill(); }
+  c.restore();
+}
+
+function drawSun(c, x, y, r, rays = 8, rot = 0) {
+  c.save(); c.translate(x, y); c.rotate(rot);
+  c.strokeStyle = C.orange; c.lineWidth = 2;
+  for (let i = 0; i < rays; i++) { const a = i * Math.PI * 2 / rays; line(c, [[Math.cos(a) * (r + 3), Math.sin(a) * (r + 3)], [Math.cos(a) * (r + 8), Math.sin(a) * (r + 8)]], 2, C.orange); }
+  c.fillStyle = C.yellow; c.beginPath(); c.arc(0, 0, r, 0, Math.PI * 2); c.fill(); c.strokeStyle = C.orange; c.stroke();
+  c.restore();
+}
+function drawBolt(c, x, y, s = 1, col = C.yellow) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  c.fillStyle = col; c.strokeStyle = C.indigo; c.lineWidth = 1.6;
+  c.beginPath(); c.moveTo(3, -10); c.lineTo(-6, 2); c.lineTo(0, 2); c.lineTo(-3, 11); c.lineTo(7, -2); c.lineTo(1, -2); c.closePath(); c.fill(); c.stroke();
+  c.restore();
+}
+function drawEnergy(c, o, time) {
+  const bob = Math.sin(time * 4 + o.x) * 3;
+  if (o.k === 0) drawSun(c, o.x, o.y + bob, 8, 8, time);
+  else if (o.k === 1) { // wind swirl
+    c.save(); c.translate(o.x, o.y + bob); c.rotate(time * 3);
+    for (let i = 0; i < 3; i++) { c.rotate(Math.PI * 2 / 3); c.fillStyle = C.green; c.beginPath(); c.ellipse(0, -7, 3.5, 7, 0, 0, Math.PI * 2); c.fill(); }
+    c.fillStyle = C.yellow; c.beginPath(); c.arc(0, 0, 3, 0, Math.PI * 2); c.fill(); c.restore();
+  } else { // water drop
+    c.save(); c.translate(o.x, o.y + bob); c.fillStyle = '#8fb3e6'; c.strokeStyle = C.indigo; c.lineWidth = 1.6;
+    c.beginPath(); c.moveTo(0, -11); c.quadraticCurveTo(9, 2, 0, 9); c.quadraticCurveTo(-9, 2, 0, -11); c.fill(); c.stroke(); c.restore();
+  }
+}
+
+function drawSmogBlob(c, x, y, w, h, time, seed) {
+  c.fillStyle = 'rgba(138,133,114,.88)'; c.strokeStyle = '#5f5a4c'; c.lineWidth = 1.6;
+  const n = Math.max(3, Math.round(w / 22)), m = Math.max(1, Math.round(h / 34));
+  for (let j = 0; j < m; j++) for (let i = 0; i < n; i++) {
+    const cx = x + (i + .5) * w / n + Math.sin(time * 2 + i + j + seed) * 2;
+    const cy = y + (j + .5) * h / m + Math.cos(time * 1.6 + i * 2 + seed) * 2;
+    c.beginPath(); c.arc(cx, cy, Math.max(w / n, h / m) * .62, 0, Math.PI * 2); c.fill(); c.stroke();
+  }
+}
+
+let bgTime = 0;
+function render(dt) {
+  bgTime += dt;
+  const c = ctx; c.setTransform(scale, 0, 0, scale, 0, 0);
+  const p = run.p, cam = p.x - PX, time = run.time;
+  const lit = litCount(), seen = Math.max(1, endless ? Math.max(lit, housesSoFar()) : lvl.houses);
+  const clean = Math.min(1, lit / seen);
+
+  // sky
+  c.fillStyle = C.paper; c.fillRect(0, 0, W, H);
+  drawSun(c, 680, 70, 28 + clean * 6, 12, bgTime * .2);
+  // far hills
+  c.fillStyle = '#e4e8c0'; c.beginPath(); c.moveTo(0, G);
+  for (let x = 0; x <= W; x += 20) { const wx = x + cam * .2; c.lineTo(x, G - 90 - Math.sin(wx / 160) * 30 - Math.sin(wx / 57) * 10); }
+  c.lineTo(W, G); c.fill();
+  c.strokeStyle = 'rgba(66,127,18,.35)'; c.lineWidth = 1.5; c.stroke();
+  // mid wind turbines
+  for (let k = -1; k < 6; k++) {
+    const wx = Math.floor(cam * .45 / 260) * 260 + k * 260, sx = wx - cam * .45 + 60;
+    if (((wx / 260) | 0) % 2 === 0) continue;
+    line(c, [[sx, G - 20], [sx, G - 120]], 2.5, 'rgba(91,100,150,.5)');
+    c.save(); c.translate(sx, G - 120); c.rotate(bgTime * (1 + clean * 2));
+    for (let i = 0; i < 3; i++) { c.rotate(Math.PI * 2 / 3); line(c, [[0, 0], [0, -30]], 3, 'rgba(66,127,18,.55)'); }
+    c.restore();
+  }
+  // smog haze lifts as homes get light
+  c.fillStyle = `rgba(120,116,100,${.32 * (1 - clean)})`; c.fillRect(0, 0, W, G);
+
+  // ground with pit gaps
+  const pits = lvl.objs.filter(o => o.t === 'pit' && o.x + o.w > cam - 50 && o.x < cam + W + 50);
+  let gx = -10; c.fillStyle = C.paper2;
+  const seg = (a, b) => { c.fillStyle = C.paper2; c.fillRect(a, G, b - a, H - G); line(c, [[a, G], [b, G]], 3, C.brown); };
+  for (const pt of pits) { seg(gx, pt.x - cam); c.fillStyle = 'rgba(61,68,112,.85)'; c.fillRect(pt.x - cam, G + 6, pt.w, H - G); gx = pt.x - cam + pt.w; }
+  seg(gx, W + 10);
+  c.strokeStyle = 'rgba(66,127,18,.5)'; c.lineWidth = 1.5;
+  for (let x = -(cam % 18); x < W; x += 18) { if (pits.some(pt => x + cam > pt.x && x + cam < pt.x + pt.w)) continue; line(c, [[x, G + 3], [x + 4, G + 11]], 1.5, 'rgba(66,127,18,.5)'); }
+
+  // world objects
+  c.save(); c.translate(-cam, 0);
+  for (const o of lvl.objs) {
+    if (o.x > cam + W + 120) break;
+    if (o.x + (o.w || 100) < cam - 120) continue;
+    switch (o.t) {
+      case 'house': {
+        if (o.lit) { const g = c.createRadialGradient(o.x + 45, G - 40, 5, o.x + 45, G - 40, 90); g.addColorStop(0, 'rgba(253,202,57,.65)'); g.addColorStop(1, 'rgba(253,202,57,0)'); c.fillStyle = g; c.fillRect(o.x - 50, G - 130, 190, 140); }
+        const img = o.lit ? IMG.house : houseDark;
+        if (img && (img.width || img.naturalWidth)) c.drawImage(img, o.x, G - 78, 92, 80);
+        if (!o.lit && Math.abs(o.x + 45 - p.x) < 140 && p.alive) {
+          const pulse = 1 + Math.sin(time * 10) * .08;
+          c.save(); c.translate(o.x + 46, G - 104); c.scale(pulse, pulse);
+          c.fillStyle = '#fff'; c.strokeStyle = C.orange; c.lineWidth = 2.5; c.beginPath(); c.roundRect(-24, -17, 48, 32, 12); c.fill(); c.stroke();
+          c.fillStyle = C.orange; c.font = `700 26px ${FONT_B}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('←', 0, 0);
+          c.restore();
+        }
+        break;
+      }
+      case 'sign':
+        line(c, [[o.x + 40, G], [o.x + 40, G - 60]], 4, C.brown);
+        c.font = `22px ${FONT_D}`; { const w = c.measureText(t(o.key)).width + 24;
+        c.fillStyle = '#fff8dc'; c.strokeStyle = C.brown; c.lineWidth = 2.5; c.beginPath(); c.roundRect(o.x + 40 - w / 2, G - 100, w, 40, 6); c.fill(); c.stroke();
+        c.fillStyle = C.indigo; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(t(o.key), o.x + 40, G - 80); }
+        break;
+      case 'block':
+        c.fillStyle = '#efe2b8'; c.strokeStyle = C.indigo; c.lineWidth = 2.5; c.beginPath(); c.roundRect(o.x, o.top, o.w, o.h, 4); c.fill(); c.stroke();
+        c.save(); c.beginPath(); c.rect(o.x, o.top, o.w, o.h); c.clip();
+        for (let x = o.x - o.h; x < o.x + o.w; x += 14) line(c, [[x, o.top + o.h], [x + o.h, o.top]], 1, 'rgba(177,116,30,.45)');
+        c.restore();
+        line(c, [[o.x, o.top + 2], [o.x + o.w, o.top + 2]], 3, C.green);
+        break;
+      case 'spike': {
+        c.fillStyle = '#4a3f3a'; c.strokeStyle = '#2b2522'; c.lineWidth = 2;
+        c.beginPath(); c.moveTo(o.x + 2, o.base); c.lineTo(o.x + 10, o.base - o.h * .55); c.lineTo(o.x + o.w / 2, o.base - o.h); c.lineTo(o.x + o.w - 9, o.base - o.h * .5); c.lineTo(o.x + o.w - 2, o.base); c.closePath(); c.fill(); c.stroke();
+        c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.moveTo(o.x + 12, o.base - 8); c.lineTo(o.x + o.w / 2, o.base - o.h + 6); c.lineTo(o.x + o.w / 2 + 2, o.base - 10); c.fill();
+        break;
+      }
+      case 'cloud': if (!o.broken) drawSmogBlob(c, o.x, G - 112, o.w, 76, time, o.x); break;
+      case 'wall':
+        if (!o.broken) {
+          drawSmogBlob(c, o.x - 6, G - 340, o.w + 12, 340, time, o.x);
+          c.fillStyle = '#4a3f3a'; c.fillRect(o.x + 10, G - 40, 24, 40);
+        }
+        break;
+      case 'pad':
+        c.fillStyle = 'rgba(253,202,57,.5)'; c.beginPath(); c.ellipse(o.x + o.w / 2, G - 4, o.w * .8, 10 + Math.sin(time * 8) * 2, 0, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#5577c0'; c.strokeStyle = C.indigo; c.lineWidth = 2; c.beginPath(); c.moveTo(o.x, G); c.lineTo(o.x + 6, G - 14); c.lineTo(o.x + o.w - 2, G - 18); c.lineTo(o.x + o.w, G); c.closePath(); c.fill(); c.stroke();
+        line(c, [[o.x + 16, G - 1], [o.x + 18, G - 15]], 1, '#cfe0ff'); line(c, [[o.x + 30, G - 1], [o.x + 31, G - 16]], 1, '#cfe0ff');
+        break;
+      case 'orb':
+        c.globalAlpha = o.used ? .35 : 1;
+        c.fillStyle = 'rgba(253,202,57,.35)'; c.beginPath(); c.arc(o.x, o.y, o.r + 8 + Math.sin(time * 9) * 3, 0, Math.PI * 2); c.fill();
+        drawSun(c, o.x, o.y, o.r - 4, 10, time * 2);
+        c.globalAlpha = 1;
+        break;
+      case 'energy': if (!o.got) drawEnergy(c, o, time); break;
+      case 'fact':
+        if (!o.got) { const im = IMG[['star-yellow', 'star-green', 'star-orange'][o.id % 3]]; const s = 30 + Math.sin(time * 5) * 3; if (im.complete) { c.save(); c.translate(o.x, o.y); c.rotate(Math.sin(time * 2) * .2); c.drawImage(im, -s / 2, -s / 2, s, s); c.restore(); } }
+        break;
+      case 'check':
+        if (save.practice) { line(c, [[o.x, G], [o.x, G - 70]], 3, C.indigo); c.fillStyle = run.cp && run.cp.x >= o.x ? C.green : C.paper2; c.beginPath(); c.moveTo(o.x, G - 70); c.lineTo(o.x + 30, G - 60); c.lineTo(o.x, G - 50); c.fill(); c.stroke(); }
+        break;
+    }
+  }
+  // finish gate
+  if (!endless && lvl.len - cam < W + 100) {
+    const fx = lvl.len;
+    line(c, [[fx, G], [fx, G - 170]], 5, C.indigo); line(c, [[fx + 120, G], [fx + 120, G - 170]], 5, C.indigo);
+    c.fillStyle = C.yellow; c.strokeStyle = C.indigo; c.lineWidth = 2.5; c.beginPath(); c.roundRect(fx - 10, G - 200, 140, 46, 8); c.fill(); c.stroke();
+    c.fillStyle = C.indigo; c.font = `30px ${FONT_D}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('2030', fx + 60, G - 177);
+  }
+  // attempt label in the world, like the classic runners
+  if (!endless || true) {
+    c.fillStyle = 'rgba(91,100,150,.75)'; c.font = `44px ${FONT_D}`; c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+    c.fillText(`${t('attempt')} ${run.attempt}`, run.startX + 260, 150);
+  }
+  // runner
+  if (p.alive) {
+    const sk = skinById(save.skin);
+    const sliding = (input.down || p.slideT > 0 || ((demo || autoPlay) && demoInp.down)) && p.ground;
+    const pose = !p.ground ? 'air' : sliding ? 'slide' : 'run';
+    if (p.dash > 0) for (let k = 1; k <= 3; k++) { c.globalAlpha = .18 * (4 - k); c.save(); c.translate(p.x - k * 18, p.y); drawPerson(c, sk, time, pose); c.restore(); }
+    c.globalAlpha = 1;
+    if (p.dash > 0) { c.fillStyle = 'rgba(253,202,57,.45)'; c.beginPath(); c.ellipse(p.x + 6, p.y - 26, 36, 30, 0, 0, Math.PI * 2); c.fill(); }
+    c.save(); c.translate(p.x, p.y); drawPerson(c, sk, time, pose); c.restore();
+  }
+  // particles
+  for (const q of run.particles) { c.globalAlpha = Math.max(0, q.life / .8); c.fillStyle = q.c; c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI * 2); c.fill(); }
+  c.globalAlpha = 1;
+  c.restore();
+
+  // HUD
+  c.textBaseline = 'middle';
+  if (!endless) {
+    const pr = Math.max(0, Math.min(1, p.x / lvl.len)), hk = Math.min(1.7, Math.max(1, .75 / scale));
+    const bx0 = Math.max(250, 12 + 200 * hk + 14), bw = Math.min(300, W - bx0 - 70 * hk - 90);
+    c.fillStyle = 'rgba(255,255,255,.7)'; c.strokeStyle = C.indigo; c.lineWidth = 2; c.beginPath(); c.roundRect(bx0, 14, bw, 16 * hk, 8); c.fill(); c.stroke();
+    c.fillStyle = C.green; c.beginPath(); c.roundRect(bx0 + 2, 16, (bw - 4) * pr, 16 * hk - 4, 6); c.fill();
+    c.fillStyle = C.indigo; c.font = `${20 * hk}px ${FONT_B}`; c.textAlign = 'left'; c.fillText(`${Math.floor(pr * 100)}%`, bx0 + bw + 8, 14 + 8 * hk);
+  } else {
+    c.fillStyle = C.indigo; c.font = `30px ${FONT_D}`; c.textAlign = 'center';
+    c.fillText(`${Math.floor(p.x / 50)} ${t('meters')}`, W / 2, 24);
+    c.font = `16px ${FONT_B}`; c.fillText(`${t('best')}: ${save.stats.bestM || 0} ${t('meters')}`, W / 2, 46);
+  }
+  // energy meter (bigger on small screens)
+  c.textAlign = 'left';
+  const k = Math.min(1.7, Math.max(1, .75 / scale)); c.save(); c.scale(k, k);
+  c.fillStyle = 'rgba(255,255,255,.75)'; c.strokeStyle = C.indigo; c.lineWidth = 2; c.beginPath(); c.roundRect(12, 10, 196, 30, 10); c.fill(); c.stroke();
+  drawBolt(c, 28, 25, 1.1);
+  for (let i = 0; i < 9; i++) { c.fillStyle = i < run.energy ? C.yellow : 'rgba(91,100,150,.18)'; c.beginPath(); c.roundRect(44 + i * 17, 18, 13, 14, 3); c.fill(); }
+  // homes
+  c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.roundRect(12, 46, 120, 30, 10); c.fill(); c.stroke();
+  if (IMG.house.complete) c.drawImage(IMG.house, 18, 49, 28, 24);
+  c.fillStyle = C.indigo; c.font = `20px ${FONT_B}`; c.fillText(endless ? `${lit}` : `${lit} / ${lvl.houses}`, 52, 62);
+  if (save.practice && !endless) { c.fillStyle = C.green; c.font = `17px ${FONT_B}`; c.fillText(t('practice'), 140, 62); }
+  c.restore();
+  if (run.flashT > 0) { c.globalAlpha = Math.min(1, run.flashT); c.fillStyle = C.orange; c.font = `26px ${FONT_D}`; c.textAlign = 'center'; c.fillText(run.flash, W / 2, 110); c.globalAlpha = 1; }
+}
+
+/* =========================================================
+   Sound (tiny synth, starts after the first key press)
+   ========================================================= */
+let ac = null;
+function sfx(kind) {
+  if (save.mute || demo) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain(), n = ac.currentTime;
+    const set = { jump: [520, 760, .09, 'square', .05], orb: [700, 1100, .12, 'square', .05], pad: [300, 900, .2, 'square', .05], coin: [880, 1320, .08, 'triangle', .08],
+      star: [660, 1760, .35, 'triangle', .1], light: [440, 880, .3, 'triangle', .1], dash: [200, 600, .15, 'sawtooth', .04], smash: [160, 60, .2, 'sawtooth', .06],
+      die: [300, 70, .35, 'sawtooth', .07], land: [140, 100, .04, 'triangle', .03], win: [523, 1046, .6, 'triangle', .1] }[kind];
+    if (!set) return;
+    o.type = set[3]; o.frequency.setValueAtTime(set[0], n); o.frequency.exponentialRampToValueAtTime(set[1], n + set[2]);
+    g.gain.setValueAtTime(set[4], n); g.gain.exponentialRampToValueAtTime(.0001, n + set[2] + .05);
+    o.connect(g).connect(ac.destination); o.start(n); o.stop(n + set[2] + .06);
+  } catch (e) {}
+}
+
+/* =========================================================
+   Achievements
+   ========================================================= */
+function unlock(id) {
+  if (save.ach.includes(id)) return;
+  save.ach.push(id); persist();
+  const a = ACH.find(x => x.id === id);
+  toast(t('achGot'), a[save.lang][0]);
+  const sk = SKINS.find(s => s.need === id);
+  if (sk) setTimeout(() => toast(t('skinGot'), sk[save.lang]), 2200);
+}
+function checkAch() {
+  const s = save.stats;
+  if (s.energy >= 100) unlock('e100');
+  if (s.walls >= 10) unlock('dash10');
+  if (s.houses >= 50) unlock('h50');
+  if (s.attempts >= 50) unlock('att50');
+  if ((s.bestM || 0) >= 1000) unlock('m1000');
+  if ((s.bestM || 0) >= 2030) unlock('m2030');
+  if (s.skinChanged) unlock('style');
+  const facts = save.lv.reduce((a, l) => a + ((l.facts || []).length), 0);
+  if (facts >= 9) unlock('facts');
+}
+
+/* =========================================================
+   Screens
+   ========================================================= */
+const screen = document.getElementById('screen');
+let state = 'menu', demo = true, demoInp = {}, autoPlay = false;
+let toastQ = [], toastBusy = false;
+function toast(title, sub) {
+  toastQ.push([title, sub]); if (toastBusy) return;
+  const next = () => {
+    const it = toastQ.shift(); if (!it) { toastBusy = false; return; }
+    toastBusy = true; const el = document.getElementById('toast');
+    el.innerHTML = `${it[0]}${it[1] ? `<small>${it[1]}</small>` : ''}`; el.hidden = false;
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    setTimeout(() => { el.hidden = true; next(); }, 2000);
+  };
+  next();
+}
+
+function show(html) { screen.innerHTML = html; screen.hidden = false; const f = screen.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
+function hide() { screen.hidden = true; }
+const on = (sel, fn) => screen.querySelectorAll(sel).forEach(el => el.addEventListener('click', fn));
+
+function startDemo() {
+  demo = true; endless = false; lvl = { idx: 0 }; run = null; newRun(false);
+}
+
+function menu() {
+  state = 'menu'; if (!demo) startDemo();
+  show(`<h2 class="menu-title">Light <span>Dash</span></h2>
+    <p class="sub">${t('menuSub')}</p>
+    <div class="row">
+      <button class="btn" id="mPlay">${t('play')}</button>
+      <button class="btn alt" id="mSkins">${t('skins')}</button>
+      <button class="btn alt" id="mAch">${t('achievements')}</button>
+      <button class="btn alt" id="mLang">${t('lang')}</button>
+    </div>
+    <h3>${t('controls')}</h3>
+    <div class="keys">
+      <span><kbd>↑</kbd>${t('kj')}</span><span><kbd>↓</kbd>${t('ks')}</span>
+      <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
+    </div>`);
+  on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements);
+  on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; save.langChosen = true; persist(); applyLang(); menu(); });
+}
+
+function levels() {
+  state = 'menu';
+  const cards = LEVEL_TXT.map((L, i) => {
+    const s = save.lv[i] || {}, open = i === 0 || (save.lv[i - 1] || {}).done, tx = L[save.lang];
+    return `<button class="card${open ? '' : ' locked'}" data-l="${i}" ${open ? '' : 'aria-disabled="true"'}>
+      <span class="k">${t('goal')} ${tx[1]}</span><span class="n">${i + 1}. ${tx[0]}</span>
+      <span class="st">${open ? `${s.done ? '✓ ' : ''}${Math.floor(s.best || 0)}% · ⌂ ${s.houses || 0}/${s.total || '?'} · ★ ${(s.facts || []).length}/3` : t('locked')}</span></button>`;
+  }).join('');
+  show(`<h2>${t('levels')}</h2><div class="cards">${cards}
+    <button class="card" data-l="e"><span class="k">∞</span><span class="n">${t('endless')}</span><span class="d">${t('endlessD')}</span><span class="st">${t('best')}: ${save.stats.bestM || 0} ${t('meters')}</span></button></div>
+    <div class="row"><button class="btn alt" id="lPr">${save.practice ? t('practiceOn') : t('practiceOff')}</button><button class="btn alt" id="lBack">${t('back')}</button></div>`);
+  on('.card', e => {
+    const d = e.currentTarget.dataset.l;
+    if (d === 'e') return intro(-1);
+    const i = +d; if (!(i === 0 || (save.lv[i - 1] || {}).done)) return;
+    intro(i);
+  });
+  on('#lPr', () => { save.practice = !save.practice; persist(); levels(); });
+  on('#lBack', menu);
+}
+
+function intro(i) {
+  demo = false; endless = i < 0; lvl = { idx: Math.max(0, i) }; run = null; newRun(false);
+  state = 'intro';
+  if (endless) {
+    show(`<h2>${t('endless')}</h2><p>${t('endlessD')}</p><p class="sub">${t('best')}: ${save.stats.bestM || 0} ${t('meters')}</p>
+      <div class="row"><button class="btn" id="iGo">${t('start')}</button><button class="btn alt" id="iBack">${t('back')}</button></div>`);
+  } else {
+    const tx = LEVEL_TXT[i][save.lang];
+    show(`<span class="sub">${t('goal')} ${tx[1]}</span><h2>${i + 1}. ${tx[0]}</h2><p>${tx[2]}</p>
+      <div class="row"><button class="btn" id="iGo">${t('start')}</button><button class="btn alt" id="iBack">${t('back')}</button></div>`);
+  }
+  on('#iGo', go); on('#iBack', levels);
+}
+function go() { hide(); state = 'play'; input.jumpBuf = 0; input.up = false; if (endless) save.stats.attempts++; }
+
+function pause() {
+  if (state !== 'play') return;
+  state = 'pause';
+  show(`<h2>${t('paused')}</h2><div class="row"><button class="btn" id="pRes">${t('resume')}</button><button class="btn alt" id="pRe">${t('retry')}</button><button class="btn alt" id="pMenu">${t('menu')}</button></div>`);
+  on('#pRes', () => { hide(); state = 'play'; });
+  on('#pRe', () => { run.sameLevel = true; newRun(false); hide(); state = 'play'; });
+  on('#pMenu', () => { demo = false; startDemo(); menu(); });
+}
+
+function complete() {
+  state = 'done'; sfx('win');
+  const i = lvl.idx, s = save.lv[i] = save.lv[i] || {};
+  const lit = litCount(), got = lvl.objs.filter(o => o.t === 'fact' && o.got).map(o => o.id);
+  s.done = true; s.best = 100; s.total = lvl.houses; s.houses = Math.max(s.houses || 0, lit);
+  s.facts = [...new Set([...(s.facts || []), ...got])];
+  persist();
+  unlock(['l1', 'l2', 'l3'][i]);
+  if (lit === lvl.houses) unlock('allhouses');
+  if (run.deaths === 0) unlock('clean');
+  checkAch();
+  const factHtml = got.map(id => `<div class="fact"><b>★ ${t('newFacts')}</b>${FACTS[id][save.lang]}</div>`).join('');
+  show(`<h2>${t('complete')}</h2>
+    <div class="stats"><span>${t('housesLit')}: <b>${lit} ${t('of')} ${lvl.houses}</b></span><span>${t('facts')}: <b>${got.length} / 3</b></span><span>${t('attempts')}: <b>${run.attempt}</b></span></div>
+    ${factHtml}
+    <div class="row">${i < 2 ? `<button class="btn" id="dNext">${t('next')}</button>` : ''}<button class="btn alt" id="dRe">${t('retry')}</button><button class="btn alt" id="dMenu">${t('levels')}</button></div>`);
+  on('#dNext', () => intro(i + 1)); on('#dRe', () => intro(i)); on('#dMenu', () => { startDemo(); levels(); });
+}
+
+function skins() {
+  state = 'menu';
+  const cards = SKINS.map(s => {
+    const open = skinOpen(s), need = s.need ? ACH.find(a => a.id === s.need)[save.lang] : null;
+    return `<button class="card${open ? '' : ' locked'}" data-s="${s.id}" aria-pressed="${save.skin === s.id}"><canvas width="140" height="168" data-p="${s.id}"></canvas>
+      <span class="n">${s[save.lang]}</span><span class="d">${open ? (save.skin === s.id ? t('wear') : '') : `${t('unlock')}: ${need[1]}`}</span></button>`;
+  }).join('');
+  show(`<h2>${t('choose')}</h2><div class="cards">${cards}</div><div class="row"><button class="btn alt" id="sBack">${t('back')}</button></div>`);
+  screen.querySelectorAll('canvas[data-p]').forEach(cn => {
+    const x = cn.getContext('2d'), sk = skinById(cn.dataset.p);
+    x.setTransform(2, 0, 0, 2, 0, 0); x.translate(35, 76); x.scale(1.2, 1.2);
+    if (!skinOpen(sk)) x.globalAlpha = .45;
+    drawPerson(x, sk, .3, 'run');
+  });
+  on('.card', e => {
+    const s = skinById(e.currentTarget.dataset.s); if (!skinOpen(s)) return;
+    if (save.skin !== s.id) save.stats.skinChanged = 1;
+    save.skin = s.id; persist(); checkAch(); skins();
+  });
+  on('#sBack', menu);
+}
+
+function achievements() {
+  state = 'menu';
+  const list = ACH.map(a => `<div class="${save.ach.includes(a.id) ? 'got' : ''}"><img src="assets/star-${save.ach.includes(a.id) ? 'yellow' : 'indigo'}.png" alt=""><span><b>${a[save.lang][0]}</b>${a[save.lang][1]}</span></div>`).join('');
+  show(`<h2>${t('achievements')} · ${save.ach.length}/${ACH.length}</h2><div class="ach">${list}</div><div class="row"><button class="btn alt" id="aBack">${t('back')}</button></div>`);
+  on('#aBack', menu);
+}
+
+function endlessOver() {
+  state = 'done';
+  checkAch(); persist();
+  const m = Math.floor(run.p.x / 50);
+  show(`<h2>${t('runOver')}</h2><div class="stats"><span>${t('distance')}: <b>${m} ${t('meters')}</b></span><span>${t('best')}: <b>${save.stats.bestM} ${t('meters')}</b></span><span>${t('housesLit')}: <b>${litCount()}</b></span></div>
+    <div class="fact"><b>★</b>${FACTS[Math.floor(Math.random() * FACTS.length)][save.lang]}</div>
+    <div class="row"><button class="btn" id="eRe">${t('retry')}</button><button class="btn alt" id="eMenu">${t('levels')}</button></div>`);
+  on('#eRe', () => { newRun(false); go(); }); on('#eMenu', () => { startDemo(); levels(); });
+}
+
+/* =========================================================
+   Main loop
+   ========================================================= */
+let last = performance.now(), acc = 0;
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  if (state === 'play' || demo) {
+    acc += dt;
+    while (acc >= STEP) {
+      acc -= STEP;
+      if (demo || autoPlay) { demoInp = autopilot(); step(STEP, demoInp); } else step(STEP);
+      if (run.done) break;
+    }
+    if (run.p.alive) {
+      for (const q of run.particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 600 * dt; q.life -= dt; }
+    } else {
+      run.deadT += dt;
+      for (const q of run.particles) { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 600 * dt; q.life -= dt; }
+      if (run.deadT > .75) {
+        if (endless && !demo) endlessOver();
+        else { const best = save.lv[lvl.idx]; if (!demo && best) { best.best = Math.max(best.best || 0, run.p.x / lvl.len * 100); persist(); } newRun(save.practice && !demo); }
+      }
+    }
+    run.particles = run.particles.filter(q => q.life > 0);
+    run.flashT = Math.max(0, run.flashT - dt);
+    if (run.done) { if (demo) { run = null; newRun(false); } else complete(); }
+  }
+  if (run) render(dt);
+  requestAnimationFrame(frame);
+}
+
+/* =========================================================
+   Input
+   ========================================================= */
+function press(k, down) {
+  if (state === 'intro' && down && (k === 'up')) return go();
+  if (state !== 'play') return;
+  if (k === 'up') { if (down && !input.up) input.jumpBuf = .12; input.up = down; }
+  if (k === 'down') { if (down && !input.down) input.downPressed = true; input.down = down; }
+  if (k === 'right' && down) input.dash = true;
+  if (k === 'left' && down) input.light = true;
+}
+const KEYMAP = { ArrowUp: 'up', KeyW: 'up', Space: 'up', ArrowDown: 'down', KeyS: 'down', ArrowRight: 'right', KeyD: 'right', ArrowLeft: 'left', KeyA: 'left' };
+window.addEventListener('keydown', e => {
+  if ((e.code === 'Escape' || e.code === 'KeyP') && state === 'play') { e.preventDefault(); return pause(); }
+  const k = KEYMAP[e.code]; if (!k) return;
+  if (state === 'play' || state === 'intro' || e.code.startsWith('Arrow')) {
+    if (screen.hidden || state === 'intro') e.preventDefault();
+  }
+  if (e.repeat) return;
+  press(k, true);
+});
+window.addEventListener('keyup', e => { const k = KEYMAP[e.code]; if (k) press(k, false); });
+document.querySelectorAll('.key').forEach(b => {
+  const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); b.classList.add('on'); try { b.setPointerCapture(e.pointerId); } catch (_) {} press(k, true); });
+  const up = () => { b.classList.remove('on'); press(k, false); };
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
+  b.addEventListener('contextmenu', e => e.preventDefault());
+});
+cv.addEventListener('pointerdown', e => { if (state === 'play') { e.preventDefault(); press('up', true); } });
+cv.addEventListener('pointerup', () => press('up', false));
+document.getElementById('bPause').addEventListener('click', pause);
+const bSound = document.getElementById('bSound');
+bSound.addEventListener('click', () => { save.mute = !save.mute; persist(); bSound.style.opacity = save.mute ? .4 : 1; });
+bSound.style.opacity = save.mute ? .4 : 1;
+document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+
+function applyLang() {
+  document.documentElement.lang = save.lang;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+}
+
+/* Test hook: run a level with the autopilot, without drawing */
+window.__lightDash = {
+  simulateEndless() {
+    const keep = { demo, endless, lvl, run, state };
+    demo = true; endless = true; run = null; newRun(false);
+    let n = 0;
+    while (run.p.alive && n < 120 * 300) { step(STEP, autopilot()); n++; }
+    const p = run.p, near = lvl.objs.filter(o => Math.abs(o.x - p.x) < 260 && o.t !== 'energy').map(o => o.t + '@' + Math.round(o.x - p.x) + (o.w ? '/' + o.w : '') + (o.top ? '^' + (G - o.top) : ''));
+    const res = { m: Math.floor(p.x / 50), y: Math.round(G - p.y), speed: Math.round(run.speed), near: near.join(' ') };
+    demo = keep.demo; endless = keep.endless; lvl = keep.lvl; run = keep.run; state = keep.state;
+    return res;
+  },
+  autoplay(v) { autoPlay = !!v; },
+  simulate(i, jitter = 0) {
+    const keep = { demo, endless, lvl, run, state };
+    demo = true; endless = false; lvl = { idx: i }; run = null; newRun(false);
+    let n = 0, delay = [];
+    while (!run.done && run.p.alive && n < 120 * 200) {
+      let a = autopilot();
+      if (jitter) { delay.push(a); a = delay.length > jitter ? delay.shift() : {}; }
+      step(STEP, a); n++;
+    }
+    const res = { level: i, done: run.done, x: Math.round(run.p.x), len: lvl.len, pct: Math.round(run.p.x / lvl.len * 100), houses: litCount() + '/' + lvl.houses, facts: lvl.objs.filter(o => o.t === 'fact' && o.got).map(o => o.id).join(','), factsAll: lvl.objs.filter(o => o.t === 'fact').map(o => o.id + '@' + Math.round(o.x) + ',' + (G - o.y)).join(' '), energy: run.energy, sec: (n / 120).toFixed(1) };
+    Object.assign(window, {}); demo = keep.demo; endless = keep.endless; lvl = keep.lvl; run = keep.run; state = keep.state;
+    return res;
+  },
+};
+
+applyLang();
+startDemo();
+menu();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
