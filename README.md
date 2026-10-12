@@ -39,17 +39,33 @@ On a phone, use the big arrow buttons under the screen.
 
 ## What's inside
 
-- **3 levels based on SDG 7 targets:** 7.1 "Village in the dark", 7.2 "Windy hills", 7.3 "Smart city".
-- **Marathon 2030:** an endless run. Can you make it 2030 meters?
-- **8 runners:** Anya, Timur, Engineer Li, Scientist Amara, Courier Niko, Night shift, Sunny Zara, and Watt, the light bulb from our presentation.
-- **13 achievements** that unlock new runners.
-- **9 fact stars** hidden in the levels. Each one reveals a real fact about SDG 7.
+- **6 levels, one for each part of SDG 7**, each with its own look:
+
+  | Level | SDG 7 target | Where you run |
+  |---|---|---|
+  | 1. Village in the dark | 7.1 Access for all | A village waiting for light |
+  | 2. Windy hills | 7.2 Renewable energy | Hills full of wind turbines |
+  | 3. Smart city | 7.3 Energy efficiency | City windows light up as you go |
+  | 4. Clean kitchen | 7.1 Clean cooking | Chimneys stop smoking as homes get clean energy |
+  | 5. Mini-grid island | 7.b Infrastructure | Fly over the sea on updrafts |
+  | 6. Grid 2030 | 7.a Working together | The final run under the power lines, at top speed |
+
+- **Updrafts:** green wind currents that carry you over wide gaps.
+- **Marathon 2030:** an endless run through all six worlds. Can you make it 2030 meters?
+- **13 runners:** Anya, Timur, Engineer Li, Scientist Amara, Courier Niko, Night shift, Sunny Zara, Watt (the light bulb from our presentation), Chef Mei, Captain Kai, Ada of Grid 2030, Hydro Hana and the Golden runner.
+- **21 achievements** that unlock new runners.
+- **18 fact stars** hidden in the levels. Each one reveals a real fact about SDG 7.
+- **SDG 7 Book:** all five targets of Goal 7 explained, plus your collection of facts.
 - **Practice mode:** respawn at checkpoint flags while you learn a level.
 - **Menu demo:** while you're in the menu, a runner plays the level in the background.
 - English and Russian.
 
 <div align="center">
-<img src="assets/dash-skins.jpg" alt="The runner selection screen with eight hand-drawn characters" width="600">
+<img src="assets/dash-skins.jpg" alt="The runner selection screen with hand-drawn characters, some still locked" width="600">
+<br><br>
+<img src="assets/dash-island.jpg" alt="Level 5, Mini-grid island: Captain Kai floats over the sea on a green updraft" width="600">
+<br><br>
+<img src="assets/dash-kitchen.jpg" alt="Level 4, Clean kitchen: the runner slides under smoke clouds past chimneys" width="600">
 <br><br>
 <img src="assets/dash-marathon.jpg" alt="Marathon mode: a lit house glows warmly, and the sky is clear of smog" width="600">
 </div>
@@ -60,8 +76,10 @@ On a phone, use the big arrow buttons under the screen.
 - About 2.1 billion people cook with wood, coal or kerosene.
 - From 2010 to 2020, electricity from solar panels got about 90% cheaper.
 - An LED bulb uses about 75–80% less electricity than an old incandescent bulb.
+- Smoke from cooking on open fires causes about 3.2 million deaths a year (WHO).
+- A solar mini-grid can power a whole village far away from the national grid.
 
-…and 5 more facts are waiting in the levels.
+…and 12 more facts are waiting in the levels.
 
 ---
 
