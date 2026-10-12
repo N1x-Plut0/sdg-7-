@@ -93,6 +93,10 @@ h1 img { width: .4em; vertical-align: top; margin-left: .1em; }
 .ach b { display: block; font: 400 21px/1 var(--font-display); }
 .fact { background: #fff; padding: 10px 14px; border: 2px solid var(--green); border-radius: 16px 16px 16px 4px; color: var(--green); }
 .fact b { font: 400 20px var(--font-display); color: var(--orange); display: block; }
+.fact.locked { color: var(--indigo); opacity: .6; border-style: dashed; }
+.tgts, .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.tgt { padding: 8px 12px; border: 2px solid var(--indigo); border-radius: 12px 4px 14px 4px; background: #fff; font-size: 16px; }
+.tgt b { display: block; font: 400 22px/1.1 var(--font-display); color: var(--green); }
 .stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 20px; }
 .stats b { color: var(--green); font-weight: 400; }
 .keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; font-size: 17px; max-width: 520px; }
@@ -180,9 +184,9 @@ const T = {
     what2: 'В игре ты собираешь энергию солнца, ветра и воды, отдаёшь её домам без света и пробиваешь угольный смог. Чем больше домов горит, тем чище небо.',
     howTitle: 'Как играть',
     how1: 'Бегун бежит сам. ↑ или пробел: прыжок (держи, чтобы прыгать снова). ↓: присесть под облако смога, в воздухе быстро упасть. →: рывок сквозь стену смога (−1 ⚡). ←: зажечь дом рядом (−1 ⚡).',
-    how2: 'Жёлтые солнышки в воздухе: нажми ↑, когда касаешься, и прыгнешь ещё раз. Синие панели на земле подбрасывают высоко. На телефоне используй кнопки под экраном.',
+    how2: 'Жёлтые солнышки в воздухе: нажми ↑, когда касаешься, и прыгнешь ещё раз. Синие панели на земле подбрасывают высоко. Зелёные потоки ветра сами несут над ямами. На телефоне используй кнопки под экраном.',
     moreTitle: 'Ещё',
-    more1: 'В каждом уровне спрятаны 3 звезды-факта о SDG 7. Ачивки открывают новых персонажей. Прогресс сохраняется в этом браузере.',
+    more1: '6 уровней и Марафон. В каждом уровне спрятаны 3 звезды-факта о SDG 7, они собираются в «Книгу SDG 7». Ачивки открывают новых персонажей. Прогресс сохраняется в этом браузере.',
     moreLink: 'Первая игра: «Light the Valley» (стратегия) →',
     play: 'Играть', levels: 'Уровни', skins: 'Персонажи', achievements: 'Ачивки', back: 'Назад', lang: 'English',
     menuSub: 'Раннер про чистую энергию для всех. Цель 7 ООН.',
@@ -197,7 +201,8 @@ const T = {
     achGot: 'Ачивка!', skinGot: 'Новый персонаж!', of: 'из',
     controls: 'Управление',
     kj: 'прыжок / прыжок с солнышка', ks: 'присесть, быстро упасть', kr: 'рывок сквозь смог (−1 ⚡)', kl: 'зажечь дом (−1 ⚡)', kp: 'пауза',
-    hintUp: '↑ прыжок', hintLeft: '← зажги дом!', hintDown: '↓ присядь под смог', hintRight: '→ рывок сквозь смог', hintOrb: '↑ на солнышке', hintPad: 'панель подбросит',
+    hintUp: '↑ прыжок', hintLeft: '← зажги дом!', hintDown: '↓ присядь под смог', hintRight: '→ рывок сквозь смог', hintOrb: '↑ на солнышке', hintPad: 'панель подбросит', hintGust: 'ветер поднимет!',
+    book: 'Книга SDG 7', bookSub: 'Все задачи цели 7 и найденные в уровнях факты.', targets: 'Задачи цели 7', factsFound: 'Коллекция фактов', foundIn: 'Найди эту звезду в уровне', didYouKnow: 'А ты знаешь?',
     goal: 'Цель SDG',
   },
   en: {
@@ -208,9 +213,9 @@ const T = {
     what2: 'In the game you collect energy from sun, wind and water, give it to homes without light, and break through coal smog. The more homes glow, the clearer the sky gets.',
     howTitle: 'How to play',
     how1: 'Your runner runs on their own. ↑ or Space: jump (hold to keep jumping). ↓: duck under smog clouds, or drop fast in the air. →: dash through a smog wall (−1 ⚡). ←: light the home next to you (−1 ⚡).',
-    how2: 'Yellow suns in the air: press ↑ while touching one to jump again. Blue panels on the ground launch you high. On a phone, use the buttons under the screen.',
+    how2: 'Yellow suns in the air: press ↑ while touching one to jump again. Blue panels on the ground launch you high. Green updrafts carry you over wide gaps. On a phone, use the buttons under the screen.',
     moreTitle: 'More',
-    more1: 'Each level hides 3 fact stars about SDG 7. Achievements unlock new runners. Progress is saved in this browser.',
+    more1: '6 levels and a Marathon. Each level hides 3 fact stars about SDG 7, collected in the SDG 7 Book. Achievements unlock new runners. Progress is saved in this browser.',
     moreLink: 'Our first game: "Light the Valley" (strategy) →',
     play: 'Play', levels: 'Levels', skins: 'Runners', achievements: 'Achievements', back: 'Back', lang: 'Русский',
     menuSub: 'A runner about clean energy for everyone. UN Goal 7.',
@@ -225,7 +230,8 @@ const T = {
     achGot: 'Achievement!', skinGot: 'New runner!', of: 'of',
     controls: 'Controls',
     kj: 'jump / jump off a sun', ks: 'duck, drop fast', kr: 'dash through smog (−1 ⚡)', kl: 'light a home (−1 ⚡)', kp: 'pause',
-    hintUp: '↑ jump', hintLeft: '← light the home!', hintDown: '↓ duck under smog', hintRight: '→ dash through smog', hintOrb: '↑ on the sun', hintPad: 'panels launch you',
+    hintUp: '↑ jump', hintLeft: '← light the home!', hintDown: '↓ duck under smog', hintRight: '→ dash through smog', hintOrb: '↑ on the sun', hintPad: 'panels launch you', hintGust: 'wind lifts you!',
+    book: 'SDG 7 Book', bookSub: 'All the targets of Goal 7, and the facts you found in the levels.', targets: 'Targets of Goal 7', factsFound: 'Fact collection', foundIn: 'Find this star in level', didYouKnow: 'Did you know?',
     goal: 'SDG target',
   },
 };
@@ -237,6 +243,20 @@ const LEVEL_TXT = [
     en: ['Windy hills', '7.2 Renewable energy', 'More sun, wind and water instead of coal. Jump across platforms, catch the wind and dash through smog.'] },
   { ru: ['Умный город', '7.3 Энергоэффективность', 'Город тратит энергию впустую. Быстрее, выше, точнее: прыгай с солнышек и неси свет на крыши.'],
     en: ['Smart city', '7.3 Energy efficiency', 'The city wastes energy. Faster, higher, sharper: bounce off suns and carry light across the rooftops.'] },
+  { ru: ['Чистая кухня', '7.1 Чистая готовка', 'Миллиарды людей готовят на дымных дровах и угле. Пробеги через кухонный квартал, увернись от дыма и принеси домам чистую энергию.'],
+    en: ['Clean kitchen', '7.1 Clean cooking', 'Billions of people cook over smoky wood and coal fires. Run through the kitchen quarter, dodge the smoke and bring clean energy to every home.'] },
+  { ru: ['Остров мини-сетей', '7.b Инфраструктура', 'Острова далеко от больших электросетей. Лети над морем на потоках ветра и подключай дома к солнечной мини-сети.'],
+    en: ['Mini-grid island', '7.b Infrastructure', 'Islands are far from big power grids. Ride the updrafts over the sea and connect homes to a solar mini-grid.'] },
+  { ru: ['Сеть 2030', '7.a Вместе', 'Страны делятся технологиями чистой энергии. Финальный забег: самая высокая скорость и все препятствия сразу.'],
+    en: ['Grid 2030', '7.a Together', 'Countries share clean energy technology. The final run: top speed and every obstacle at once.'] },
+];
+const LEVEL_CODE = ['7.1', '7.2', '7.3', '7.1', '7.b', '7.a'];
+const TARGETS = [
+  { code: '7.1', ru: ['Доступ для всех', 'К 2030 году у каждого человека должно быть недорогое и надёжное электричество и чистый способ готовить еду.'], en: ['Access for all', 'By 2030, everyone should have affordable, reliable electricity and a clean way to cook.'] },
+  { code: '7.2', ru: ['Возобновляемая энергия', 'Увеличить долю энергии солнца, ветра, воды и других возобновляемых источников.'], en: ['Renewable energy', 'Increase the share of energy from the sun, wind, water and other renewable sources.'] },
+  { code: '7.3', ru: ['Энергоэффективность', 'Вдвое ускорить рост энергоэффективности: делать больше, тратя меньше энергии.'], en: ['Energy efficiency', 'Double the rate of improvement in energy efficiency: do more while using less energy.'] },
+  { code: '7.a', ru: ['Сотрудничество', 'Страны вместе исследуют и развивают чистую энергию и вкладывают в неё деньги.'], en: ['Working together', 'Countries cooperate on clean energy research and technology, and invest in it.'] },
+  { code: '7.b', ru: ['Инфраструктура', 'Строить и обновлять энергосистемы в развивающихся странах, на малых островах и в странах без выхода к морю.'], en: ['Infrastructure', 'Build and upgrade energy systems in developing countries, small islands and landlocked countries.'] },
 ];
 
 const FACTS = [
@@ -249,17 +269,26 @@ const FACTS = [
   { ru: 'Цель 7.3: к 2030 году вдвое ускорить рост энергоэффективности во всём мире.', en: 'Target 7.3: double the global rate of improvement in energy efficiency by 2030.' },
   { ru: 'LED-лампа тратит примерно на 75–80% меньше электричества, чем обычная лампа накаливания.', en: 'An LED bulb uses about 75–80% less electricity than an old incandescent bulb.' },
   { ru: 'Приборы в режиме ожидания могут съедать от 5 до 10% электричества дома. Выключай их из розетки!', en: 'Devices on standby can use 5–10% of a home\'s electricity. Unplug them!' },
+  { ru: 'Дым от готовки на открытом огне и простых печках уносит около 3,2 миллиона жизней в год (ВОЗ).', en: 'Smoke from cooking on open fires and simple stoves causes about 3.2 million deaths a year (WHO).' },
+  { ru: 'Во многих странах женщины и дети тратят часы каждую неделю, чтобы собрать дрова для готовки.', en: 'In many countries, women and children spend hours every week collecting firewood for cooking.' },
+  { ru: 'Чистая готовка — это газ, электричество, биогаз или улучшенные печи, которые почти не дымят.', en: 'Clean cooking means gas, electricity, biogas or improved stoves that make very little smoke.' },
+  { ru: 'Солнечная мини-сеть может дать свет целой деревне далеко от большой электросети.', en: 'A solar mini-grid can power a whole village far away from the national grid.' },
+  { ru: 'Многие маленькие острова привозят дизельное топливо для электростанций, поэтому электричество там дорогое. Солнце и ветер помогают экономить.', en: 'Many small islands import diesel fuel to make electricity, so power there is expensive. Sun and wind help them save.' },
+  { ru: 'Задача 7.b: строить современные энергосистемы в развивающихся странах, особенно в беднейших, на малых островах и в странах без выхода к морю.', en: 'Target 7.b: build modern energy infrastructure in developing countries, especially the poorest ones, small islands and landlocked countries.' },
+  { ru: 'Задача 7.a: страны вместе развивают исследования и технологии чистой энергии и вкладывают в них деньги.', en: 'Target 7.a: countries work together on clean energy research and technology, and invest in it.' },
+  { ru: 'В 2010-х солнечная и ветровая энергетика росли быстрее всех других источников электричества.', en: 'In the 2010s, solar and wind power grew faster than any other source of electricity.' },
+  { ru: 'Аккумуляторы запасают энергию солнца днём, чтобы в домах был свет и ночью.', en: 'Batteries store solar energy during the day so homes have light at night too.' },
 ];
 
 /* =========================================================
    Save
    ========================================================= */
 const SAVE_KEY = 'light-dash-v1';
-const save = { lang: 'en', langChosen: false, mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}], ach: [],
+const save = { lang: 'en', langChosen: false, mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}, {}, {}, {}], ach: [],
   stats: { energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 } };
 try {
   const s = JSON.parse(localStorage.getItem(SAVE_KEY));
-  if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = [0, 1, 2].map(i => (s.lv && s.lv[i]) || {}); }
+  if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = [0, 1, 2, 3, 4, 5].map(i => (s.lv && s.lv[i]) || {}); }
   if (!save.langChosen) save.lang = 'en';
 } catch (e) {}
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
@@ -277,6 +306,11 @@ const SKINS = [
   { id: 'night',  ru: 'Ночная смена',   en: 'Night shift',     shirt: '#2f3664', pants: '#1f2447', skin: '#b1741e', hair: '#1a1210', style: 'headlamp', hat: '#5b6496', need: 'l3' },
   { id: 'zara',   ru: 'Солнечная Зара', en: 'Sunny Zara',      shirt: '#fdca39', pants: '#ff4401', skin: '#6b4428', hair: '#1a1210', style: 'long', crown: true, need: 'm1000' },
   { id: 'watt',   ru: 'Ватт',           en: 'Watt',            shirt: '#fdca39', pants: '#5b6496', skin: '#fdca39', hair: '#fdca39', style: 'led', need: 'facts' },
+  { id: 'mei',    ru: 'Шеф Мэй',        en: 'Chef Mei',        shirt: '#ffffff', pants: '#ff4401', skin: '#e8c39a', hair: '#141414', style: 'chef', need: 'l4' },
+  { id: 'kai',    ru: 'Капитан Кай',    en: 'Captain Kai',     shirt: '#8fb3e6', pants: '#ffffff', skin: '#8a5a3c', hair: '#1a1210', style: 'sailor', need: 'l5' },
+  { id: 'ada',    ru: 'Ада из Сети 2030', en: 'Ada of Grid 2030', shirt: '#427f12', pants: '#3d4470', skin: '#c48a5a', hair: '#3a2416', style: 'visor', need: 'l6' },
+  { id: 'hana',   ru: 'Хана-Гидро',     en: 'Hydro Hana',      shirt: '#8fb3e6', pants: '#5b6496', skin: '#f0d2a8', hair: '#141414', style: 'hood', need: 'e300' },
+  { id: 'gold',   ru: 'Золотой бегун',  en: 'Golden runner',   shirt: '#fdca39', pants: '#b1741e', skin: '#dab680', hair: '#b1741e', style: 'long', crown: true, need: 'perfect' },
 ];
 const skinById = id => SKINS.find(s => s.id === id) || SKINS[0];
 const skinOpen = s => !s.need || save.ach.includes(s.need);
@@ -291,10 +325,18 @@ const ACH = [
   { id: 'h50',       ru: ['50 окон', 'Зажги 50 домов всего'], en: ['50 windows', 'Light 50 homes in total'] },
   { id: 'clean',     ru: ['Чистый забег', 'Пройди уровень с первой попытки'], en: ['Clean run', 'Finish a level on the first attempt'] },
   { id: 'att50',     ru: ['Упорство', 'Сделай 50 попыток'], en: ['Never give up', 'Make 50 attempts'] },
-  { id: 'facts',     ru: ['Знаток SDG 7', 'Найди все 9 звёзд-фактов'], en: ['SDG 7 expert', 'Find all 9 fact stars'] },
+  { id: 'facts',     ru: ['Знаток SDG 7', 'Найди 9 звёзд-фактов'], en: ['SDG 7 expert', 'Find 9 fact stars'] },
   { id: 'm1000',     ru: ['Марафонец', 'Пробеги 1000 м в Марафоне'], en: ['Marathoner', 'Run 1000 m in the Marathon'] },
   { id: 'm2030',     ru: ['Цель 2030', 'Пробеги 2030 м в Марафоне'], en: ['Goal 2030', 'Run 2030 m in the Marathon'] },
   { id: 'style',     ru: ['Новый образ', 'Смени персонажа'], en: ['New look', 'Change your runner'] },
+  { id: 'l4',        ru: ['Чистая кухня', 'Пройди уровень 4'], en: ['Clean kitchen', 'Finish level 4'] },
+  { id: 'l5',        ru: ['Свет на острове', 'Пройди уровень 5'], en: ['Island power', 'Finish level 5'] },
+  { id: 'l6',        ru: ['Цель достигнута', 'Пройди уровень 6'], en: ['Goal reached', 'Finish level 6'] },
+  { id: 'e300',      ru: ['Электростанция', 'Собери 300 ⚡ всего'], en: ['Power plant', 'Collect 300 ⚡ in total'] },
+  { id: 'h150',      ru: ['Светлый город', 'Зажги 150 домов всего'], en: ['Bright town', 'Light 150 homes in total'] },
+  { id: 'gust20',    ru: ['Оседлай ветер', 'Пролети на 20 потоках ветра'], en: ['Ride the wind', 'Ride 20 updrafts'] },
+  { id: 'perfect',   ru: ['Идеальный забег', 'Зажги все дома и найди 3 звезды за один забег'], en: ['Perfect run', 'Light every home and find all 3 stars in one run'] },
+  { id: 'facts18',   ru: ['Мастер SDG 7', 'Найди все 18 звёзд-фактов'], en: ['SDG 7 master', 'Find all 18 fact stars'] },
 ];
 
 /* =========================================================
@@ -329,6 +371,8 @@ Builder.prototype = {
   wall() { this.add({ t: 'wall', x: this.x, w: 44 }); this.x += 44; return this; },
   pad() { this.add({ t: 'pad', x: this.x, w: 44 }); this.x += 44; return this; },
   orb(dx, y) { this.add({ t: 'orb', x: this.x + dx, y, r: 18 }); return this; },
+  orbPit(w = 320, dx = 120) { const x0 = this.x; this.pit(w); this.add({ t: 'orb', x: x0 + dx, y: G - 150, r: 18 }); return this; },
+  gustPit(w = 420) { const x0 = this.x; this.add({ t: 'gust', x: x0 - 30, w: w - 50 }); this.pit(w); return this; },
   house() { this.add({ t: 'house', x: this.x }); return this; },
   fact(id, dx, y) { this.add({ t: 'fact', x: this.x + dx, y, id }); return this; },
   check() { this.add({ t: 'check', x: this.x }); return this; },
@@ -337,7 +381,7 @@ Builder.prototype = {
 };
 
 function buildLevel(i) {
-  const L = [300, 340, 380][i], b = new Builder(L), D = b.D;
+  const L = [300, 340, 380, 340, 360, 400][i], b = new Builder(L), D = b.D;
   if (i === 0) {
     b.gap(80).sign('hintUp', 40).gap(260)
      .energy(3).gap(180).sign('hintLeft', -60).house().gap(300)
@@ -356,7 +400,7 @@ function buildLevel(i) {
      .wall().gap(330).check()
      .block(110, 40).block(110, 80).gap(300).spikes(2).gap(300)
      .energy(3).gap(120).house().gap(220).block(200, 60);
-    b.fact(2, -100, G - 180);
+    b.fact(2, -180, G - 150);
     b.gap(300).spikes(1).gap(260).energy(3).finish(500);
   } else if (i === 1) {
     b.gap(200).energy(3).gap(200).house().gap(250)
@@ -371,12 +415,12 @@ function buildLevel(i) {
      .spikes(3).gap(300).energy(3).gap(170).wall().gap(150).energy(3).gap(170).house().gap(150)
      .pit(180).gap(320).check()
      .block(220, 60);
-    b.fact(4, -90, G - 170);
+    b.fact(4, -200, G - 150);
     b.gap(0).spikes(2).gap(320).energy(3).gap(100).house().gap(170)
      .pad().gap(40).spikes(4).gap(20).wall().gap(330).energy(3).gap(150).house().gap(200)
      .spikes(2).gap(280).cloud(130).gap(330).pit(180).gap(330);
     b.fact(5, 60, G - 120); b.spikes(3).gap(330).energy(3).gap(150).house().gap(150).finish(520);
-  } else {
+  } else if (i === 2) {
     b.gap(200).energy(3).gap(150).house().gap(260)
      .spikes(2).gap(320).sign('hintOrb', 0).gap(80).pit(320);
     b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
@@ -391,7 +435,7 @@ function buildLevel(i) {
      .pad().gap(40).spikes(5).gap(330).energy(3).gap(150).wall().gap(140).house().gap(220)
      .cloud(130).gap(120).energy(2).gap(160).cloud(130).gap(330)
      .block(260, 70);
-    b.fact(7, -130, G - 170);
+    b.fact(7, -240, G - 150);
     b.gap(0).spikes(3).gap(330).check()
      .energy(3).gap(120).house().gap(160).pit(320);
     b.o.push({ t: 'orb', x: b.x - 320 + 120, y: G - 150, r: 18 });
@@ -399,6 +443,51 @@ function buildLevel(i) {
      .block(210, 50).block(210, 95).gap(0).spikes(4).gap(330)
      .energy(3).gap(120).house().gap(180).cloud(140).gap(330);
     b.fact(8, 80, G - 118); b.pit(200).gap(340).spikes(3).gap(320).energy(3).gap(150).house().gap(150).finish(520);
+  } else if (i === 3) {
+    b.gap(200).energy(3).gap(150).house().gap(250)
+     .spikes(2).gap(300).cloud(120).gap(120).energy(2).gap(150).cloud(120).gap(330)
+     .house().gap(160).block(270, 55);
+    b.fact(9, -250, G - 150);
+    b.gap(0).spikes(2).gap(320).energy(3).gap(150).wall().gap(300).check()
+     .pit(160).gap(300).energy(3).gap(120).house().gap(200)
+     .pad().gap(40).spikes(5).gap(330)
+     .cloud(130).gap(110).energy(2).gap(150).cloud(130).gap(330)
+     .energy(3).gap(120).house().gap(200).spikes(3).gap(300);
+    b.fact(10, 85, G - 118); b.pit(170).gap(320).check()
+     .block(210, 50).block(210, 95).gap(0).spikes(3).gap(320)
+     .energy(3).gap(120).house().gap(160).wall().gap(150).energy(3).gap(150).house().gap(200)
+     .spikes(2).gap(260).cloud(130).gap(330);
+    b.fact(11, 200, G - 250); b.pad().gap(40).spikes(4).gap(330)
+     .energy(3).gap(150).house().gap(150).finish(520);
+  } else if (i === 4) {
+    b.gap(200).energy(3).gap(150).house().gap(250)
+     .pit(170).gap(300).sign('hintGust', 0).gap(120).gustPit(420).gap(330)
+     .energy(3).gap(120).house().gap(200)
+     .spikes(3).gap(320).block(260, 60);
+    b.fact(12, -240, G - 150);
+    b.gap(0).spikes(2).gap(320).check()
+     .energy(3).gap(150).wall().gap(300).house().gap(160);
+    b.fact(13, 230, G - 250); b.gustPit(460).gap(330)
+     .cloud(130).gap(330).energy(3).gap(120).house().gap(200)
+     .pit(180).gap(320).pad().gap(40).spikes(5).gap(330).check()
+     .orbPit(320).gap(330).energy(3).gap(150).house().gap(150).wall().gap(300)
+     .gustPit(420).gap(330).spikes(2).gap(280);
+    b.fact(14, 90, G - 118); b.pit(180).gap(320).energy(3).gap(150).house().gap(150).finish(520);
+  } else {
+    b.gap(200).energy(3).gap(150).house().gap(260)
+     .spikes(3).gap(330).orbPit(330).gap(340).energy(3).gap(120).house().gap(200)
+     .block(240, 60).block(240, 105);
+    b.fact(15, -120, G - 210);
+    b.gap(0).spikes(4).gap(340)
+     .wall().gap(150).energy(3).gap(120).house().gap(200).cloud(140).gap(120).energy(2).gap(150).cloud(140).gap(340).check()
+     .gustPit(460).gap(340).pad().gap(40).spikes(5).gap(340).energy(3).gap(150).house().gap(150).wall().gap(300)
+     .spikes(2).gap(300).spikes(2).gap(320);
+    b.fact(16, 235, G - 268); b.orbPit(330).gap(340).check()
+     .energy(3).gap(120).house().gap(180).block(290, 70);
+    b.fact(17, -270, G - 150);
+    b.gap(0).spikes(3).gap(340)
+     .cloud(140).gap(340).gustPit(440).gap(340).energy(3).gap(150).house().gap(150).wall().gap(300)
+     .spikes(3).gap(320).energy(3).gap(150).house().gap(150).finish(520);
   }
   b.o.sort((a, c) => a.x - c.x);
   return { idx: i, speed: L, objs: b.o, groups: b.groups, len: b.len, houses: b.o.filter(o => o.t === 'house').length, D };
@@ -422,6 +511,7 @@ function endlessBuilder() {
     else if (r < .74) { this.pad().gap(40).spikes(4).gap(g()); }
     else if (r < .82) { this.pit(300); this.o.push({ t: 'orb', x: this.x - 300 + 115, y: G - 150, r: 18 }); this.gap(g()); }
     else if (r < .9) { this.block(210, 45).block(210, 90).gap(0).spikes(2).gap(g()); }
+    else if (r < .95) { this.gustPit(420).gap(g()); }
     else { this.spikes(2).gap(Math.round(v * .8)).spikes(2).gap(g()); }
   };
   return b;
@@ -441,7 +531,7 @@ function newRun(fromCheckpoint) {
   }
   const attempt = run ? run.attempt + 1 : 1;
   const base = cp ? cp.snap : { x: 0, energy: 0, lit: [], facts: [], broken: [] };
-  for (const o of lvl.objs) { o.lit = base.lit.includes(o); o.got = base.facts.includes(o) || (o.t === 'energy' && o.x < base.x); o.broken = base.broken.includes(o); o.used = false; }
+  for (const o of lvl.objs) { o.lit = base.lit.includes(o); o.got = base.facts.includes(o) || (o.t === 'energy' && o.x < base.x); o.broken = base.broken.includes(o); o.used = false; o.rode = false; }
   run = {
     p: { x: base.x, y: G, vy: 0, ground: true, slideT: 0, dash: 0, dashCd: 0, alive: true, ang: 0 },
     energy: base.energy, time: 0, deadT: 0, attempt, cp: cp || null, fresh: !cp, deaths: run && run.sameLevel ? run.deaths : 0,
@@ -513,6 +603,11 @@ function step(dt, bot) {
   if (!p.ground && inp.down) p.vy = Math.max(p.vy, FASTFALL);
 
   const prevY = p.y, prevTop = p.y - h;
+  for (const o of lvl.objs) {
+    if (o.t !== 'gust' || p.x < o.x || p.x > o.x + o.w) continue;
+    p.vy += (-GRAV + 45 * ((G - 230) - p.y) - 9 * p.vy) * dt;
+    if (!o.rode) { o.rode = true; if (!demo) save.stats.gusts = (save.stats.gusts || 0) + 1; }
+  }
   p.vy += GRAV * dt; p.y += p.vy * dt;
   let support = false;
 
@@ -594,6 +689,13 @@ function autopilot() {
       const T = Math.min((g.a + g.b) / 2 - (fall > 0 ? air * .45 : D / 2), g.a - 30);
       if (p.x >= T - 2 && p.x < g.a - 2) { a.up = true; break; }
     }
+    // hop up for a fact star floating above the path
+    for (const o of lvl.objs) {
+      if (o.t !== 'fact' || o.got) continue;
+      const dx = o.x - p.x, rise = p.y - o.y;
+      if (dx > D * .42 - 12 && dx < D * .42 + 12 && rise > 40 && rise < 175) a.up = true;
+      if (dx > 400) break;
+    }
     // walking off a block straight onto spikes: jump from the block edge
     for (const o of lvl.objs) {
       if (o.t === 'block' && p.y === o.top && o.top < G) {
@@ -630,6 +732,15 @@ IMG.house.onload = () => {
 };
 
 const C = { paper: '#f8f4d9', paper2: '#f1ebc4', indigo: '#5b6496', deep: '#3d4470', green: '#427f12', yellow: '#fdca39', orange: '#ff4401', brown: '#b1741e', smog: '#8a8572' };
+const THEMES = [
+  { sky: '#f8f4d9', hill: '#e4e8c0', prop: 'turbines', pit: 'rgba(61,68,112,.85)' },
+  { sky: '#f6f5dc', hill: '#d9e6b8', prop: 'turbines', pit: 'rgba(61,68,112,.85)' },
+  { sky: '#f4f2e6', hill: '#e2e3ea', prop: 'city', pit: 'rgba(61,68,112,.85)' },
+  { sky: '#fbf1d8', hill: '#efdfbc', prop: 'chimneys', pit: 'rgba(90,60,40,.8)' },
+  { sky: '#eef5f1', hill: '#d3e6e6', prop: 'sea', pit: '#7fa6c9' },
+  { sky: '#f2eff8', hill: '#dddbef', prop: 'pylons', pit: 'rgba(61,68,112,.85)' },
+];
+const hash = n => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
 const FONT_D = '"Biro Script Plus", "Caveat", cursive';
 const FONT_B = '"Linotype Feltpen", "Patrick Hand", "Neucha", cursive';
 
@@ -671,6 +782,21 @@ function drawPerson(c, sk, time, pose) {
       c.fillStyle = sk.hat; c.beginPath(); c.arc(1, -51, 8.6, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[-9, -51], [12, -51]], 2.5, C.indigo);
       if (sk.style === 'headlamp') { c.fillStyle = 'rgba(253,202,57,.35)'; c.beginPath(); c.moveTo(8, -54); c.lineTo(44, -66); c.lineTo(44, -40); c.closePath(); c.fill(); c.fillStyle = '#fff6b0'; c.beginPath(); c.arc(8, -54, 2.6, 0, Math.PI * 2); c.fill(); c.stroke(); }
       break;
+    case 'chef':
+      c.beginPath(); c.arc(1, -50, 8.2, Math.PI, Math.PI * 2); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.roundRect(-6, -59, 14, 7, 2); c.fill(); c.stroke();
+      c.beginPath(); c.arc(-2, -61, 5, 0, Math.PI * 2); c.arc(5, -62, 5.5, 0, Math.PI * 2); c.fill(); c.stroke(); break;
+    case 'sailor':
+      c.beginPath(); c.arc(1, -50, 8.2, Math.PI, Math.PI * 2); c.fill();
+      c.fillStyle = '#fff'; c.beginPath(); c.ellipse(1, -55, 9, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+      line(c, [[-6, -53], [8, -53]], 2.5, C.indigo); break;
+    case 'visor':
+      c.beginPath(); c.arc(1, -50, 8.2, Math.PI, Math.PI * 2); c.fill();
+      c.fillStyle = 'rgba(124,252,154,.35)'; c.beginPath(); c.ellipse(5, -48, 9, 4, 0, 0, Math.PI * 2); c.fill();
+      line(c, [[-3, -48], [10, -48]], 3.5, '#4fd07a'); break;
+    case 'hood':
+      c.fillStyle = sk.shirt; c.lineWidth = 2; c.beginPath(); c.arc(0, -48, 10.5, Math.PI * .55, Math.PI * 2.2); c.stroke();
+      c.beginPath(); c.arc(1, -52, 9, Math.PI * .95, Math.PI * 2.05); c.fill(); c.stroke(); break;
     default: c.beginPath(); c.arc(1, -50, 8.2, Math.PI, Math.PI * 2); c.fill();
   }
   if (sk.goggles) { c.strokeStyle = C.indigo; c.lineWidth = 1.5; c.fillStyle = 'rgba(180,220,240,.8)'; c.beginPath(); c.arc(5, -48, 3, 0, Math.PI * 2); c.fill(); c.stroke(); }
@@ -715,6 +841,46 @@ function drawSmogBlob(c, x, y, w, h, time, seed) {
 }
 
 let bgTime = 0;
+function turbine(c, sx, base, hgt, spin, col = 'rgba(66,127,18,.55)') {
+  line(c, [[sx, base], [sx, base - hgt]], 2.5, 'rgba(91,100,150,.5)');
+  c.save(); c.translate(sx, base - hgt); c.rotate(spin);
+  for (let i = 0; i < 3; i++) { c.rotate(Math.PI * 2 / 3); line(c, [[0, 0], [0, -hgt * .28]], 3, col); }
+  c.restore();
+}
+function drawProps(c, th, cam, clean) {
+  const par = cam * .45, step = th.prop === 'city' ? 90 : th.prop === 'chimneys' ? 150 : th.prop === 'pylons' ? 300 : 260;
+  const first = Math.floor(par / step) - 1;
+  if (th.prop === 'sea') {
+    c.fillStyle = '#b9d3e3'; c.fillRect(0, G - 46, W, 46);
+    for (let x = -(par % 40); x < W; x += 40) line(c, [[x, G - 30 + Math.sin(bgTime * 2 + x) * 2], [x + 16, G - 34 + Math.sin(bgTime * 2 + x) * 2]], 1.5, 'rgba(255,255,255,.8)');
+  }
+  for (let k = first; k < first + Math.ceil(W / step) + 3; k++) {
+    const sx = k * step - par + 40, r = hash(k);
+    if (th.prop === 'turbines') { if (k % 2) turbine(c, sx, G - 20, 100, bgTime * (1 + clean * 2)); }
+    else if (th.prop === 'sea') { if (k % 2 === 0) turbine(c, sx, G - 38, 90 + r * 30, bgTime * (1 + clean * 2)); }
+    else if (th.prop === 'city') {
+      const bh = 70 + r * 120, bw = 60 + hash(k + 9) * 20;
+      c.fillStyle = 'rgba(214,216,232,.9)'; c.strokeStyle = 'rgba(91,100,150,.4)'; c.lineWidth = 1.5;
+      c.fillRect(sx, G - bh, bw, bh); c.strokeRect(sx, G - bh, bw, bh);
+      for (let wy = G - bh + 10; wy < G - 14; wy += 18) for (let wx = sx + 8; wx < sx + bw - 10; wx += 16) {
+        c.fillStyle = hash(wx * 3 + wy + k) < clean * .9 + .05 ? 'rgba(253,202,57,.85)' : 'rgba(91,100,150,.25)'; c.fillRect(wx, wy, 8, 9);
+      }
+    } else if (th.prop === 'chimneys') {
+      c.fillStyle = 'rgba(214,190,150,.8)'; c.strokeStyle = 'rgba(91,100,150,.4)'; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(sx, G); c.lineTo(sx, G - 50); c.lineTo(sx + 35, G - 75); c.lineTo(sx + 70, G - 50); c.lineTo(sx + 70, G); c.fill(); c.stroke();
+      c.fillRect(sx + 48, G - 82, 10, 22);
+      for (let j = 0; j < 3; j++) { const ph = (bgTime * .6 + j / 3 + r) % 1; c.fillStyle = `rgba(138,133,114,${(1 - clean) * .55 * (1 - ph)})`; c.beginPath(); c.arc(sx + 53 + ph * 20, G - 88 - ph * 60, 6 + ph * 10, 0, Math.PI * 2); c.fill(); }
+    } else if (th.prop === 'pylons') {
+      const tx = sx, top = G - 150;
+      line(c, [[tx - 18, G], [tx, top], [tx + 18, G]], 2, 'rgba(91,100,150,.5)');
+      line(c, [[tx - 22, top + 18], [tx + 22, top + 18]], 2, 'rgba(91,100,150,.5)');
+      const nx = tx + step;
+      c.strokeStyle = 'rgba(91,100,150,.45)'; c.lineWidth = 1.5;
+      for (const dy of [0, 18]) { c.beginPath(); c.moveTo(tx + (dy ? 22 : 0), top + dy); c.quadraticCurveTo((tx + nx) / 2, top + dy + 40, nx + (dy ? 22 : 0), top + dy); c.stroke(); }
+      for (let j = 1; j < 6; j++) { const f = j / 6, lx = tx + f * step, ly = top + 18 + 4 * 40 * f * (1 - f) * .5 * 2; c.fillStyle = hash(k * 7 + j) < clean ? 'rgba(253,202,57,.95)' : 'rgba(91,100,150,.3)'; c.beginPath(); c.arc(lx + 22 * (1 - f) + 0, ly, 3, 0, Math.PI * 2); c.fill(); }
+    }
+  }
+}
 function render(dt) {
   bgTime += dt;
   const c = ctx; c.setTransform(scale, 0, 0, scale, 0, 0);
@@ -722,23 +888,16 @@ function render(dt) {
   const lit = litCount(), seen = Math.max(1, endless ? Math.max(lit, housesSoFar()) : lvl.houses);
   const clean = Math.min(1, lit / seen);
 
+  const th = THEMES[endless ? Math.floor(p.x / 20000) % THEMES.length : Math.max(0, lvl.idx)];
   // sky
-  c.fillStyle = C.paper; c.fillRect(0, 0, W, H);
+  c.fillStyle = th.sky; c.fillRect(0, 0, W, H);
   drawSun(c, 680, 70, 28 + clean * 6, 12, bgTime * .2);
   // far hills
-  c.fillStyle = '#e4e8c0'; c.beginPath(); c.moveTo(0, G);
+  c.fillStyle = th.hill; c.beginPath(); c.moveTo(0, G);
   for (let x = 0; x <= W; x += 20) { const wx = x + cam * .2; c.lineTo(x, G - 90 - Math.sin(wx / 160) * 30 - Math.sin(wx / 57) * 10); }
   c.lineTo(W, G); c.fill();
   c.strokeStyle = 'rgba(66,127,18,.35)'; c.lineWidth = 1.5; c.stroke();
-  // mid wind turbines
-  for (let k = -1; k < 6; k++) {
-    const wx = Math.floor(cam * .45 / 260) * 260 + k * 260, sx = wx - cam * .45 + 60;
-    if (((wx / 260) | 0) % 2 === 0) continue;
-    line(c, [[sx, G - 20], [sx, G - 120]], 2.5, 'rgba(91,100,150,.5)');
-    c.save(); c.translate(sx, G - 120); c.rotate(bgTime * (1 + clean * 2));
-    for (let i = 0; i < 3; i++) { c.rotate(Math.PI * 2 / 3); line(c, [[0, 0], [0, -30]], 3, 'rgba(66,127,18,.55)'); }
-    c.restore();
-  }
+  drawProps(c, th, cam, clean);
   // smog haze lifts as homes get light
   c.fillStyle = `rgba(120,116,100,${.32 * (1 - clean)})`; c.fillRect(0, 0, W, G);
 
@@ -746,7 +905,7 @@ function render(dt) {
   const pits = lvl.objs.filter(o => o.t === 'pit' && o.x + o.w > cam - 50 && o.x < cam + W + 50);
   let gx = -10; c.fillStyle = C.paper2;
   const seg = (a, b) => { c.fillStyle = C.paper2; c.fillRect(a, G, b - a, H - G); line(c, [[a, G], [b, G]], 3, C.brown); };
-  for (const pt of pits) { seg(gx, pt.x - cam); c.fillStyle = 'rgba(61,68,112,.85)'; c.fillRect(pt.x - cam, G + 6, pt.w, H - G); gx = pt.x - cam + pt.w; }
+  for (const pt of pits) { seg(gx, pt.x - cam); c.fillStyle = th.pit; c.fillRect(pt.x - cam, G + 6, pt.w, H - G); if (th.prop === 'sea') for (let wx = 8; wx < pt.w - 8; wx += 26) line(c, [[pt.x - cam + wx, G + 16 + Math.sin(bgTime * 3 + wx) * 2], [pt.x - cam + wx + 12, G + 12 + Math.sin(bgTime * 3 + wx) * 2]], 1.5, 'rgba(255,255,255,.6)'); gx = pt.x - cam + pt.w; }
   seg(gx, W + 10);
   c.strokeStyle = 'rgba(66,127,18,.5)'; c.lineWidth = 1.5;
   for (let x = -(cam % 18); x < W; x += 18) { if (pits.some(pt => x + cam > pt.x && x + cam < pt.x + pt.w)) continue; line(c, [[x, G + 3], [x + 4, G + 11]], 1.5, 'rgba(66,127,18,.5)'); }
@@ -796,6 +955,19 @@ function render(dt) {
           c.fillStyle = '#4a3f3a'; c.fillRect(o.x + 10, G - 40, 24, 40);
         }
         break;
+      case 'gust': {
+        c.fillStyle = 'rgba(207,232,214,.35)'; c.fillRect(o.x, G - 290, o.w, 290);
+        for (let k = 0; k < Math.floor(o.w / 44); k++) {
+          const gx = o.x + 22 + k * 44;
+          for (let j = 0; j < 4; j++) {
+            const y = G - ((j * 72 + time * 170 + k * 29) % 290), wob = Math.sin(y / 20 + k) * 5;
+            c.globalAlpha = .25 + .5 * (1 - (G - y) / 290);
+            line(c, [[gx + wob - 7, y + 7], [gx + wob, y], [gx + wob + 7, y + 7]], 2.5, C.green);
+          }
+        }
+        c.globalAlpha = 1;
+        break;
+      }
       case 'pad':
         c.fillStyle = 'rgba(253,202,57,.5)'; c.beginPath(); c.ellipse(o.x + o.w / 2, G - 4, o.w * .8, 10 + Math.sin(time * 8) * 2, 0, 0, Math.PI * 2); c.fill();
         c.fillStyle = '#5577c0'; c.strokeStyle = C.indigo; c.lineWidth = 2; c.beginPath(); c.moveTo(o.x, G); c.lineTo(o.x + 6, G - 14); c.lineTo(o.x + o.w - 2, G - 18); c.lineTo(o.x + o.w, G); c.closePath(); c.fill(); c.stroke();
@@ -912,6 +1084,10 @@ function checkAch() {
   if (s.skinChanged) unlock('style');
   const facts = save.lv.reduce((a, l) => a + ((l.facts || []).length), 0);
   if (facts >= 9) unlock('facts');
+  if (facts >= 18) unlock('facts18');
+  if (s.energy >= 300) unlock('e300');
+  if (s.houses >= 150) unlock('h150');
+  if ((s.gusts || 0) >= 20) unlock('gust20');
 }
 
 /* =========================================================
@@ -948,6 +1124,7 @@ function menu() {
       <button class="btn" id="mPlay">${t('play')}</button>
       <button class="btn alt" id="mSkins">${t('skins')}</button>
       <button class="btn alt" id="mAch">${t('achievements')}</button>
+      <button class="btn alt" id="mBook">${t('book')}</button>
       <button class="btn alt" id="mLang">${t('lang')}</button>
     </div>
     <h3>${t('controls')}</h3>
@@ -955,7 +1132,7 @@ function menu() {
       <span><kbd>↑</kbd>${t('kj')}</span><span><kbd>↓</kbd>${t('ks')}</span>
       <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
     </div>`);
-  on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements);
+  on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements); on('#mBook', book);
   on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; save.langChosen = true; persist(); applyLang(); menu(); });
 }
 
@@ -988,7 +1165,9 @@ function intro(i) {
       <div class="row"><button class="btn" id="iGo">${t('start')}</button><button class="btn alt" id="iBack">${t('back')}</button></div>`);
   } else {
     const tx = LEVEL_TXT[i][save.lang];
+    const tg = TARGETS.find(x => x.code === LEVEL_CODE[i]);
     show(`<span class="sub">${t('goal')} ${tx[1]}</span><h2>${i + 1}. ${tx[0]}</h2><p>${tx[2]}</p>
+      <div class="fact"><b>${tg.code} · ${tg[save.lang][0]}</b>${tg[save.lang][1]}</div>
       <div class="row"><button class="btn" id="iGo">${t('start')}</button><button class="btn alt" id="iBack">${t('back')}</button></div>`);
   }
   on('#iGo', go); on('#iBack', levels);
@@ -998,7 +1177,7 @@ function go() { hide(); state = 'play'; input.jumpBuf = 0; input.up = false; if 
 function pause() {
   if (state !== 'play') return;
   state = 'pause';
-  show(`<h2>${t('paused')}</h2><div class="row"><button class="btn" id="pRes">${t('resume')}</button><button class="btn alt" id="pRe">${t('retry')}</button><button class="btn alt" id="pMenu">${t('menu')}</button></div>`);
+  show(`<h2>${t('paused')}</h2><div class="fact"><b>${t('didYouKnow')}</b>${FACTS[Math.floor(Math.random() * FACTS.length)][save.lang]}</div><div class="row"><button class="btn" id="pRes">${t('resume')}</button><button class="btn alt" id="pRe">${t('retry')}</button><button class="btn alt" id="pMenu">${t('menu')}</button></div>`);
   on('#pRes', () => { hide(); state = 'play'; });
   on('#pRe', () => { run.sameLevel = true; newRun(false); hide(); state = 'play'; });
   on('#pMenu', () => { demo = false; startDemo(); menu(); });
@@ -1011,7 +1190,8 @@ function complete() {
   s.done = true; s.best = 100; s.total = lvl.houses; s.houses = Math.max(s.houses || 0, lit);
   s.facts = [...new Set([...(s.facts || []), ...got])];
   persist();
-  unlock(['l1', 'l2', 'l3'][i]);
+  unlock('l' + (i + 1));
+  if (lit === lvl.houses && got.length === 3) unlock('perfect');
   if (lit === lvl.houses) unlock('allhouses');
   if (run.deaths === 0) unlock('clean');
   checkAch();
@@ -1019,7 +1199,7 @@ function complete() {
   show(`<h2>${t('complete')}</h2>
     <div class="stats"><span>${t('housesLit')}: <b>${lit} ${t('of')} ${lvl.houses}</b></span><span>${t('facts')}: <b>${got.length} / 3</b></span><span>${t('attempts')}: <b>${run.attempt}</b></span></div>
     ${factHtml}
-    <div class="row">${i < 2 ? `<button class="btn" id="dNext">${t('next')}</button>` : ''}<button class="btn alt" id="dRe">${t('retry')}</button><button class="btn alt" id="dMenu">${t('levels')}</button></div>`);
+    <div class="row">${i < LEVEL_TXT.length - 1 ? `<button class="btn" id="dNext">${t('next')}</button>` : ''}<button class="btn alt" id="dRe">${t('retry')}</button><button class="btn alt" id="dMenu">${t('levels')}</button></div>`);
   on('#dNext', () => intro(i + 1)); on('#dRe', () => intro(i)); on('#dMenu', () => { startDemo(); levels(); });
 }
 
@@ -1043,6 +1223,20 @@ function skins() {
     save.skin = s.id; persist(); checkAch(); skins();
   });
   on('#sBack', menu);
+}
+
+function book() {
+  state = 'menu';
+  const found = new Set([].concat(...save.lv.map(l => l.facts || [])));
+  const tg = TARGETS.map(x => `<div class="tgt"><b>${x.code} · ${x[save.lang][0]}</b><span>${x[save.lang][1]}</span></div>`).join('');
+  const fc = FACTS.map((f, id) => { const lv = Math.floor(id / 3); return found.has(id)
+    ? `<div class="fact"><b>★ ${lv + 1}. ${LEVEL_TXT[lv][save.lang][0]}</b>${f[save.lang]}</div>`
+    : `<div class="fact locked"><b>★ ???</b>${t('foundIn')} ${lv + 1}</div>`; }).join('');
+  show(`<h2>${t('book')}</h2><p class="sub">${t('bookSub')}</p>
+    <h3>${t('targets')}</h3><div class="tgts">${tg}</div>
+    <h3>${t('factsFound')} · ${found.size}/${FACTS.length}</h3><div class="facts">${fc}</div>
+    <div class="row"><button class="btn alt" id="bBack">${t('back')}</button></div>`);
+  on('#bBack', menu);
 }
 
 function achievements() {
