@@ -96,6 +96,16 @@ h1 img { width: .4em; vertical-align: top; margin-left: .1em; }
 .fact.locked { color: var(--indigo); opacity: .6; border-style: dashed; }
 .tgts, .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
 .tgt { padding: 8px 12px; border: 2px solid var(--indigo); border-radius: 12px 4px 14px 4px; background: #fff; font-size: 16px; }
+.board { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-width: 560px; counter-reset: none; }
+.board li { display: grid; grid-template-columns: 34px 16px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 4px 10px; background: #fff; border: 1.5px solid rgba(91,100,150,.4); border-radius: 10px 4px 12px 4px; font-size: 18px; }
+.board li.me { border: 2.5px solid var(--orange); background: #fff3c4; }
+.board .rk { font: 400 24px/1 var(--font-display); color: var(--green); text-align: center; }
+.board .dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid var(--indigo); }
+.board .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.board .sc { font-variant-numeric: tabular-nums; color: var(--indigo); }
+.board li:nth-child(1) .rk { color: var(--orange); }
+input.nick { font: 22px var(--font-body); color: var(--indigo); padding: 8px 12px; min-width: 0; width: 240px; max-width: 100%; background: #fff; border: 2px solid var(--indigo); border-radius: 12px 4px 12px 4px; }
+input.nick:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
 .tgt b { display: block; font: 400 22px/1.1 var(--font-display); color: var(--green); }
 .stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 20px; }
 .stats b { color: var(--green); font-weight: 400; }
@@ -155,6 +165,7 @@ h1 img { width: .4em; vertical-align: top; margin-left: .1em; }
   </div>
 </div>
 
+<script src="firebase-config.js"></script>
 <script>
 (() => {
 'use strict';
@@ -204,6 +215,13 @@ const T = {
     hintUp: '↑ прыжок', hintLeft: '← зажги дом!', hintDown: '↓ присядь под смог', hintRight: '→ рывок сквозь смог', hintOrb: '↑ на солнышке', hintPad: 'панель подбросит', hintGust: 'ветер поднимет!',
     book: 'Книга SDG 7', bookSub: 'Все задачи цели 7 и найденные в уровнях факты.', targets: 'Задачи цели 7', factsFound: 'Коллекция фактов', foundIn: 'Найди эту звезду в уровне', didYouKnow: 'А ты знаешь?',
     goal: 'Цель SDG',
+    board: 'Рекорды', boardSub: 'Лучшие игроки со всего мира', tabScore: 'Очки', tabMarathon: 'Марафон',
+    nick: 'Твой ник', nickSub: 'Под этим ником тебя увидят в таблице рекордов. Не пиши настоящее имя и фамилию.', nickPh: 'Например, SunnyFox', save: 'Сохранить',
+    setNick: 'Выбрать ник', changeNick: 'Сменить ник', nickBad: 'Ник: от 2 до 16 букв или цифр, без грубых слов.',
+    loading: 'Загружаю…', boardOff: 'Таблица рекордов ещё не подключена.', boardOffHint: 'Она работает на сайте игры, когда к ней подключён Firebase.',
+    boardErr: 'Не получилось загрузить рекорды. Проверь интернет и попробуй ещё раз.', you: 'ты', noScores: 'Пока никого нет. Стань первым!',
+    yourRank: 'Твоё место', notRanked: 'ещё нет в таблице', points: 'очков', scoreHow: 'Очки: 1000 за уровень, 200 за звезду-факт, 50 за ачивку, плюс метры Марафона (до 5000).',
+    saved: 'Сохранено!', anon: 'Игрок',
   },
   en: {
     tagline: 'Run, collect clean energy and light up homes. SDG 7',
@@ -233,6 +251,13 @@ const T = {
     hintUp: '↑ jump', hintLeft: '← light the home!', hintDown: '↓ duck under smog', hintRight: '→ dash through smog', hintOrb: '↑ on the sun', hintPad: 'panels launch you', hintGust: 'wind lifts you!',
     book: 'SDG 7 Book', bookSub: 'All the targets of Goal 7, and the facts you found in the levels.', targets: 'Targets of Goal 7', factsFound: 'Fact collection', foundIn: 'Find this star in level', didYouKnow: 'Did you know?',
     goal: 'SDG target',
+    board: 'Leaderboard', boardSub: 'Top players from around the world', tabScore: 'Score', tabMarathon: 'Marathon',
+    nick: 'Your nickname', nickSub: 'Other players see this name on the leaderboard. Don\'t use your real full name.', nickPh: 'For example, SunnyFox', save: 'Save',
+    setNick: 'Choose a nickname', changeNick: 'Change nickname', nickBad: 'Nickname: 2 to 16 letters or numbers, no rude words.',
+    loading: 'Loading…', boardOff: 'The leaderboard isn\'t connected yet.', boardOffHint: 'It works on the game\'s website once Firebase is connected.',
+    boardErr: 'Couldn\'t load the leaderboard. Check your internet and try again.', you: 'you', noScores: 'Nobody here yet. Be the first!',
+    yourRank: 'Your place', notRanked: 'not on the board yet', points: 'points', scoreHow: 'Score: 1000 per level, 200 per fact star, 50 per achievement, plus Marathon meters (up to 5000).',
+    saved: 'Saved!', anon: 'Player',
   },
 };
 
@@ -1067,7 +1092,7 @@ function sfx(kind) {
    ========================================================= */
 function unlock(id) {
   if (save.ach.includes(id)) return;
-  save.ach.push(id); persist();
+  save.ach.push(id); persist(); pushSoon();
   const a = ACH.find(x => x.id === id);
   toast(t('achGot'), a[save.lang][0]);
   const sk = SKINS.find(s => s.need === id);
@@ -1125,6 +1150,7 @@ function menu() {
       <button class="btn alt" id="mSkins">${t('skins')}</button>
       <button class="btn alt" id="mAch">${t('achievements')}</button>
       <button class="btn alt" id="mBook">${t('book')}</button>
+      <button class="btn alt" id="mBoard">${t('board')}</button>
       <button class="btn alt" id="mLang">${t('lang')}</button>
     </div>
     <h3>${t('controls')}</h3>
@@ -1132,7 +1158,7 @@ function menu() {
       <span><kbd>↑</kbd>${t('kj')}</span><span><kbd>↓</kbd>${t('ks')}</span>
       <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
     </div>`);
-  on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements); on('#mBook', book);
+  on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements); on('#mBook', book); on('#mBoard', () => board('score'));
   on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; save.langChosen = true; persist(); applyLang(); menu(); });
 }
 
@@ -1199,7 +1225,9 @@ function complete() {
   show(`<h2>${t('complete')}</h2>
     <div class="stats"><span>${t('housesLit')}: <b>${lit} ${t('of')} ${lvl.houses}</b></span><span>${t('facts')}: <b>${got.length} / 3</b></span><span>${t('attempts')}: <b>${run.attempt}</b></span></div>
     ${factHtml}
-    <div class="row">${i < LEVEL_TXT.length - 1 ? `<button class="btn" id="dNext">${t('next')}</button>` : ''}<button class="btn alt" id="dRe">${t('retry')}</button><button class="btn alt" id="dMenu">${t('levels')}</button></div>`);
+    <div class="row">${i < LEVEL_TXT.length - 1 ? `<button class="btn" id="dNext">${t('next')}</button>` : ''}<button class="btn alt" id="dRe">${t('retry')}</button><button class="btn alt" id="dMenu">${t('levels')}</button><button class="btn alt" id="dBoard">${t('board')}</button></div>`);
+  on('#dBoard', () => { startDemo(); board('score'); });
+  pushScore();
   on('#dNext', () => intro(i + 1)); on('#dRe', () => intro(i)); on('#dMenu', () => { startDemo(); levels(); });
 }
 
@@ -1252,8 +1280,105 @@ function endlessOver() {
   const m = Math.floor(run.p.x / 50);
   show(`<h2>${t('runOver')}</h2><div class="stats"><span>${t('distance')}: <b>${m} ${t('meters')}</b></span><span>${t('best')}: <b>${save.stats.bestM} ${t('meters')}</b></span><span>${t('housesLit')}: <b>${litCount()}</b></span></div>
     <div class="fact"><b>★</b>${FACTS[Math.floor(Math.random() * FACTS.length)][save.lang]}</div>
-    <div class="row"><button class="btn" id="eRe">${t('retry')}</button><button class="btn alt" id="eMenu">${t('levels')}</button></div>`);
+    <div class="row"><button class="btn" id="eRe">${t('retry')}</button><button class="btn alt" id="eMenu">${t('levels')}</button><button class="btn alt" id="eBoard">${t('board')}</button></div>`);
+  on('#eBoard', () => { startDemo(); board('bestM'); });
+  pushScore();
   on('#eRe', () => { newRun(false); go(); }); on('#eMenu', () => { startDemo(); levels(); });
+}
+
+/* =========================================================
+   Online leaderboard (Firebase: anonymous sign-in + Firestore)
+   ========================================================= */
+const FB = { ready: null };
+const fbConfigured = () => !!(window.LD_FIREBASE_CONFIG && window.LD_FIREBASE_CONFIG.apiKey && window.LD_FIREBASE_CONFIG.projectId);
+function fb() {
+  if (!fbConfigured()) return Promise.resolve(null);
+  if (FB.ready) return FB.ready;
+  FB.ready = (async () => {
+    const base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+    const mods = window.__ldFirebaseMock || await Promise.all(['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js'].map(f => import(base + f)));
+    const [appM, authM, fs] = mods;
+    const app = appM.initializeApp(window.LD_FIREBASE_CONFIG);
+    const auth = authM.getAuth(app);
+    let user = await new Promise(r => { const un = authM.onAuthStateChanged(auth, u => { un(); r(u); }); });
+    if (!user) user = (await authM.signInAnonymously(auth)).user;
+    return { uid: user.uid, fs, db: fs.getFirestore(app) };
+  })().catch(e => { console.warn('Leaderboard unavailable:', e); FB.ready = null; return null; });
+  return FB.ready;
+}
+function profileStats() {
+  const levels = save.lv.filter(l => l.done).length;
+  const facts = save.lv.reduce((a, l) => a + (l.facts || []).length, 0);
+  const bestM = Math.min(100000, Math.floor(save.stats.bestM || 0));
+  return { levels, facts, bestM, homes: Math.floor(save.stats.houses || 0), score: levels * 1000 + facts * 200 + save.ach.length * 50 + Math.min(bestM, 5000) };
+}
+const BAD = ['fuck', 'shit', 'bitch', 'cunt', 'dick', 'nigg', 'fag', 'whore', 'slut', 'хуй', 'хуе', 'пизд', 'бля', 'ебат', 'ебан', 'сука', 'мудак', 'пидор', 'шлюх', 'жоп'];
+function nickOk(n) {
+  if (!/^[A-Za-zА-Яа-яЁё0-9 _.-]{2,16}$/.test(n) || !/[A-Za-zА-Яа-яЁё0-9]/.test(n)) return false;
+  const low = n.toLowerCase().replace(/[^a-zа-яё]/g, '');
+  return !BAD.some(w => low.includes(w));
+}
+const esc = x => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+let pushTimer = 0;
+async function pushScore() {
+  if (!save.nick || !fbConfigured()) return;
+  const f = await fb(); if (!f) return;
+  const st = profileStats();
+  try {
+    await f.fs.setDoc(f.fs.doc(f.db, 'players', f.uid), { name: save.nick, skin: String(save.skin).slice(0, 12), score: st.score, levels: st.levels, facts: st.facts, bestM: st.bestM, homes: st.homes, updated: f.fs.serverTimestamp() });
+  } catch (e) { console.warn('Score not saved:', e); }
+}
+const pushSoon = () => { clearTimeout(pushTimer); pushTimer = setTimeout(pushScore, 2500); };
+
+async function board(tab) {
+  state = 'menu';
+  const head = `<h2>${t('board')}</h2><p class="sub">${t('boardSub')}</p>`;
+  if (!fbConfigured()) {
+    show(`${head}<div class="fact"><b>${t('boardOff')}</b>${t('boardOffHint')}</div><div class="row"><button class="btn alt" id="rBack">${t('back')}</button></div>`);
+    return on('#rBack', menu);
+  }
+  const tabs = `<div class="row tabs"><button class="btn${tab === 'score' ? '' : ' alt'}" id="rScore">${t('tabScore')}</button><button class="btn${tab === 'bestM' ? '' : ' alt'}" id="rMara">${t('tabMarathon')}</button>
+    <button class="btn alt" id="rNick">${save.nick ? t('changeNick') : t('setNick')}</button><button class="btn alt" id="rBack">${t('back')}</button></div>`;
+  const wire = () => { on('#rScore', () => board('score')); on('#rMara', () => board('bestM')); on('#rNick', () => nickname(() => board(tab))); on('#rBack', menu); };
+  show(`${head}${tabs}<p>${t('loading')}</p>`); wire();
+  const f = await fb();
+  let rows = null;
+  if (f) {
+    try {
+      const q = f.fs.query(f.fs.collection(f.db, 'players'), f.fs.orderBy(tab, 'desc'), f.fs.limit(20));
+      rows = (await f.fs.getDocs(q)).docs.map(d => Object.assign({ id: d.id }, d.data()));
+    } catch (e) { console.warn(e); }
+  }
+  if (state !== 'menu' || !screen.querySelector('#rScore')) return; // the player left this screen
+  if (!rows) { show(`${head}${tabs}<div class="fact"><b>${t('boardErr')}</b></div>`); return wire(); }
+  const unit = tab === 'bestM' ? ` ${t('meters')}` : '';
+  const meIdx = rows.findIndex(r => r.id === f.uid);
+  const list = rows.length ? rows.map((r, k) => {
+    const sk = skinById(r.skin);
+    return `<li class="${r.id === f.uid ? 'me' : ''}"><span class="rk">${k + 1}</span><span class="dot" style="background:${esc(sk.shirt)}"></span><span class="nm">${esc(r.name || t('anon'))}${r.id === f.uid ? ` (${t('you')})` : ''}</span><span class="sc">${Math.floor(r[tab] || 0)}${unit}</span></li>`;
+  }).join('') : `<li><span class="nm">${t('noScores')}</span></li>`;
+  const mine = profileStats();
+  show(`${head}${tabs}<ol class="board">${list}</ol>
+    <p class="sub">${t('yourRank')}: <b>${meIdx >= 0 ? meIdx + 1 : t('notRanked')}</b>${save.nick ? ` · ${esc(save.nick)} · ${tab === 'bestM' ? mine.bestM + ' ' + t('meters') : mine.score + ' ' + t('points')}` : ''}</p>
+    <p style="font-size:15px">${t('scoreHow')}</p>`);
+  wire();
+}
+
+function nickname(back) {
+  state = 'menu';
+  show(`<h2>${t('nick')}</h2><p>${t('nickSub')}</p>
+    <form id="nForm" class="row" autocomplete="off"><input id="nInput" class="nick" maxlength="16" placeholder="${t('nickPh')}" value="${esc(save.nick || '')}">
+    <button class="btn" type="submit">${t('save')}</button><button class="btn alt" type="button" id="nBack">${t('back')}</button></form>
+    <p id="nMsg" class="sub"></p>`);
+  const inp = screen.querySelector('#nInput'); inp.focus();
+  on('#nBack', back);
+  screen.querySelector('#nForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const n = inp.value.trim().replace(/\s+/g, ' ');
+    if (!nickOk(n)) { screen.querySelector('#nMsg').textContent = t('nickBad'); return; }
+    save.nick = n; persist(); screen.querySelector('#nMsg').textContent = t('saved');
+    await pushScore(); back();
+  });
 }
 
 /* =========================================================
@@ -1300,6 +1425,7 @@ function press(k, down) {
 }
 const KEYMAP = { ArrowUp: 'up', KeyW: 'up', Space: 'up', ArrowDown: 'down', KeyS: 'down', ArrowRight: 'right', KeyD: 'right', ArrowLeft: 'left', KeyA: 'left' };
 window.addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;
   if ((e.code === 'Escape' || e.code === 'KeyP') && state === 'play') { e.preventDefault(); return pause(); }
   const k = KEYMAP[e.code]; if (!k) return;
   if (state === 'play' || state === 'intro' || e.code.startsWith('Arrow')) {
