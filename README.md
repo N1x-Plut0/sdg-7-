@@ -56,6 +56,7 @@ On a phone, use the big arrow buttons under the screen.
 - **21 achievements** that unlock new runners.
 - **18 fact stars** hidden in the levels. Each one reveals a real fact about SDG 7.
 - **SDG 7 Book:** all five targets of Goal 7 explained, plus your collection of facts.
+- **Leaderboard:** pick a nickname (no email or password) and compare your score and Marathon distance with other players.
 - **Practice mode:** respawn at checkpoint flags while you learn a level.
 - **Menu demo:** while you're in the menu, a runner plays the level in the background.
 - English and Russian.
@@ -93,6 +94,15 @@ Our first game is a calm strategy game: build solar, wind and hydro power for a 
 ## Play locally
 
 Download or clone this repo and open `index.html` in any browser. That's it.
+
+## Leaderboard (Netlify)
+
+The leaderboard runs as a small Netlify function (`netlify/functions/leaderboard.mjs`) that stores scores in Netlify Blobs.
+To turn it on: sign in to [Netlify](https://app.netlify.com) with GitHub, choose **Add new project → Import an existing project → GitHub → sdg-7-**, and deploy.
+Netlify reads `netlify.toml`, so no settings are needed. The game on the Netlify address finds the leaderboard by itself;
+for the GitHub Pages copy, put the Netlify address in `leaderboard-config.js`.
+
+Players choose only a nickname. Each browser gets a secret key, so nobody else can overwrite your row.
 
 ## Fonts
 

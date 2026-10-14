@@ -1,0 +1,8 @@
+# Netlify settings for Light Dash: the static game plus the leaderboard function.
+[build]
+  command = "mkdir -p dist && cp -r index.html valley.html leaderboard-config.js assets dist/"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
