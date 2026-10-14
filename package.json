@@ -1,0 +1,8 @@
+{
+  "name": "light-dash",
+  "private": true,
+  "description": "Light Dash, an SDG 7 game. The leaderboard runs as a Netlify function.",
+  "dependencies": {
+    "@netlify/blobs": "11.1.1"
+  }
+}
