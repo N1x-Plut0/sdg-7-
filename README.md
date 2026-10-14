@@ -10,6 +10,8 @@
 
 *No download, no sign-up. Works on a laptop or a phone.*
 
+*Also on Netlify: [splendorous-gumption-10c31d.netlify.app](https://splendorous-gumption-10c31d.netlify.app)*
+
 <img src="assets/dash-play.jpg" alt="Light Dash: a runner in a hard hat races past dark houses toward a tall wall of coal smog, with sun, water and wind energy to collect" width="820">
 
 </div>
@@ -100,7 +102,8 @@ Download or clone this repo and open `index.html` in any browser. That's it.
 The leaderboard runs as a small Netlify function (`netlify/functions/leaderboard.mjs`) that stores scores in Netlify Blobs.
 To turn it on: sign in to [Netlify](https://app.netlify.com) with GitHub, choose **Add new project → Import an existing project → GitHub → sdg-7-**, and deploy.
 Netlify reads `netlify.toml`, so no settings are needed. The game on the Netlify address finds the leaderboard by itself;
-for the GitHub Pages copy, put the Netlify address in `leaderboard-config.js`.
+the GitHub Pages copy uses the address in `leaderboard-config.js`
+(currently https://splendorous-gumption-10c31d.netlify.app).
 
 Players choose only a nickname. Each browser gets a secret key, so nobody else can overwrite your row.
 
