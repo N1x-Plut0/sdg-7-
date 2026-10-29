@@ -41,7 +41,7 @@ On a phone, use the big arrow buttons under the screen.
 
 ## What's inside
 
-- **6 levels, one for each part of SDG 7**, each with its own look:
+- **9 levels across all parts of SDG 7**, each with its own look:
 
   | Level | SDG 7 target | Where you run |
   |---|---|---|
@@ -50,15 +50,21 @@ On a phone, use the big arrow buttons under the screen.
   | 3. Smart city | 7.3 Energy efficiency | City windows light up as you go |
   | 4. Clean kitchen | 7.1 Clean cooking | Chimneys stop smoking as homes get clean energy |
   | 5. Mini-grid island | 7.b Infrastructure | Fly over the sea on updrafts |
-  | 6. Grid 2030 | 7.a Working together | The final run under the power lines, at top speed |
+  | 6. Grid 2030 | 7.a Working together | Under the power lines, at top speed |
+  | 7. Solar desert | 7.2 Renewable energy | Solar farms and speed arrows |
+  | 8. River dam | 7.b Infrastructure | A hydropower dam, slow and fast sections |
+  | 9. Night of 2030 | 7.3 Energy around the clock | The final night run: lit homes shine in the dark |
 
 - **Updrafts:** green wind currents that carry you over wide gaps.
-- **Marathon 2030:** an endless run through all six worlds. Can you make it 2030 meters?
-- **13 runners:** Anya, Timur, Engineer Li, Scientist Amara, Courier Niko, Night shift, Sunny Zara, Watt (the light bulb from our presentation), Chef Mei, Captain Kai, Ada of Grid 2030, Hydro Hana and the Golden runner.
-- **21 achievements** that unlock new runners.
-- **18 fact stars** hidden in the levels. Each one reveals a real fact about SDG 7.
+- **Speed arrows:** green arrows speed you up, yellow ones slow you down, blue ones bring back normal speed.
+- **Daily quests:** three new quests every day (light 15 homes, ride 5 updrafts…), with a daily streak.
+- **Marathon 2030:** an endless run through all nine worlds. Can you make it 2030 meters?
+- **13 runners:** Anya, Timur, Engineer Li, Scientist Amara, Courier Niko, Night shift, Sunny Zara, Watt (the light bulb from our presentation), Chef Mei, Captain Kai, Ada of Grid 2030, Hydro Hana, the Golden runner, Explorer Sol, River guard Nadia, Astronaut Yuki, Grandpa Ken and Robot Volt (18 in total).
+- **30 achievements** that unlock new runners.
+- **27 fact stars** hidden in the levels. Each one reveals a real fact about SDG 7.
 - **SDG 7 Book:** all five targets of Goal 7 explained, plus your collection of facts.
-- **Leaderboard:** pick a nickname (no email or password) and compare your score and Marathon distance with other players.
+- **Leaderboards:** pick a nickname (no email or password) and compare score, Marathon distance, fastest time on each level and quests completed.
+- **Stats table:** your homes lit, energy, attempts, best % and best time for every level.
 - **Practice mode:** respawn at checkpoint flags while you learn a level.
 - **Menu demo:** while you're in the menu, a runner plays the level in the background.
 - English and Russian.
@@ -82,7 +88,7 @@ On a phone, use the big arrow buttons under the screen.
 - Smoke from cooking on open fires causes about 3.2 million deaths a year (WHO).
 - A solar mini-grid can power a whole village far away from the national grid.
 
-…and 12 more facts are waiting in the levels.
+…and 21 more facts are waiting in the levels.
 
 ---
 
