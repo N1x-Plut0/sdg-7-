@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Light Dash Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Neucha&family=Patrick+Hand&display=swap">
+<style>
+/* Admin panel for the Light Dash leaderboard: a password gate, then one editable table of players. */
+@font-face { font-family: "Biro Script Plus"; src: local("Biro Script Plus"), url("assets/fonts/BiroScriptPlus.woff2") format("woff2"); font-display: swap; }
+:root {
+  --paper: #f8f4d9; --indigo: #5b6496; --green: #427f12; --yellow: #fdca39; --orange: #ff4401;
+  --font-display: "Biro Script Plus", "Caveat", cursive;
+  --font-body: "Patrick Hand", "Neucha", "Segoe Print", cursive;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--indigo); font: 18px/1.35 var(--font-body); padding: 20px 16px 40px; }
+.wrap { max-width: 1200px; margin: 0 auto; display: grid; gap: 14px; }
+.wrap > *, #panel > * { min-width: 0; }
+#panel { display: grid; gap: 14px; }
+h1 { font: 400 clamp(38px, 6vw, 56px)/1 var(--font-display); margin: 0; }
+h1 span { color: var(--green); }
+p { margin: 0; max-width: 70ch; }
+.sub { color: var(--green); }
+.card { background: #fff; padding: 14px 16px; border: 2px solid var(--indigo); border-radius: 18px 6px 20px 6px / 6px 20px 6px 18px; display: grid; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+input { font: inherit; color: var(--indigo); padding: 6px 10px; border: 2px solid var(--indigo); border-radius: 10px 4px 10px 4px; background: #fff; min-width: 0; }
+input:focus-visible, button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+button { font: inherit; cursor: pointer; padding: 5px 14px; color: var(--indigo); background: var(--paper); border: 2px solid var(--indigo); border-radius: 12px 4px 12px 4px; }
+button.main { background: var(--yellow); font: 400 24px/1.1 var(--font-display); padding: 6px 18px; }
+button.danger { border-color: var(--orange); color: var(--orange); }
+button.sure { background: var(--orange); color: #fff; }
+.msg { min-height: 1.4em; color: var(--green); }
+.msg.err { color: var(--orange); }
+.tablewrap { overflow-x: auto; background: #fff; border: 2px solid var(--indigo); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 8px; border-bottom: 1.5px dashed rgba(91,100,150,.3); text-align: left; vertical-align: middle; white-space: nowrap; }
+thead th { font: 400 20px var(--font-display); color: var(--green); border-bottom: 2px solid var(--indigo); position: sticky; top: 0; background: #fff; }
+td input.name { width: 150px; }
+td input.num { width: 76px; }
+tr.blocked td { background: #fde7df; }
+tr.changed td { background: #fff7d6; }
+.tag { display: inline-block; font-size: 13px; padding: 0 6px; border-radius: 6px; border: 1.5px solid currentColor; margin-left: 4px; }
+.tag.b { color: var(--orange); } .tag.l { color: var(--green); }
+.actions { display: flex; gap: 6px; }
+.count { color: var(--green); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Light Dash <span>Admin</span></h1>
+
+  <section class="card" id="login">
+    <p>Админ-панель таблицы рекордов. Если ты играешь в этом браузере под админским ником (dev mode или enthropy), панель откроется сама. Иначе введи пароль из Netlify (переменная <b>ADMIN_PASSWORD</b>).</p>
+    <form class="row" id="loginForm" autocomplete="off">
+      <input id="pw" type="password" placeholder="Пароль" aria-label="Пароль">
+      <button class="main" type="submit">Войти</button>
+    </form>
+    <p class="msg" id="loginMsg"></p>
+  </section>
+
+  <section id="panel" hidden>
+    <div class="card">
+      <div class="row">
+        <input id="q" type="search" placeholder="Поиск по нику" aria-label="Поиск по нику">
+        <button type="button" id="reload">Обновить</button>
+        <button type="button" id="logout">Выйти</button>
+        <span class="count" id="count"></span>
+      </div>
+      <p style="font-size:15px">Измени ник или цифры и нажми «Сохранить». Игрок может потом сам выбрать другой ник в игре. Админы (метка «админ») заходят сюда из игры без пароля.
+        «Заблокировать» убирает игрока из таблицы, и его результаты больше не принимаются. «Удалить» стирает строку, но игрок сможет снова появиться, если сыграет ещё раз.</p>
+      <p class="msg" id="msg"></p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Ник</th><th>Очки</th><th>Уровни</th><th>Звёзды</th><th>Ачивки</th><th>Задания</th><th>Марафон, м</th><th>Дома</th><th>Обновлён</th><th>Действия</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script src="leaderboard-config.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const API = /netlify\.app$/.test(location.hostname) ? '/api/admin'
+    : (window.LD_LEADERBOARD_URL ? window.LD_LEADERBOARD_URL.replace(/\/api\/leaderboard$/, '/api/admin') : '');
+  let password = '';
+  try { password = sessionStorage.getItem('ld-admin') || ''; } catch (e) {}
+  // An admin account from the game (same browser) gets in without the password.
+  let player = null;
+  try { const v = JSON.parse(localStorage.getItem('light-dash-player')); if (v && v.id && v.key) player = v; } catch (e) {}
+  let usePlayer = false;
+  let players = [];
+
+  const ERR = {
+    wrong_password: 'Неверный пароль.', admin_off: 'Вход по паролю выключен: в Netlify не задан ADMIN_PASSWORD (минимум 8 символов). Админы могут войти из игры под своим ником.',
+    not_admin: 'Этот аккаунт не админ.',
+    bad_name: 'Такой ник нельзя: 2–16 букв или цифр, без грубых слов.', not_found: 'Игрок не найден, обнови список.', server: 'Ошибка сервера, попробуй ещё раз.',
+  };
+  const errText = e => ERR[e] || (e && e.startsWith('bad_') ? 'Неверное значение: ' + e.slice(4) : 'Не получилось связаться с сервером.');
+  const say = (el, text, bad) => { el.textContent = text; el.classList.toggle('err', !!bad); };
+
+  async function call(body) {
+    if (!API) return { error: 'no_api' };
+    try {
+      const r = await fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.assign(usePlayer ? { playerId: player.id, playerKey: player.key } : { password }, body)) });
+      return await r.json();
+    } catch (e) { return { error: 'network' }; }
+  }
+
+  async function load() {
+    say($('msg'), 'Загружаю…');
+    const res = await call({ action: 'list' });
+    if (res.error) {
+      if (['wrong_password', 'admin_off', 'not_admin'].includes(res.error)) { usePlayer = false; showLogin(errText(res.error)); return; }
+      say($('msg'), errText(res.error), true); return;
+    }
+    players = res.players; say($('msg'), ''); render();
+  }
+
+  function showLogin(text) {
+    $('panel').hidden = true; $('login').hidden = false; say($('loginMsg'), text || '', !!text); $('pw').focus();
+  }
+
+  const NUMS = ['levels', 'facts', 'ach', 'quests', 'bestM', 'homes'];
+  function render() {
+    const q = $('q').value.trim().toLowerCase();
+    const list = players.filter(p => !q || p.name.toLowerCase().includes(q));
+    $('count').textContent = `Игроков: ${players.length}${q ? `, найдено: ${list.length}` : ''}`;
+    const tb = $('rows'); tb.textContent = '';
+    list.forEach((p, i) => {
+      const tr = document.createElement('tr'); tr.dataset.id = p.id; if (p.blocked) tr.className = 'blocked';
+      const cell = () => tr.appendChild(document.createElement('td'));
+      cell().textContent = i + 1;
+      const nc = cell(); const ni = document.createElement('input'); ni.className = 'name'; ni.value = p.name; ni.maxLength = 16; ni.dataset.f = 'name'; ni.setAttribute('aria-label', 'Ник'); nc.appendChild(ni);
+      if (p.admin) { const s = document.createElement('span'); s.className = 'tag l'; s.textContent = 'админ'; nc.appendChild(s); }
+      if (player && p.id === player.id) { const s = document.createElement('span'); s.className = 'tag l'; s.textContent = 'это ты'; nc.appendChild(s); }
+      if (p.blocked) { const s = document.createElement('span'); s.className = 'tag b'; s.textContent = 'заблокирован'; nc.appendChild(s); }
+      cell().textContent = p.score;
+      for (const k of NUMS) { const c = cell(); const inp = document.createElement('input'); inp.type = 'number'; inp.min = 0; inp.className = 'num'; inp.value = p[k] || 0; inp.dataset.f = k; inp.setAttribute('aria-label', k); c.appendChild(inp); }
+      cell().textContent = p.updated ? new Date(p.updated).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+      const ac = cell(); const box = document.createElement('div'); box.className = 'actions'; ac.appendChild(box);
+      const btn = (text, cls, fn) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = text; if (cls) b.className = cls; b.addEventListener('click', () => fn(b)); box.appendChild(b); return b; };
+      btn('Сохранить', 'main', () => saveRow(tr, p));
+      btn(p.admin ? 'Снять админа' : 'Сделать админом', '', () => setAdmin(p, !p.admin));
+      btn(p.blocked ? 'Разблокировать' : 'Заблокировать', 'danger', () => act(p.blocked ? 'unblock' : 'block', p));
+      btn('Удалить', 'danger', b => {
+        if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = 'Точно удалить?'; setTimeout(() => { b.classList.remove('sure'); b.textContent = 'Удалить'; }, 4000); return; }
+        act('delete', p);
+      });
+      tr.addEventListener('input', () => tr.classList.add('changed'));
+      tb.appendChild(tr);
+    });
+  }
+
+  async function saveRow(tr, p) {
+    const fields = {};
+    const name = tr.querySelector('[data-f="name"]').value.trim();
+    if (name !== p.name) fields.name = name;
+    for (const k of NUMS) { const v = Number(tr.querySelector(`[data-f="${k}"]`).value); if (v !== (p[k] || 0)) fields[k] = v; }
+    if (!Object.keys(fields).length) { say($('msg'), 'Ничего не изменилось.'); return; }
+    const res = await call({ action: 'update', id: p.id, fields });
+    if (res.error) { say($('msg'), errText(res.error), true); return; }
+    Object.assign(p, res.player); say($('msg'), `Сохранено: ${res.player.name}`); render();
+  }
+
+  async function setAdmin(p, on) {
+    const res = await call({ action: 'update', id: p.id, fields: { admin: on } });
+    if (res.error) { say($('msg'), errText(res.error), true); return; }
+    Object.assign(p, res.player); say($('msg'), on ? `${p.name} теперь админ` : `${p.name} больше не админ`); render();
+  }
+
+  async function act(action, p) {
+    const res = await call({ action, id: p.id });
+    if (res.error) { say($('msg'), errText(res.error), true); return; }
+    if (action === 'delete') { players = players.filter(x => x.id !== p.id); say($('msg'), `Удалён: ${p.name}`); }
+    else { Object.assign(p, res.player); say($('msg'), action === 'block' ? `Заблокирован: ${p.name}` : `Разблокирован: ${p.name}`); }
+    render();
+  }
+
+  $('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    password = $('pw').value;
+    if (!API) { say($('loginMsg'), 'Адрес таблицы рекордов не задан (leaderboard-config.js).', true); return; }
+    say($('loginMsg'), 'Проверяю…');
+    const res = await call({ action: 'list' });
+    if (res.error) { say($('loginMsg'), errText(res.error), true); return; }
+    try { sessionStorage.setItem('ld-admin', password); } catch (err) {}
+    $('pw').value = ''; $('login').hidden = true; $('panel').hidden = false;
+    players = res.players; render();
+  });
+  $('q').addEventListener('input', render);
+  $('reload').addEventListener('click', load);
+  $('logout').addEventListener('click', () => { password = ''; usePlayer = false; player = null; try { sessionStorage.removeItem('ld-admin'); } catch (e) {} showLogin(); });
+
+  (async () => {
+    if (player && API) {
+      usePlayer = true;
+      const res = await call({ action: 'list' });
+      if (!res.error) { $('login').hidden = true; $('panel').hidden = false; players = res.players; render(); return; }
+      usePlayer = false;
+    }
+    if (password) { $('login').hidden = true; $('panel').hidden = false; load(); } else showLogin();
+  })();
+})();
+</script>
+</body>
+</html>

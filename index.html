@@ -243,7 +243,7 @@ const T = {
     loading: 'Загружаю…', boardOff: 'Таблица рекордов ещё не подключена.', boardOffHint: 'Она заработает, когда игру выложат на Netlify.',
     boardErr: 'Не получилось загрузить рекорды. Проверь интернет и попробуй ещё раз.', you: 'ты', noScores: 'Пока никого нет. Стань первым!',
     yourRank: 'Твоё место', notRanked: 'ещё нет в таблице', points: 'очков', scoreHow: 'Очки: 1000 за уровень, 200 за звезду-факт, 50 за ачивку, 20 за задание (до 200 заданий), плюс метры Марафона (до 5000).',
-    saved: 'Сохранено!', anon: 'Игрок',
+    saved: 'Сохранено!', nameTaken: 'Этот ник уже занят. Выбери другой.', adminPanel: 'Админ-панель', anon: 'Игрок',
   },
   en: {
     tagline: 'Run, collect clean energy and light up homes. SDG 7',
@@ -282,7 +282,7 @@ const T = {
     loading: 'Loading…', boardOff: 'The leaderboard isn\'t connected yet.', boardOffHint: 'It starts working once the game is published on Netlify.',
     boardErr: 'Couldn\'t load the leaderboard. Check your internet and try again.', you: 'you', noScores: 'Nobody here yet. Be the first!',
     yourRank: 'Your place', notRanked: 'not on the board yet', points: 'points', scoreHow: 'Score: 1000 per level, 200 per fact star, 50 per achievement, 20 per quest (up to 200 quests), plus Marathon meters (up to 5000).',
-    saved: 'Saved!', anon: 'Player',
+    saved: 'Saved!', nameTaken: 'This nickname is taken. Choose another one.', adminPanel: 'Admin panel', anon: 'Player',
   },
 };
 
@@ -1576,13 +1576,16 @@ function nickOk(n) {
 const esc = x => String(x).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 let pushTimer = 0;
 // Sends this player's progress; resolves to the server's answer, or null when offline or not set up.
-async function pushScore() {
+async function pushScore(rename) {
   if (!save.nick || !lbOn()) return null;
   const me = lbPlayer(), st = profileStats();
   try {
     const r = await fetch(LB_URL, { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: me.id, key: me.key, name: save.nick, skin: String(save.skin).slice(0, 12), levels: st.levels, facts: st.facts, ach: st.ach, bestM: st.bestM, homes: st.homes, quests: st.quests, times: st.times }) });
-    return await r.json();
+      body: JSON.stringify({ id: me.id, key: me.key, name: save.nick, rename: !!rename, skin: String(save.skin).slice(0, 12), levels: st.levels, facts: st.facts, ach: st.ach, bestM: st.bestM, homes: st.homes, quests: st.quests, times: st.times }) });
+    const res = await r.json();
+    // the admin may have corrected this nickname: keep the game in step
+    if (res && res.ok && res.name && res.name !== save.nick) { save.nick = res.name; persist(); }
+    return res;
   } catch (e) { console.warn('Score not saved:', e); return null; }
 }
 const pushSoon = () => { clearTimeout(pushTimer); pushTimer = setTimeout(pushScore, 2500); };
@@ -1618,7 +1621,8 @@ async function board(tab, lvIdx) {
   const mine = profileStats();
   show(`${head}${tabs}<ol class="board">${list}</ol>
     <p class="sub">${t('yourRank')}: <b>${data.me ? data.me.rank : t('notRanked')}</b>${save.nick ? ` · ${esc(save.nick)} · ${isTime ? fmtTime(mine.times[lvIdx]) : tab === 'bestM' ? mine.bestM + ' ' + t('meters') : tab === 'quests' ? mine.quests : mine.score + ' ' + t('points')}` : ''}</p>
-    <p style="font-size:15px">${t('scoreHow')}</p>`);
+    <p style="font-size:15px">${t('scoreHow')}</p>
+    ${data.me && data.me.admin ? `<div class="row"><a class="btn alt" href="admin.html">${t('adminPanel')}</a></div>` : ''}`);
   wire();
 }
 
@@ -1635,8 +1639,8 @@ function nickname(back) {
     const n = inp.value.trim().replace(/\s+/g, ' ');
     if (!nickOk(n)) { screen.querySelector('#nMsg').textContent = t('nickBad'); return; }
     const old = save.nick; save.nick = n;
-    const res = await pushScore();
-    if (res && res.error === 'bad_name') { save.nick = old; screen.querySelector('#nMsg').textContent = t('nickBad'); return; }
+    const res = await pushScore(true);
+    if (res && (res.error === 'bad_name' || res.error === 'name_taken')) { save.nick = old; screen.querySelector('#nMsg').textContent = t(res.error === 'name_taken' ? 'nameTaken' : 'nickBad'); return; }
     persist(); screen.querySelector('#nMsg').textContent = t('saved');
     back();
   });

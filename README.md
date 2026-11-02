@@ -112,6 +112,15 @@ the GitHub Pages copy uses the address in `leaderboard-config.js`
 (currently https://splendorous-gumption-10c31d.netlify.app).
 
 Players choose only a nickname. Each browser gets a secret key, so nobody else can overwrite your row.
+Players can change their nickname any time from the game.
+
+### Admin panel
+
+`admin.html` lets the game's admins correct nicknames and numbers, block or delete players, and make other players admins.
+- The nicknames **dev mode** and **enthropy** are reserved for the admins: only one player can hold each, and that player
+  becomes an admin. In the same browser, the leaderboard then shows an **Admin panel** button and the panel opens without a password.
+  Change the list with the `ADMIN_NAMES` environment variable in Netlify (comma separated).
+- Optional backup login: set `ADMIN_PASSWORD` (8+ characters) in Netlify → Project configuration → Environment variables.
 
 ## Fonts
 
