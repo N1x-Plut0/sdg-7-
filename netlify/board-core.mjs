@@ -16,6 +16,10 @@ async function sha256(s) {
   return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 const LEVELS = 9;
+// Nicknames that belong to the game's admins. Only one player can hold each, and that player
+// can open the admin panel. Set ADMIN_NAMES in Netlify (comma separated) to change the list.
+const nameKey = n => String(n || '').toLowerCase().replace(/[^a-zа-яё0-9]/g, '');
+const adminNames = () => String((typeof process !== 'undefined' && process.env && process.env.ADMIN_NAMES) || 'dev mode,enthropy').split(',').map(nameKey).filter(Boolean);
 const pub = r => ({ id: r.id, name: r.name, skin: r.skin, score: r.score, bestM: r.bestM, levels: r.levels, facts: r.facts, quests: r.quests || 0 });
 
 export async function handle(req, store) {
@@ -35,7 +39,7 @@ async function route(req, store) {
     const want = url.searchParams.get('sort') || 'score';
     const me = url.searchParams.get('me') || '';
     const { blobs } = await store.list();
-    let rows = (await Promise.all(blobs.slice(0, 3000).map(b => store.get(b.key, { type: 'json' })))).filter(r => r && r.id);
+    let rows = (await Promise.all(blobs.slice(0, 3000).map(b => store.get(b.key, { type: 'json' })))).filter(r => r && r.id && !r.blocked);
     const lvl = /^t[0-9]$/.test(want) ? Number(want.slice(1)) : -1;
     let sort = 'score', view = pub;
     if (lvl >= 0 && lvl < LEVELS) {
@@ -49,7 +53,7 @@ async function route(req, store) {
       rows.sort((a, b) => ((b[sort] || 0) - (a[sort] || 0)) || (a.updated - b.updated));
     }
     const rank = rows.findIndex(r => r.id === me);
-    return json({ sort, total: rows.length, top: rows.slice(0, 20).map(view), me: rank >= 0 ? { rank: rank + 1, ...view(rows[rank]) } : null });
+    return json({ sort, total: rows.length, top: rows.slice(0, 20).map(view), me: rank >= 0 ? { rank: rank + 1, ...view(rows[rank]), admin: !!rows[rank].admin } : null });
   }
 
   if (req.method === 'POST') {
@@ -67,13 +71,97 @@ async function route(req, store) {
     const keyHash = await sha256(b.key);
     const old = await store.get(b.id, { type: 'json' });
     if (old && old.keyHash !== keyHash) return json({ error: 'not_yours' }, 403);
+    if (old && old.blocked) return json({ error: 'blocked' }, 403);
+    // The name changes only when the player renames on purpose (or on the first save).
+    // Automatic saves keep the current name, so a name the admin corrected stays.
+    let finalName = old && !b.rename ? old.name : name;
+    let admin = !!(old && old.admin);
+    if (finalName !== (old && old.name) && adminNames().includes(nameKey(finalName))) {
+      const { blobs } = await store.list();
+      const others = (await Promise.all(blobs.map(x => x.key === b.id ? null : store.get(x.key, { type: 'json' })))).filter(r => r && nameKey(r.name) === nameKey(finalName));
+      if (others.length) return json({ error: 'name_taken' }, 409);
+      admin = true;
+    } else if (!admin && old && adminNames().includes(nameKey(old.name))) {
+      // the player already used an admin nickname before admins existed: they keep it if nobody else has it
+      const { blobs } = await store.list();
+      const others = (await Promise.all(blobs.map(x => x.key === b.id ? null : store.get(x.key, { type: 'json' })))).filter(r => r && nameKey(r.name) === nameKey(old.name));
+      if (!others.length) admin = true;
+    }
     const row = {
-      id: b.id, keyHash, name, skin, levels: b.levels, facts: b.facts, ach: b.ach, bestM: b.bestM, homes: b.homes, quests, times,
+      id: b.id, keyHash, name: finalName, admin, skin, levels: b.levels, facts: b.facts, ach: b.ach, bestM: b.bestM, homes: b.homes, quests, times,
       score: b.levels * 1000 + b.facts * 200 + b.ach * 50 + Math.min(quests, 200) * 20 + Math.min(b.bestM, 5000), updated: Date.now(),
     };
     await store.setJSON(b.id, row);
-    return json({ ok: true, score: row.score });
+    return json({ ok: true, score: row.score, name: row.name });
   }
 
   return json({ error: 'method' }, 405);
+}
+
+// ---------------------------------------------------------------------------
+// Admin: list, correct, block or delete players. Needs the ADMIN_PASSWORD
+// environment variable set in Netlify; without it the admin API stays off.
+// ---------------------------------------------------------------------------
+const score = r => r.levels * 1000 + r.facts * 200 + r.ach * 50 + Math.min(r.quests || 0, 200) * 20 + Math.min(r.bestM, 5000);
+const adminView = r => ({ id: r.id, name: r.name, skin: r.skin, score: r.score, levels: r.levels, facts: r.facts, ach: r.ach, quests: r.quests || 0,
+  bestM: r.bestM, homes: r.homes, times: r.times || [], updated: r.updated, blocked: !!r.blocked, admin: !!r.admin });
+const wait = ms => new Promise(res => setTimeout(res, ms));
+
+export async function handleAdmin(req, store, password) {
+  try {
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+    if (req.method !== 'POST') return json({ error: 'method' }, 405);
+    let b;
+    try { b = await req.json(); } catch (e) { return json({ error: 'bad_json' }, 400); }
+    if (!b) return json({ error: 'bad_json' }, 400);
+    // Two ways in: an admin player's own secret key (the game's admin accounts), or ADMIN_PASSWORD.
+    let ok = false;
+    if (typeof b.playerId === 'string' && /^[a-f0-9-]{16,64}$/.test(b.playerId) && typeof b.playerKey === 'string') {
+      const me = await store.get(b.playerId, { type: 'json' });
+      ok = !!(me && me.admin && !me.blocked && me.keyHash === (await sha256(b.playerKey)));
+    } else if (password && password.length >= 8 && typeof b.password === 'string') {
+      // compare hashes so the check takes the same time for every guess
+      ok = (await sha256(b.password)) === (await sha256(password));
+    }
+    if (!ok) { await wait(1200); return json({ error: b.playerId ? 'not_admin' : (password && password.length >= 8 ? 'wrong_password' : 'admin_off') }, 401); }
+    if (b.action === 'whoami') return json({ ok: true });
+
+    if (b.action === 'list') {
+      const { blobs } = await store.list();
+      const rows = (await Promise.all(blobs.slice(0, 5000).map(x => store.get(x.key, { type: 'json' })))).filter(r => r && r.id);
+      rows.sort((x, y) => (y.score || 0) - (x.score || 0));
+      return json({ players: rows.map(adminView) });
+    }
+    if (typeof b.id !== 'string' || !/^[a-f0-9-]{16,64}$/.test(b.id)) return json({ error: 'bad_id' }, 400);
+    const row = await store.get(b.id, { type: 'json' });
+    if (!row) return json({ error: 'not_found' }, 404);
+
+    if (b.action === 'delete') { await store.delete(b.id); return json({ ok: true }); }
+    if (b.action === 'block' || b.action === 'unblock') {
+      row.blocked = b.action === 'block'; await store.setJSON(b.id, row); return json({ ok: true, player: adminView(row) });
+    }
+    if (b.action === 'update') {
+      const f = b.fields || {};
+      if (f.name !== undefined) {
+        const name = typeof f.name === 'string' ? f.name.trim().replace(/\s+/g, ' ') : '';
+        if (!nickOk(name)) return json({ error: 'bad_name' }, 400);
+        row.name = name;
+      }
+      if (typeof f.admin === 'boolean') row.admin = f.admin;
+      const lim = { levels: [0, LEVELS], facts: [0, LEVELS * 3], ach: [0, 50], quests: [0, 100000], bestM: [0, 100000], homes: [0, 1000000] };
+      for (const [k, [lo, hi]] of Object.entries(lim)) {
+        if (f[k] === undefined) continue;
+        if (!int(f[k], lo, hi)) return json({ error: 'bad_' + k }, 400);
+        row[k] = f[k];
+      }
+      if (f.clearTimes) row.times = [];
+      row.score = score(row);
+      await store.setJSON(b.id, row);
+      return json({ ok: true, player: adminView(row) });
+    }
+    return json({ error: 'bad_action' }, 400);
+  } catch (e) {
+    console.error(e);
+    return json({ error: 'server' }, 500);
+  }
 }
