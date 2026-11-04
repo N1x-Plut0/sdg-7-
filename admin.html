@@ -102,7 +102,7 @@ tr.changed td { background: #fff7d6; }
   const ERR = {
     wrong_password: 'Неверный пароль.', admin_off: 'Вход по паролю выключен: в Netlify не задан ADMIN_PASSWORD (минимум 8 символов). Админы могут войти из игры под своим ником.',
     not_admin: 'Этот аккаунт не админ.',
-    bad_name: 'Такой ник нельзя: 2–16 букв или цифр, без грубых слов.', not_found: 'Игрок не найден, обнови список.', server: 'Ошибка сервера, попробуй ещё раз.',
+    bad_name: 'Такой ник нельзя: 2–16 латинских букв (A–Z) или цифр, без грубых слов.', not_found: 'Игрок не найден, обнови список.', server: 'Ошибка сервера, попробуй ещё раз.',
   };
   const errText = e => ERR[e] || (e && e.startsWith('bad_') ? 'Неверное значение: ' + e.slice(4) : 'Не получилось связаться с сервером.');
   const say = (el, text, bad) => { el.textContent = text; el.classList.toggle('err', !!bad); };

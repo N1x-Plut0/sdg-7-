@@ -3,7 +3,7 @@
 
 const BAD = ['fuck', 'shit', 'bitch', 'cunt', 'dick', 'nigg', 'fag', 'whore', 'slut', 'хуй', 'хуе', 'пизд', 'бля', 'ебат', 'ебан', 'сука', 'мудак', 'пидор', 'шлюх', 'жоп'];
 export function nickOk(n) {
-  if (typeof n !== 'string' || !/^[A-Za-zА-Яа-яЁё0-9 _.-]{2,16}$/.test(n) || !/[A-Za-zА-Яа-яЁё0-9]/.test(n)) return false;
+  if (typeof n !== 'string' || !/^[A-Za-z0-9 _.-]{2,16}$/.test(n) || !/[A-Za-z0-9]/.test(n)) return false;
   const low = n.toLowerCase().replace(/[^a-zа-яё]/g, '');
   return !BAD.some(w => low.includes(w));
 }
