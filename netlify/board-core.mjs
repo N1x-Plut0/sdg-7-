@@ -15,7 +15,7 @@ async function sha256(s) {
   const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
-const LEVELS = 9;
+const LEVELS = 12;
 // Nicknames that belong to the game's admins. Only one player can hold each, and that player
 // can open the admin panel. Set ADMIN_NAMES in Netlify (comma separated) to change the list.
 const nameKey = n => String(n || '').toLowerCase().replace(/[^a-zа-яё0-9]/g, '');
@@ -40,7 +40,7 @@ async function route(req, store) {
     const me = url.searchParams.get('me') || '';
     const { blobs } = await store.list();
     let rows = (await Promise.all(blobs.slice(0, 3000).map(b => store.get(b.key, { type: 'json' })))).filter(r => r && r.id && !r.blocked);
-    const lvl = /^t[0-9]$/.test(want) ? Number(want.slice(1)) : -1;
+    const lvl = /^t[0-9]{1,2}$/.test(want) ? Number(want.slice(1)) : -1;
     let sort = 'score', view = pub;
     if (lvl >= 0 && lvl < LEVELS) {
       // Fastest finish on one level: lower time is better, players without a time are left out.
