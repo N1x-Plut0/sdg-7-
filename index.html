@@ -239,7 +239,7 @@ const T = {
     goal: 'Цель SDG',
     board: 'Рекорды', boardSub: 'Лучшие игроки со всего мира', tabScore: 'Очки', tabMarathon: 'Марафон',
     nick: 'Твой ник', nickSub: 'Под этим ником тебя увидят в таблице рекордов. Не пиши настоящее имя и фамилию.', nickPh: 'Например, SunnyFox', save: 'Сохранить',
-    setNick: 'Выбрать ник', changeNick: 'Сменить ник', nickBad: 'Ник: от 2 до 16 букв или цифр, без грубых слов.',
+    setNick: 'Выбрать ник', changeNick: 'Сменить ник', nickBad: 'Ник: от 2 до 16 латинских букв (A–Z) или цифр, без грубых слов. Русские буквы нельзя.',
     loading: 'Загружаю…', boardOff: 'Таблица рекордов ещё не подключена.', boardOffHint: 'Она заработает, когда игру выложат на Netlify.',
     boardErr: 'Не получилось загрузить рекорды. Проверь интернет и попробуй ещё раз.', you: 'ты', noScores: 'Пока никого нет. Стань первым!',
     yourRank: 'Твоё место', notRanked: 'ещё нет в таблице', points: 'очков', scoreHow: 'Очки: 1000 за уровень, 200 за звезду-факт, 50 за ачивку, 20 за задание (до 200 заданий), плюс метры Марафона (до 5000).',
@@ -278,7 +278,7 @@ const T = {
     goal: 'SDG target',
     board: 'Leaderboard', boardSub: 'Top players from around the world', tabScore: 'Score', tabMarathon: 'Marathon',
     nick: 'Your nickname', nickSub: 'Other players see this name on the leaderboard. Don\'t use your real full name.', nickPh: 'For example, SunnyFox', save: 'Save',
-    setNick: 'Choose a nickname', changeNick: 'Change nickname', nickBad: 'Nickname: 2 to 16 letters or numbers, no rude words.',
+    setNick: 'Choose a nickname', changeNick: 'Change nickname', nickBad: 'Nickname: 2 to 16 Latin letters (A–Z) or numbers, no rude words.',
     loading: 'Loading…', boardOff: 'The leaderboard isn\'t connected yet.', boardOffHint: 'It starts working once the game is published on Netlify.',
     boardErr: 'Couldn\'t load the leaderboard. Check your internet and try again.', you: 'you', noScores: 'Nobody here yet. Be the first!',
     yourRank: 'Your place', notRanked: 'not on the board yet', points: 'points', scoreHow: 'Score: 1000 per level, 200 per fact star, 50 per achievement, 20 per quest (up to 200 quests), plus Marathon meters (up to 5000).',
@@ -1569,7 +1569,7 @@ function profileStats() {
 }
 const BAD = ['fuck', 'shit', 'bitch', 'cunt', 'dick', 'nigg', 'fag', 'whore', 'slut', 'хуй', 'хуе', 'пизд', 'бля', 'ебат', 'ебан', 'сука', 'мудак', 'пидор', 'шлюх', 'жоп'];
 function nickOk(n) {
-  if (!/^[A-Za-zА-Яа-яЁё0-9 _.-]{2,16}$/.test(n) || !/[A-Za-zА-Яа-яЁё0-9]/.test(n)) return false;
+  if (!/^[A-Za-z0-9 _.-]{2,16}$/.test(n) || !/[A-Za-z0-9]/.test(n)) return false;
   const low = n.toLowerCase().replace(/[^a-zа-яё]/g, '');
   return !BAD.some(w => low.includes(w));
 }
