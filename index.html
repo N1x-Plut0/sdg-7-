@@ -125,6 +125,31 @@ input.nick:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px
 .lvpick { gap: 6px; }
 .lvpick .chip { min-width: 36px; justify-content: center; }
 .lvpick .chip.on { background: var(--yellow); }
+.cwrap { display: grid; gap: 6px; }
+.cwrap .chip { justify-self: center; }
+.card.newc { justify-items: center; align-content: center; border-style: dashed; min-height: 150px; }
+.card .plus { font: 400 54px/1 var(--font-display); color: var(--green); }
+.editor { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 620px) { .editor { grid-template-columns: minmax(0, 1fr); } }
+.editor canvas { width: 180px; height: 210px; justify-self: center; background: #fff; border: 2px solid var(--indigo); border-radius: 16px 6px 16px 6px; }
+.edctl { display: grid; gap: 8px; }
+.edctl h4 { margin: 4px 0 0; font: 400 20px var(--font-display); color: var(--green); }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--indigo); cursor: pointer; padding: 0; }
+.swatch[aria-pressed="true"] { outline: 3px solid var(--orange); outline-offset: 2px; }
+.chip[aria-pressed="true"] { background: var(--yellow); }
+.chip:disabled { opacity: .45; cursor: not-allowed; }
+.edui { display: grid; gap: 8px; }
+.edui .row { gap: 6px; }
+.edui select, .edui input.nick { font: 18px var(--font-body); color: var(--indigo); padding: 5px 8px; border: 2px solid var(--indigo); border-radius: 10px 4px 10px 4px; background: #fff; max-width: 100%; }
+.edui input[type=range] { width: 100%; accent-color: var(--green); }
+.edui .btn { font-size: 22px; padding: 5px 14px 7px; }
+.tools-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.lvrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; padding: 8px 12px; background: #fff; border: 2px solid var(--indigo); border-radius: 12px 4px 14px 4px; }
+.lvrow .nm { font: 400 24px/1.1 var(--font-display); overflow-wrap: anywhere; }
+.lvrow .d { font-size: 15px; color: var(--green); display: block; }
+.mylv { display: grid; gap: 8px; max-width: 720px; }
+textarea.code { width: 100%; min-height: 70px; font: 14px ui-monospace, Menlo, monospace; color: var(--indigo); border: 2px solid var(--indigo); border-radius: 10px; padding: 8px; overflow-wrap: anywhere; }
 .tgt b { display: block; font: 400 22px/1.1 var(--font-display); color: var(--green); }
 .stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 20px; }
 .stats b { color: var(--green); font-weight: 400; }
@@ -164,11 +189,14 @@ input.nick:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px
     <canvas id="cv" aria-label="Light Dash"></canvas>
     <div class="hudbtns">
       <button type="button" id="bPause" aria-label="Pause">II</button>
-      <button type="button" id="bSound" aria-label="Sound">♪</button>
+      <button type="button" id="bSound" aria-label="Sound effects">♪</button>
+      <button type="button" id="bMusic" aria-label="Music">♫</button>
     </div>
     <div class="screen" id="screen"></div>
     <div class="toast" id="toast" hidden></div>
   </div>
+
+  <div class="edui" id="edUI" hidden></div>
 
   <div class="pad" id="pad">
     <button type="button" class="key" data-k="left"><span class="a">←</span><span class="l" data-t="kLeft"></span></button>
@@ -216,7 +244,7 @@ const T = {
     how1: 'Бегун бежит сам. ↑ или пробел: прыжок (держи, чтобы прыгать снова). ↓: присесть под облако смога, в воздухе быстро упасть. →: рывок сквозь стену смога (−1 ⚡). ←: зажечь дом рядом (−1 ⚡).',
     how2: 'Жёлтые солнышки в воздухе: нажми ↑, когда касаешься, и прыгнешь ещё раз. Синие панели на земле подбрасывают высоко. Зелёные потоки ветра сами несут над ямами. На телефоне используй кнопки под экраном.',
     moreTitle: 'Ещё',
-    more1: '9 уровней, Марафон и ежедневные задания. В каждом уровне спрятаны 3 звезды-факта о SDG 7, они собираются в «Книгу SDG 7». Ачивки открывают новых персонажей. Прогресс сохраняется в этом браузере.',
+    more1: '12 уровней, Марафон, ежедневные задания, свои бегуны и редактор уровней («Создать»). В каждом уровне спрятаны 3 звезды-факта о SDG 7, они собираются в «Книгу SDG 7». Ачивки открывают новых персонажей. Прогресс сохраняется в этом браузере.',
     moreLink: 'Первая игра: «Light the Valley» (стратегия) →',
     play: 'Играть', levels: 'Уровни', skins: 'Персонажи', achievements: 'Ачивки', back: 'Назад', lang: 'English',
     menuSub: 'Раннер про чистую энергию для всех. Цель 7 ООН.',
@@ -255,7 +283,7 @@ const T = {
     how1: 'Your runner runs on their own. ↑ or Space: jump (hold to keep jumping). ↓: duck under smog clouds, or drop fast in the air. →: dash through a smog wall (−1 ⚡). ←: light the home next to you (−1 ⚡).',
     how2: 'Yellow suns in the air: press ↑ while touching one to jump again. Blue panels on the ground launch you high. Green updrafts carry you over wide gaps. On a phone, use the buttons under the screen.',
     moreTitle: 'More',
-    more1: '9 levels, a Marathon and daily quests. Each level hides 3 fact stars about SDG 7, collected in the SDG 7 Book. Achievements unlock new runners. Progress is saved in this browser.',
+    more1: '12 levels, a Marathon, daily quests, your own runners and a level editor (Create). Each level hides 3 fact stars about SDG 7, collected in the SDG 7 Book. Achievements unlock new runners. Progress is saved in this browser.',
     moreLink: 'Our first game: "Light the Valley" (strategy) →',
     play: 'Play', levels: 'Levels', skins: 'Runners', achievements: 'Achievements', back: 'Back', lang: 'Русский',
     menuSub: 'A runner about clean energy for everyone. UN Goal 7.',
@@ -286,6 +314,37 @@ const T = {
   },
 };
 
+Object.assign(T.ru, {
+  create: 'Создать', createSub: 'Создай своего бегуна и свои уровни, а потом поделись ими с друзьями.', newRunner: 'Новый бегун', runnerEditor: 'Редактор бегуна', yourRunner: 'Твой бегун',
+  rName: 'Имя', rShirt: 'Кофта', rPants: 'Штаны', rSkin: 'Кожа', rHair: 'Волосы', rStyle: 'Причёска и шапка', rHat: 'Цвет шапки', rExtras: 'Аксессуары', rGoggles: 'Очки', rCrown: 'Солнечная корона',
+  lockedBy: 'Откроется вместе с персонажем', saveRunner: 'Сохранить и надеть', del: 'Удалить', sure: 'Точно удалить?', edit: 'Изменить',
+  myLevels: 'Мои уровни', newLevel: 'Новый уровень', levelEditor: 'Редактор уровней', loadCode: 'Загрузить уровень по коду', codePh: 'Вставь сюда код уровня', load: 'Загрузить',
+  badCode: 'Этот код не работает. Проверь, что он скопирован целиком.', noLevels: 'Пока пусто. Нажми «Новый уровень»!',
+  edTest: 'Тест', edAuto: 'Проверка автопилотом', edSave: 'Сохранить', edShare: 'Поделиться', edExit: 'Готово', edClear: 'Очистить',
+  edHelp: 'Выбери предмет и нажми на дорожку, чтобы поставить его. Ластиком нажми на предмет, чтобы убрать. Листай дорожку перетаскиванием, ползунком или стрелками ← →.',
+  edName: 'Название', edTheme: 'Мир', edSpeed: 'Скорость', speedN: ['Медленно', 'Обычно', 'Быстро', 'Очень быстро'],
+  autoOk: 'Автопилот прошёл твой уровень!', autoFail: 'Автопилот разбился на {p}%. Возможно, это место слишком сложное.', levelSaved: 'Уровень сохранён!',
+  copied: 'Скопировано! Отправь другу.', copyFail: 'Не получилось скопировать. Выдели текст и скопируй вручную.', shareText: 'Отправь другу код или ссылку. По ссылке уровень откроется сразу.', shareCode: 'Код', shareLink: 'Ссылка', copy: 'Копировать',
+  sharedLevel: 'Уровень от друга', saveToMine: 'Сохранить в мои уровни', customDone: 'Уровень пройден!', backEditor: 'В редактор', fullLevels: 'Можно хранить до 8 уровней. Сначала удали один.', fullRunners: 'Можно создать до 4 бегунов.',
+  emptyLevel: 'Сначала поставь хотя бы один предмет.', untitled: 'Мой уровень', noSpace: 'Здесь нет места: предметы не должны пересекаться.', startZone: 'Старт: здесь ставить нельзя', verified: 'проверен',
+  tools: { spike: 'Шип', spike2: '2 шипа', spike3: '3 шипа', pit: 'Яма', pitW: 'Широкая яма + солнце', gust: 'Поток ветра', block: 'Блок', blockH: 'Высокий блок', cloud: 'Облако смога', wall: 'Стена смога', pad: 'Батут', energy: 'Энергия ×3', house: 'Дом', fast: '>> Быстро', normal: '> Обычно', slow: '< Медленно', check: 'Флажок', erase: 'Ластик' },
+});
+Object.assign(T.en, {
+  create: 'Create', createSub: 'Make your own runner and your own levels, then share them with friends.', newRunner: 'New runner', runnerEditor: 'Runner editor', yourRunner: 'Your runner',
+  rName: 'Name', rShirt: 'Shirt', rPants: 'Trousers', rSkin: 'Skin', rHair: 'Hair', rStyle: 'Hairstyle & hat', rHat: 'Hat colour', rExtras: 'Extras', rGoggles: 'Glasses', rCrown: 'Sun crown',
+  lockedBy: 'Unlocks together with', saveRunner: 'Save and wear', del: 'Delete', sure: 'Sure? Delete', edit: 'Edit',
+  myLevels: 'My levels', newLevel: 'New level', levelEditor: 'Level editor', loadCode: 'Load a level from a code', codePh: 'Paste a level code here', load: 'Load',
+  badCode: 'This code doesn\'t work. Check that you copied all of it.', noLevels: 'Nothing here yet. Press "New level"!',
+  edTest: 'Test', edAuto: 'Autopilot check', edSave: 'Save', edShare: 'Share', edExit: 'Done', edClear: 'Clear',
+  edHelp: 'Pick an object, then tap the track to place it. With the eraser, tap an object to remove it. Scroll the track by dragging, with the slider or with ← →.',
+  edName: 'Name', edTheme: 'World', edSpeed: 'Speed', speedN: ['Slow', 'Normal', 'Fast', 'Very fast'],
+  autoOk: 'The autopilot finished your level!', autoFail: 'The autopilot crashed at {p}%. That part may be too hard.', levelSaved: 'Level saved!',
+  copied: 'Copied! Send it to a friend.', copyFail: 'Couldn\'t copy. Select the text and copy it yourself.', shareText: 'Send a friend the code or the link. The link opens the level straight away.', shareCode: 'Code', shareLink: 'Link', copy: 'Copy',
+  sharedLevel: 'A friend\'s level', saveToMine: 'Save to my levels', customDone: 'Level complete!', backEditor: 'Back to editor', fullLevels: 'You can keep up to 8 levels. Delete one first.', fullRunners: 'You can make up to 4 runners.',
+  emptyLevel: 'Place at least one object first.', untitled: 'My level', noSpace: 'No space here: objects can\'t overlap.', startZone: 'Start: nothing can go here', verified: 'checked',
+  tools: { spike: 'Spike', spike2: '2 spikes', spike3: '3 spikes', pit: 'Gap', pitW: 'Wide gap + sun', gust: 'Updraft', block: 'Block', blockH: 'Tall block', cloud: 'Smog cloud', wall: 'Smog wall', pad: 'Jump pad', energy: 'Energy ×3', house: 'Home', fast: '>> Fast', normal: '> Normal', slow: '< Slow', check: 'Flag', erase: 'Eraser' },
+});
+
 const LEVEL_TXT = [
   { ru: ['Деревня без света', '7.1 Доступ для всех', 'Около 685 миллионов человек живут без электричества. Пробеги через деревню и зажги свет в каждом доме.'],
     en: ['Village in the dark', '7.1 Access for all', 'About 685 million people live without electricity. Run through the village and light every home.'] },
@@ -305,8 +364,14 @@ const LEVEL_TXT = [
     en: ['River dam', '7.b Infrastructure', 'Flowing water spins hydropower turbines. Fly over the river on updrafts and keep your rhythm, slow and fast.'] },
   { ru: ['Ночь 2030', '7.3 Энергия всегда', 'Солнце село, но свет должен гореть. Финальный ночной забег: каждый зажжённый дом сияет в темноте.'],
     en: ['Night of 2030', '7.3 Energy around the clock', 'The sun has set, but the lights must stay on. The final night run: every home you light shines in the dark.'] },
+  { ru: ['Штормовой берег', '7.2 Возобновляемая энергия', 'Над морем бушует шторм, но морские ветряки только сильнее крутятся. Беги сквозь дождь и лети на порывах ветра.'],
+    en: ['Storm coast', '7.2 Renewable energy', 'A storm rages over the sea, but the offshore turbines only spin faster. Run through the rain and ride the gusts.'] },
+  { ru: ['Школа будущего', '7.1 Свет для школ', 'Каждая четвёртая школа в мире без света. Зажги школьный квартал, чтобы дети могли учиться.'],
+    en: ['School of the future', '7.1 Light for schools', 'One in four schools in the world has no power. Light up the school quarter so children can learn.'] },
+  { ru: ['Рассвет 2030', '7.a Вместе к 2030', 'Финал всей игры. Солнце встаёт над миром, где у каждого есть чистая энергия. Самая высокая скорость!'],
+    en: ['Sunrise 2030', '7.a Together to 2030', 'The grand finale. The sun rises over a world where everyone has clean energy. Top speed!'] },
 ];
-const LEVEL_CODE = ['7.1', '7.2', '7.3', '7.1', '7.b', '7.a', '7.2', '7.b', '7.3'];
+const LEVEL_CODE = ['7.1', '7.2', '7.3', '7.1', '7.b', '7.a', '7.2', '7.b', '7.3', '7.2', '7.1', '7.a'];
 const TARGETS = [
   { code: '7.1', ru: ['Доступ для всех', 'К 2030 году у каждого человека должно быть недорогое и надёжное электричество и чистый способ готовить еду.'], en: ['Access for all', 'By 2030, everyone should have affordable, reliable electricity and a clean way to cook.'] },
   { code: '7.2', ru: ['Возобновляемая энергия', 'Увеличить долю энергии солнца, ветра, воды и других возобновляемых источников.'], en: ['Renewable energy', 'Increase the share of energy from the sun, wind, water and other renewable sources.'] },
@@ -343,17 +408,26 @@ const FACTS = [
   { ru: 'Ночью солнечные панели отдыхают, поэтому нужны аккумуляторы, ГЭС и умные сети.', en: 'At night solar panels rest, so we need batteries, hydropower and smart grids.' },
   { ru: 'Умная сеть следит за спросом и сама направляет энергию туда, где она нужна.', en: 'A smart grid watches demand and sends energy where it is needed.' },
   { ru: 'Цель 7 связана со многими другими целями ООН: здоровьем, образованием, климатом и работой.', en: 'Goal 7 is linked to many other UN goals: health, education, climate and jobs.' },
+  { ru: 'Ветер на море дует сильнее и ровнее, чем на суше, поэтому морские ветряки дают больше энергии.', en: 'Wind at sea blows stronger and steadier than on land, so offshore turbines make more energy.' },
+  { ru: 'Самые большие морские ветряки выше 250 метров — почти как небоскрёб.', en: 'The biggest offshore wind turbines are taller than 250 metres, almost like a skyscraper.' },
+  { ru: 'В 2023 году ветер и солнце дали больше 13% всего электричества в мире.', en: 'In 2023, wind and solar made more than 13% of the world\'s electricity.' },
+  { ru: 'Примерно в каждой четвёртой начальной школе мира нет электричества.', en: 'About one in four primary schools in the world has no electricity.' },
+  { ru: 'Около 1 миллиарда человек лечатся в больницах и клиниках без надёжного электричества.', en: 'About 1 billion people are served by health centres without reliable electricity.' },
+  { ru: 'Со светом дети могут делать уроки вечером, а в школах работают компьютеры и интернет.', en: 'With electric light, children can do homework in the evening, and schools can use computers and the internet.' },
+  { ru: 'В 2023 году в возобновляемой энергетике работали около 16 миллионов человек.', en: 'In 2023, about 16 million people worked in renewable energy.' },
+  { ru: 'Энергоэффективность называют «первым топливом»: сэкономленная энергия — самая дешёвая и чистая.', en: 'Energy efficiency is called the "first fuel": the energy you save is the cheapest and cleanest.' },
+  { ru: 'Цель 7 — одна из 17 Глобальных целей, которые все страны ООН приняли в 2015 году.', en: 'Goal 7 is one of 17 Global Goals that all UN member states adopted in 2015.' },
 ];
 
 /* =========================================================
    Save
    ========================================================= */
 const SAVE_KEY = 'light-dash-v1';
-const save = { lang: 'en', langChosen: false, mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}, {}, {}, {}, {}, {}, {}], ach: [],
+const save = { lang: 'en', langChosen: false, mute: false, skin: 'anya', practice: false, lv: [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}], ach: [], custom: [], myLevels: [],
   stats: { energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 } };
 try {
   const s = JSON.parse(localStorage.getItem(SAVE_KEY));
-  if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => (s.lv && s.lv[i]) || {}); }
+  if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = Array.from({ length: 12 }, (_, i) => (s.lv && s.lv[i]) || {}); }
   if (!save.langChosen) save.lang = 'en';
 } catch (e) {}
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
@@ -381,8 +455,14 @@ const SKINS = [
   { id: 'yuki',   ru: 'Астронавт Юки',  en: 'Astronaut Yuki',  shirt: '#ffffff', pants: '#dfe3f0', skin: '#f0d2a8', hair: '#141414', style: 'astro', need: 'l9' },
   { id: 'ken',    ru: 'Дедушка Кен',    en: 'Grandpa Ken',     shirt: '#b1741e', pants: '#5b6496', skin: '#e8c39a', hair: '#d8d8d8', style: 'grandpa', need: 'q10' },
   { id: 'volt',   ru: 'Робот Вольт',    en: 'Robot Volt',      shirt: '#9aa3c7', pants: '#5b6496', skin: '#c9cfe6', hair: '#c9cfe6', style: 'robot', need: 'streak3' },
+  { id: 'marin',  ru: 'Моряк Марин',    en: 'Sailor Marin',    shirt: '#fdca39', pants: '#3d4470', skin: '#c48a5a', hair: '#1a1210', style: 'hood', need: 'l10' },
+  { id: 'olga',   ru: 'Учительница Ольга', en: 'Teacher Olga', shirt: '#ff4401', pants: '#5b6496', skin: '#f0d2a8', hair: '#8a5a3c', style: 'bun', goggles: true, need: 'l11' },
+  { id: 'dawn',   ru: 'Чемпион Рассвета', en: 'Sunrise champion', shirt: '#ff4401', pants: '#fdca39', skin: '#8a5a3c', hair: '#1a1210', style: 'long', crown: true, need: 'l12' },
 ];
-const skinById = id => SKINS.find(s => s.id === id) || SKINS[0];
+const skinById = id => SKINS.find(s => s.id === id) || (save.custom || []).find(s => s.id === id)
+  || (/^c[0-9a-f]{6}$/.test(id) ? { id, shirt: '#' + id.slice(1), pants: '#3d4470', skin: '#dab680', hair: '#1a1210', style: 'short' } : SKINS[0]);
+// what other players see on the leaderboard: a custom runner travels as its shirt colour
+const skinWire = () => { const c = (save.custom || []).find(s => s.id === save.skin); return c ? 'c' + c.shirt.slice(1).toLowerCase() : String(save.skin).slice(0, 12); };
 const skinOpen = s => !s.need || save.ach.includes(s.need);
 
 const ACH = [
@@ -410,9 +490,16 @@ const ACH = [
   { id: 'l7',        ru: ['Солнце пустыни', 'Пройди уровень 7'], en: ['Desert sun', 'Finish level 7'] },
   { id: 'l8',        ru: ['Сила реки', 'Пройди уровень 8'], en: ['River power', 'Finish level 8'] },
   { id: 'l9',        ru: ['Свет в ночи', 'Пройди уровень 9'], en: ['Light in the night', 'Finish level 9'] },
-  { id: 'champion',  ru: ['Чемпион SDG 7', 'Пройди все 9 уровней'], en: ['SDG 7 champion', 'Finish all 9 levels'] },
+  { id: 'champion',  ru: ['Чемпион SDG 7', 'Пройди все 12 уровней'], en: ['SDG 7 champion', 'Finish all 12 levels'] },
   { id: 'speed20',   ru: ['Скоростной', 'Пролети через 20 стрелок скорости'], en: ['Speedster', 'Pass 20 speed arrows'] },
-  { id: 'facts27',   ru: ['Энциклопедия', 'Найди все 27 звёзд-фактов'], en: ['Encyclopedia', 'Find all 27 fact stars'] },
+  { id: 'facts27',   ru: ['Энциклопедия', 'Найди 27 звёзд-фактов'], en: ['Encyclopedia', 'Find 27 fact stars'] },
+  { id: 'facts36',   ru: ['Профессор SDG 7', 'Найди все 36 звёзд-фактов'], en: ['SDG 7 professor', 'Find all 36 fact stars'] },
+  { id: 'l10',       ru: ['Сквозь шторм', 'Пройди уровень 10'], en: ['Through the storm', 'Finish level 10'] },
+  { id: 'l11',       ru: ['Свет для школы', 'Пройди уровень 11'], en: ['Light for school', 'Finish level 11'] },
+  { id: 'l12',       ru: ['Рассвет 2030', 'Пройди уровень 12'], en: ['Sunrise 2030', 'Finish level 12'] },
+  { id: 'stylist',   ru: ['Стилист', 'Создай своего персонажа'], en: ['Stylist', 'Create your own runner'] },
+  { id: 'creator',   ru: ['Создатель', 'Создай свой уровень'], en: ['Creator', 'Make your own level'] },
+  { id: 'tester',    ru: ['Испытатель', 'Пройди свой уровень'], en: ['Tester', 'Finish your own level'] },
   { id: 'q1',        ru: ['Первое задание', 'Выполни ежедневное задание'], en: ['First quest', 'Complete a daily quest'] },
   { id: 'q10',       ru: ['Герой заданий', 'Выполни 10 заданий'], en: ['Quest hero', 'Complete 10 quests'] },
   { id: 'streak3',   ru: ['Три дня подряд', 'Выполни все задания 3 дня подряд'], en: ['Three in a row', 'Finish all daily quests 3 days in a row'] },
@@ -461,7 +548,7 @@ Builder.prototype = {
 };
 
 function buildLevel(i) {
-  const L = [300, 340, 380, 340, 360, 400, 340, 360, 380][i], b = new Builder(L), D = b.D;
+  const L = [300, 340, 380, 340, 360, 400, 340, 360, 380, 400, 420, 440][i], b = new Builder(L), D = b.D;
   if (i === 0) {
     b.gap(80).sign('hintUp', 40).gap(260)
      .energy(3).gap(180).sign('hintLeft', -60).house().gap(300)
@@ -598,7 +685,7 @@ function buildLevel(i) {
      .energy(3).gap(120).house().gap(200).orbPit(320);
     b.fact(23, -320 + 235, G - 268);
     b.gap(340).spikes(3).gap(320).energy(3).gap(150).house().gap(150).wall().gap(300).energy(3).gap(150).house().gap(150).finish(520);
-  } else {
+  } else if (i === 8) {
     b.gap(200).energy(3).gap(150).house().gap(260)
      .spikes(3).gap(330).portal(1.25).gap(340).orbPit(340).gap(380)
      .energy(3).gap(120).house().gap(200).block(270, 60).block(270, 105);
@@ -611,6 +698,40 @@ function buildLevel(i) {
     b.fact(26, 85, G - 118); b.pit(170).gap(340)
      .cloud(140).gap(340).gustPit(440).gap(340).energy(3).gap(150).house().gap(150).wall().gap(300)
      .spikes(3).gap(320).energy(3).gap(150).house().gap(150).finish(520);
+  } else if (i === 9) {
+    b.gap(200).energy(3).gap(150).house().gap(260)
+     .spikes(3).gap(340).gustPit(460).gap(360).energy(3).gap(120).house().gap(200)
+     .cloud(140).gap(120).energy(2).gap(150).cloud(140).gap(360)
+     .block(290, 60);
+    b.fact(27, -270, G - 150);
+    b.gap(0).spikes(3).gap(360).check()
+     .wall().gap(150).energy(3).gap(130).house().gap(200).orbPit(340);
+    b.fact(28, -340 + 235, G - 268);
+    b.gap(380).portal(1.2).gap(360).spikes(2).gap(420).pit(220).gap(420).portal(1).gap(320).check()
+     .energy(3).gap(150).house().gap(200).pad().gap(40).spikes(5).gap(360);
+    b.fact(29, 85, G - 118); b.pit(170).gap(360).gustPit(460).gap(360).energy(3).gap(150).house().gap(150).wall().gap(300).energy(3).gap(150).house().gap(150).finish(520);
+  } else if (i === 10) {
+    b.gap(200).energy(3).gap(150).house().gap(260)
+     .spikes(2).gap(360).block(300, 55);
+    b.fact(30, -280, G - 150);
+    b.gap(0).spikes(3).gap(380)
+     .energy(3).gap(130).house().gap(200).portal(.8).gap(260).spikes(1).gap(240).spikes(1).gap(240).spikes(2).gap(260).portal(1).gap(320).check()
+     .wall().gap(150).energy(3).gap(130).house().gap(200).cloud(140).gap(380);
+    b.fact(31, 230, G - 250); b.gustPit(460).gap(380).orbPit(340).gap(400).energy(3).gap(150).house().gap(200)
+     .block(280, 60).block(280, 105).gap(0).spikes(4).gap(400).check()
+     .energy(3).gap(150).house().gap(150).wall().gap(300);
+    b.fact(32, 200, G - 250); b.pad().gap(40).spikes(5).gap(380).energy(3).gap(150).house().gap(150).finish(520);
+  } else {
+    b.gap(220).energy(3).gap(150).house().gap(280)
+     .spikes(3).gap(380).orbPit(350).gap(420).energy(3).gap(130).house().gap(200)
+     .block(300, 60).block(300, 110);
+    b.fact(33, -580, G - 150);
+    b.gap(0).spikes(4).gap(420).check()
+     .wall().gap(150).energy(3).gap(130).house().gap(220).cloud(150).gap(130).energy(2).gap(160).cloud(150).gap(400);
+    b.fact(34, 230, G - 250); b.gustPit(480).gap(400).portal(.8).gap(260).spikes(1).gap(250).spikes(2).gap(260).portal(1).gap(340).check()
+     .energy(3).gap(150).house().gap(200).pad().gap(40).spikes(5).gap(400);
+    b.fact(35, 85, G - 118); b.pit(180).gap(400).spikes(3).gap(400).energy(3).gap(150).house().gap(150).wall().gap(300)
+     .gustPit(460).gap(400).energy(3).gap(150).house().gap(150).finish(560);
   }
   b.o.sort((a, c) => a.x - c.x);
   return { idx: i, speed: L, objs: b.o, groups: b.groups, len: b.len, houses: b.o.filter(o => o.t === 'house').length, D };
@@ -651,7 +772,7 @@ function newRun(fromCheckpoint) {
   const cp = fromCheckpoint && run && run.cp;
   if (!cp) {
     if (endless) { B = endlessBuilder(); for (let i = 0; i < 6; i++) B.more(); lvl = { idx: -1, speed: 320, objs: B.o, groups: B.groups, len: Infinity, houses: 0 }; }
-    else lvl = buildLevel(lvl.idx);
+    else lvl = lvl.custom ? buildCustom(lvl.custom) : buildLevel(lvl.idx);
   }
   const attempt = run ? run.attempt + 1 : 1;
   const base = cp ? cp.snap : { x: 0, energy: 0, lit: [], facts: [], broken: [] };
@@ -867,6 +988,9 @@ const THEMES = [
   { sky: '#fbf3dc', hill: '#f0d9a8', prop: 'solarfarm', pit: 'rgba(150,100,50,.75)' },
   { sky: '#eef4f6', hill: '#cfe2d6', prop: 'dam', pit: '#7fa6c9', water: true },
   { sky: '#262a4d', hill: '#363c6b', prop: 'nightcity', pit: 'rgba(15,17,40,.92)', night: true },
+  { sky: '#c9ccd6', hill: '#a9b6b8', prop: 'storm', pit: '#6f8fae', water: true },
+  { sky: '#f5f0e0', hill: '#e6dcc0', prop: 'school', pit: 'rgba(61,68,112,.85)' },
+  { sky: '#ffe6c2', hill: '#f3c99a', prop: 'sunrise', pit: 'rgba(120,70,60,.8)', sunrise: true },
 ];
 const hash = n => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
 const FONT_D = '"Biro Script Plus", "Caveat", cursive';
@@ -1038,6 +1162,18 @@ function drawProps(c, th, cam, clean) {
       for (let wy = G - bh + 10; wy < G - 14; wy += 18) for (let wx = sx + 8; wx < sx + bw - 10; wx += 16) {
         c.fillStyle = hash(wx * 3 + wy + k) < clean * .9 + .08 ? 'rgba(253,202,57,.95)' : 'rgba(120,130,180,.25)'; c.fillRect(wx, wy, 8, 9);
       }
+    } else if (th.prop === 'storm') {
+      if (k % 2 === 0) turbine(c, sx, G - 10, 110 + r * 30, bgTime * 4, 'rgba(91,100,150,.6)');
+    } else if (th.prop === 'school') {
+      if (k % 3) continue;
+      c.fillStyle = 'rgba(230,140,110,.55)'; c.strokeStyle = 'rgba(91,100,150,.5)'; c.lineWidth = 1.5;
+      c.fillRect(sx, G - 110, 190, 110); c.strokeRect(sx, G - 110, 190, 110);
+      c.beginPath(); c.moveTo(sx - 8, G - 110); c.lineTo(sx + 95, G - 150); c.lineTo(sx + 198, G - 110); c.closePath(); c.fill(); c.stroke();
+      line(c, [[sx + 95, G - 150], [sx + 95, G - 182]], 2, 'rgba(91,100,150,.6)'); c.fillStyle = C.green; c.fillRect(sx + 96, G - 182, 18, 11);
+      for (let wy = 0; wy < 2; wy++) for (let wx = 0; wx < 5; wx++) { c.fillStyle = hash(k * 13 + wx + wy * 7) < clean * .95 + .05 ? 'rgba(253,202,57,.9)' : 'rgba(91,100,150,.25)'; c.fillRect(sx + 14 + wx * 35, G - 95 + wy * 40, 22, 24); }
+    } else if (th.prop === 'sunrise') {
+      if (k % 2) turbine(c, sx, G - 20, 100, bgTime * 2);
+      else for (let j = 0; j < 3; j++) { const px = sx + j * 26, py = G - 30; c.fillStyle = 'rgba(85,119,192,.7)'; c.beginPath(); c.moveTo(px, py + 10); c.lineTo(px + 20, py); c.lineTo(px + 24, py + 6); c.lineTo(px + 4, py + 16); c.closePath(); c.fill(); }
     } else if (th.prop === 'pylons') {
       const tx = sx, top = G - 150;
       line(c, [[tx - 18, G], [tx, top], [tx + 18, G]], 2, 'rgba(91,100,150,.5)');
@@ -1056,13 +1192,16 @@ function render(dt) {
   const lit = litCount(), seen = Math.max(1, endless ? Math.max(lit, housesSoFar()) : lvl.houses);
   const clean = Math.min(1, lit / seen);
 
-  const th = THEMES[endless ? Math.floor(p.x / 20000) % THEMES.length : Math.max(0, lvl.idx)];
+  const th = THEMES[endless ? Math.floor(p.x / 20000) % THEMES.length : lvl.custom ? (lvl.custom.theme || 0) % THEMES.length : Math.max(0, lvl.idx)];
   // sky
   c.fillStyle = th.sky; c.fillRect(0, 0, W, H);
   if (th.night) {
     for (let k = 0; k < 60; k++) { c.fillStyle = `rgba(255,248,210,${.4 + .5 * Math.abs(Math.sin(bgTime * 1.5 + k))})`; c.fillRect((hash(k) * W + 800 - cam * .05) % W, hash(k + 99) * (G - 150), 2, 2); }
     c.fillStyle = '#f6efc6'; c.beginPath(); c.arc(680, 70, 26, 0, Math.PI * 2); c.fill();
     c.fillStyle = th.sky; c.beginPath(); c.arc(692, 62, 22, 0, Math.PI * 2); c.fill();
+  } else if (th.sunrise) {
+    const g = c.createLinearGradient(0, 0, 0, G); g.addColorStop(0, '#ffd2a1'); g.addColorStop(1, '#fff3d6'); c.fillStyle = g; c.fillRect(0, 0, W, G);
+    drawSun(c, 640, G - 110, 60 + clean * 10, 16, bgTime * .1);
   } else drawSun(c, 680, 70, 28 + clean * 6, 12, bgTime * .2);
   // far hills
   c.fillStyle = th.hill; c.beginPath(); c.moveTo(0, G);
@@ -1070,6 +1209,12 @@ function render(dt) {
   c.lineTo(W, G); c.fill();
   c.strokeStyle = 'rgba(66,127,18,.35)'; c.lineWidth = 1.5; c.stroke();
   drawProps(c, th, cam, clean);
+  if (th.prop === 'storm') {
+    c.strokeStyle = 'rgba(91,100,150,.35)'; c.lineWidth = 1.2; c.beginPath();
+    for (let k = 0; k < 90; k++) { const x = (hash(k) * W * 1.2 + bgTime * 260 + k * 7) % (W + 40) - 20, y = (hash(k + 50) * H + bgTime * 700) % (G + 40) - 20; c.moveTo(x, y); c.lineTo(x - 6, y + 16); }
+    c.stroke();
+    const fl = (bgTime % 6.5); if (fl < .12) { c.fillStyle = `rgba(255,255,255,${.5 - fl * 4})`; c.fillRect(0, 0, W, G); }
+  }
   // smog haze lifts as homes get light
   c.fillStyle = `rgba(120,116,100,${.32 * (1 - clean)})`; c.fillRect(0, 0, W, G);
 
@@ -1180,6 +1325,7 @@ function render(dt) {
     c.fillStyle = C.yellow; c.strokeStyle = C.indigo; c.lineWidth = 2.5; c.beginPath(); c.roundRect(fx - 10, G - 200, 140, 46, 8); c.fill(); c.stroke();
     c.fillStyle = C.indigo; c.font = `30px ${FONT_D}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('2030', fx + 60, G - 177);
   }
+  if (state === 'editor') { drawEditorMarks(c, cam); c.restore(); return; }
   // attempt label in the world, like the classic runners
   if (!endless || true) {
     c.fillStyle = th.night ? 'rgba(246,239,198,.8)' : 'rgba(91,100,150,.75)'; c.font = `44px ${FONT_D}`; c.textAlign = 'left'; c.textBaseline = 'alphabetic';
@@ -1277,10 +1423,11 @@ function checkAch() {
   if ((s.gusts || 0) >= 20) unlock('gust20');
   if ((s.portals || 0) >= 20) unlock('speed20');
   if (facts >= 27) unlock('facts27');
+  if (facts >= 36) unlock('facts36');
   if ((s.quests || 0) >= 1) unlock('q1');
   if ((s.quests || 0) >= 10) unlock('q10');
   if (((save.daily || {}).streak || 0) >= 3) unlock('streak3');
-  if (save.lv.filter(l => l.done).length >= 9) unlock('champion');
+  if (save.lv.filter(l => l.done).length >= 12) unlock('champion');
 }
 
 /* =========================================================
@@ -1310,12 +1457,13 @@ function startDemo() {
 }
 
 function menu() {
-  state = 'menu'; if (!demo) startDemo();
+  state = 'menu'; musicStop(); if (!demo) startDemo();
   show(`<h2 class="menu-title">Light <span>Dash</span></h2>
     <p class="sub">${t('menuSub')}</p>
     <div class="row">
       <button class="btn" id="mPlay">${t('play')}</button>
       <button class="btn alt" id="mSkins">${t('skins')}</button>
+      <button class="btn alt" id="mCreate">${t('create')}</button>
       <button class="btn alt" id="mAch">${t('achievements')}</button>
       <button class="btn alt" id="mBook">${t('book')}</button>
       <button class="btn alt" id="mBoard">${t('board')}</button>
@@ -1328,7 +1476,7 @@ function menu() {
       <span><kbd>↑</kbd>${t('kj')}</span><span><kbd>↓</kbd>${t('ks')}</span>
       <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
     </div>`);
-  on('#mPlay', levels); on('#mSkins', skins); on('#mAch', achievements); on('#mBook', book); on('#mBoard', () => board('score')); on('#mQuests', quests); on('#mStats', statsTable);
+  on('#mPlay', levels); on('#mSkins', skins); on('#mCreate', createHub); on('#mAch', achievements); on('#mBook', book); on('#mBoard', () => board('score')); on('#mQuests', quests); on('#mStats', statsTable);
   on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; save.langChosen = true; persist(); applyLang(); menu(); });
 }
 
@@ -1368,19 +1516,21 @@ function intro(i) {
   }
   on('#iGo', go); on('#iBack', levels);
 }
-function go() { hide(); state = 'play'; input.jumpBuf = 0; input.up = false; if (endless) bump('attempts'); }
+function go() { hide(); state = 'play'; input.jumpBuf = 0; input.up = false; if (endless) bump('attempts'); musicPlay(endless ? 5 : lvl.custom ? lvl.custom.theme || 0 : lvl.idx); }
 
 function pause() {
   if (state !== 'play') return;
-  state = 'pause';
+  state = 'pause'; musicStop();
   show(`<h2>${t('paused')}</h2><div class="fact"><b>${t('didYouKnow')}</b>${FACTS[Math.floor(Math.random() * FACTS.length)][save.lang]}</div><div class="row"><button class="btn" id="pRes">${t('resume')}</button><button class="btn alt" id="pRe">${t('retry')}</button><button class="btn alt" id="pMenu">${t('menu')}</button></div>`);
-  on('#pRes', () => { hide(); state = 'play'; });
-  on('#pRe', () => { run.sameLevel = true; newRun(false); hide(); state = 'play'; });
-  on('#pMenu', () => { demo = false; startDemo(); menu(); });
+  const resume = () => { hide(); state = 'play'; musicPlay(endless ? 5 : lvl.custom ? lvl.custom.theme || 0 : lvl.idx); };
+  on('#pRes', resume);
+  on('#pRe', () => { run.sameLevel = true; newRun(false); resume(); });
+  on('#pMenu', () => { if (lvl.custom) return leaveCustom(); demo = false; startDemo(); menu(); });
 }
 
 function complete() {
-  state = 'done'; sfx('win');
+  if (lvl.custom) return completeCustom();
+  state = 'done'; sfx('win'); musicStop();
   const i = lvl.idx, s = save.lv[i] = save.lv[i] || {};
   const lit = litCount(), got = lvl.objs.filter(o => o.t === 'fact' && o.got).map(o => o.id);
   s.done = true; s.best = 100; s.total = lvl.houses; s.houses = Math.max(s.houses || 0, lit);
@@ -1413,14 +1563,19 @@ function skins() {
     return `<button class="card${open ? '' : ' locked'}" data-s="${s.id}" aria-pressed="${save.skin === s.id}"><canvas width="140" height="168" data-p="${s.id}"></canvas>
       <span class="n">${s[save.lang]}</span><span class="d">${open ? (save.skin === s.id ? t('wear') : '') : `${t('unlock')}: ${need[1]}`}</span></button>`;
   }).join('');
-  show(`<h2>${t('choose')}</h2><div class="cards">${cards}</div><div class="row"><button class="btn alt" id="sBack">${t('back')}</button></div>`);
+  const mine = (save.custom || []).map((c, i) => `<div class="cwrap"><button class="card" data-s="${c.id}" aria-pressed="${save.skin === c.id}"><canvas width="140" height="168" data-p="${c.id}"></canvas>
+      <span class="n">${esc(c.name)}</span><span class="d">${save.skin === c.id ? t('wear') : t('yourRunner')}</span></button><button type="button" class="chip" data-e="${i}">✎ ${t('edit')}</button></div>`).join('');
+  const add = (save.custom || []).length < 4 ? `<button class="card newc" id="sNew"><span class="plus">+</span><span class="n">${t('newRunner')}</span><span class="d">${t('runnerEditor')}</span></button>` : '';
+  show(`<h2>${t('choose')}</h2><div class="cards">${add}${mine}${cards}</div><div class="row"><button class="btn alt" id="sBack">${t('back')}</button></div>`);
+  on('#sNew', () => skinEditor(-1));
+  on('[data-e]', e => skinEditor(+e.currentTarget.dataset.e));
   screen.querySelectorAll('canvas[data-p]').forEach(cn => {
     const x = cn.getContext('2d'), sk = skinById(cn.dataset.p);
     x.setTransform(2, 0, 0, 2, 0, 0); x.translate(35, 76); x.scale(1.2, 1.2);
     if (!skinOpen(sk)) x.globalAlpha = .45;
     drawPerson(x, sk, .3, 'run');
   });
-  on('.card', e => {
+  on('.card[data-s]', e => {
     const s = skinById(e.currentTarget.dataset.s); if (!skinOpen(s)) return;
     if (save.skin !== s.id) save.stats.skinChanged = 1;
     save.skin = s.id; persist(); checkAch(); skins();
@@ -1450,7 +1605,7 @@ function achievements() {
 }
 
 function endlessOver() {
-  state = 'done';
+  state = 'done'; musicStop();
   bumpMax('mara', Math.floor(run.p.x / 50));
   checkAch(); persist();
   const m = Math.floor(run.p.x / 50);
@@ -1507,13 +1662,13 @@ function checkQuests() {
 }
 // Count something the player did, for lifetime stats and today's quests.
 function bump(key, n = 1) {
-  if (demo) return;
+  if (demo || (lvl && lvl.custom)) return;
   save.stats[key] = (save.stats[key] || 0) + n;
   const st = dailyState(); st.c[key] = (st.c[key] || 0) + n;
   checkQuests();
 }
 function bumpMax(key, v) {
-  if (demo) return;
+  if (demo || (lvl && lvl.custom)) return;
   const st = dailyState(); st.c[key] = Math.max(st.c[key] || 0, v);
   checkQuests();
 }
@@ -1581,7 +1736,7 @@ async function pushScore(rename) {
   const me = lbPlayer(), st = profileStats();
   try {
     const r = await fetch(LB_URL, { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ id: me.id, key: me.key, name: save.nick, rename: !!rename, skin: String(save.skin).slice(0, 12), levels: st.levels, facts: st.facts, ach: st.ach, bestM: st.bestM, homes: st.homes, quests: st.quests, times: st.times }) });
+      body: JSON.stringify({ id: me.id, key: me.key, name: save.nick, rename: !!rename, skin: skinWire(), levels: st.levels, facts: st.facts, ach: st.ach, bestM: st.bestM, homes: st.homes, quests: st.quests, times: st.times }) });
     const res = await r.json();
     // the admin may have corrected this nickname: keep the game in step
     if (res && res.ok && res.name && res.name !== save.nick) { save.nick = res.name; persist(); }
@@ -1599,7 +1754,7 @@ async function board(tab, lvIdx) {
     show(`${head}<div class="fact"><b>${t('boardOff')}</b>${t('boardOffHint')}</div><div class="row"><button class="btn alt" id="rBack">${t('back')}</button></div>`);
     return on('#rBack', menu);
   }
-  const isTime = /^t\d$/.test(tab);
+  const isTime = /^t\d{1,2}$/.test(tab);
   const tabs = `<div class="row tabs"><button class="btn${tab === 'score' ? '' : ' alt'}" id="rScore">${t('tabScore')}</button><button class="btn${tab === 'bestM' ? '' : ' alt'}" id="rMara">${t('tabMarathon')}</button>
     <button class="btn${isTime ? '' : ' alt'}" id="rTime">${t('tabTime')}</button><button class="btn${tab === 'quests' ? '' : ' alt'}" id="rQuests">${t('tabQuests')}</button>
     <button class="btn alt" id="rNick">${save.nick ? t('changeNick') : t('setNick')}</button><button class="btn alt" id="rBack">${t('back')}</button></div>
@@ -1647,6 +1802,407 @@ function nickname(back) {
 }
 
 /* =========================================================
+   Runner editor (custom skins)
+   ========================================================= */
+const PAL = {
+  shirt: ['#5b6496', '#427f12', '#ff4401', '#fdca39', '#ffffff', '#8fb3e6', '#b1741e', '#2f3664', '#e86aa6', '#8e5cc4', '#1aa58f', '#333333'],
+  pants: ['#3d4470', '#5b6496', '#427f12', '#b1741e', '#ffffff', '#1f2447', '#ff4401', '#333333', '#8fb3e6'],
+  skin: ['#f0d2a8', '#e8c39a', '#dab680', '#c48a5a', '#b1741e', '#8a5a3c', '#6b4428', '#4a2f1b'],
+  hair: ['#1a1210', '#4a2f1b', '#8a5a3c', '#b1741e', '#e8c27a', '#d8d8d8', '#ff4401', '#5b6496', '#e86aa6', '#427f12'],
+  hat: ['#fdca39', '#ff4401', '#427f12', '#5b6496', '#ffffff', '#2f3664', '#e86aa6', '#8fb3e6'],
+};
+// hairstyles: free ones, plus special ones that come with an unlocked runner
+const STYLES = [['short'], ['bun'], ['curly'], ['long'], ['cap'], ['helmet'], ['hood'], ['sunhat'],
+  ['hardhat', 'li'], ['headlamp', 'night'], ['chef', 'mei'], ['sailor', 'kai'], ['visor', 'ada'], ['astro', 'yuki'], ['grandpa', 'ken'], ['robot', 'volt'], ['led', 'watt']];
+const STYLE_NAMES = { short: ['Короткая', 'Short'], bun: ['Пучок', 'Bun'], curly: ['Кудри', 'Curly'], long: ['Длинные', 'Long'], cap: ['Кепка', 'Cap'], helmet: ['Шлем', 'Helmet'], hood: ['Капюшон', 'Hood'], sunhat: ['Панама', 'Sun hat'],
+  hardhat: ['Каска', 'Hard hat'], headlamp: ['Фонарик', 'Headlamp'], chef: ['Колпак', 'Chef hat'], sailor: ['Бескозырка', 'Sailor cap'], visor: ['Визор', 'Visor'], astro: ['Скафандр', 'Space helmet'], grandpa: ['Седина', 'Grey hair'], robot: ['Робот', 'Robot'], led: ['Лампочка', 'Light bulb'] };
+const styleOpen = st => !st[1] || skinOpen(SKINS.find(k => k.id === st[1]));
+const crownOpen = () => ['zara', 'gold', 'dawn'].some(id => skinOpen(SKINS.find(k => k.id === id)));
+
+function skinEditor(idx) {
+  state = 'menu';
+  if (idx < 0 && (save.custom || []).length >= 4) { toast(t('fullRunners')); return; }
+  const d = idx >= 0 ? Object.assign({}, save.custom[idx]) : { id: 'u' + Date.now().toString(36), name: save.nick || t('yourRunner'), shirt: '#427f12', pants: '#3d4470', skin: '#dab680', hair: '#4a2f1b', hat: '#fdca39', style: 'cap', goggles: false, crown: false };
+  const sw = (k) => `<div class="swatches">${PAL[k].map(c => `<button type="button" class="swatch" data-k="${k}" data-v="${c}" style="background:${c}" aria-label="${k} ${c}" aria-pressed="${d[k] === c}"></button>`).join('')}</div>`;
+  const styles = STYLES.map(st => {
+    const open = styleOpen(st), who = st[1] ? SKINS.find(k => k.id === st[1]) : null;
+    return `<button type="button" class="chip" data-style="${st[0]}" aria-pressed="${d.style === st[0]}" ${open ? '' : `disabled title="${t('lockedBy')}: ${esc(who[save.lang])}"`}>${open ? '' : '🔒 '}${STYLE_NAMES[st[0]][save.lang === 'ru' ? 0 : 1]}</button>`;
+  }).join('');
+  show(`<h2>${t('runnerEditor')}</h2>
+    <div class="editor"><canvas id="skPrev" width="360" height="420" aria-label="${t('runnerEditor')}"></canvas>
+    <div class="edctl">
+      <label>${t('rName')} <input id="skName" class="nick" maxlength="16" value="${esc(d.name)}"></label>
+      <h4>${t('rShirt')}</h4>${sw('shirt')}<h4>${t('rPants')}</h4>${sw('pants')}<h4>${t('rSkin')}</h4>${sw('skin')}<h4>${t('rHair')}</h4>${sw('hair')}
+      <h4>${t('rStyle')}</h4><div class="swatches">${styles}</div>
+      <h4>${t('rHat')}</h4>${sw('hat')}
+      <h4>${t('rExtras')}</h4><div class="swatches"><button type="button" class="chip" id="skGog" aria-pressed="${!!d.goggles}">${t('rGoggles')}</button>
+        <button type="button" class="chip" id="skCrown" aria-pressed="${!!d.crown}" ${crownOpen() ? '' : `disabled title="${t('lockedBy')}: ${esc(SKINS.find(k => k.id === 'zara')[save.lang])}"`}>${crownOpen() ? '' : '🔒 '}${t('rCrown')}</button></div>
+    </div></div>
+    <div class="row"><button class="btn" id="skSave">${t('saveRunner')}</button>${idx >= 0 ? `<button class="btn alt" id="skDel">${t('del')}</button>` : ''}<button class="btn alt" id="skBack">${t('back')}</button></div>`);
+  const cv2 = screen.querySelector('#skPrev'), x2 = cv2.getContext('2d');
+  let t0 = performance.now();
+  const draw = now => {
+    if (!document.body.contains(cv2)) return;
+    x2.setTransform(1, 0, 0, 1, 0, 0); x2.clearRect(0, 0, 360, 420);
+    x2.setTransform(3.6, 0, 0, 3.6, 180, 360); drawPerson(x2, d, (now - t0) / 1000, 'run');
+    requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+  screen.querySelectorAll('.swatch').forEach(b => b.addEventListener('click', () => {
+    d[b.dataset.k] = b.dataset.v; screen.querySelectorAll(`.swatch[data-k="${b.dataset.k}"]`).forEach(x => x.setAttribute('aria-pressed', x === b));
+  }));
+  screen.querySelectorAll('[data-style]').forEach(b => b.addEventListener('click', () => {
+    d.style = b.dataset.style; screen.querySelectorAll('[data-style]').forEach(x => x.setAttribute('aria-pressed', x === b));
+  }));
+  on('#skGog', e => { d.goggles = !d.goggles; e.currentTarget.setAttribute('aria-pressed', d.goggles); });
+  on('#skCrown', e => { d.crown = !d.crown; e.currentTarget.setAttribute('aria-pressed', d.crown); });
+  on('#skSave', () => {
+    d.name = (screen.querySelector('#skName').value || '').trim().slice(0, 16) || t('yourRunner');
+    save.custom = save.custom || [];
+    if (idx >= 0) save.custom[idx] = d; else save.custom.push(d);
+    save.skin = d.id; save.stats.skinChanged = 1; persist(); unlock('stylist'); checkAch(); pushSoon(); skins();
+  });
+  on('#skDel', e => {
+    const b = e.currentTarget;
+    if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('sure'); return; }
+    save.custom.splice(idx, 1); if (save.skin === d.id) save.skin = 'anya'; persist(); skins();
+  });
+  on('#skBack', skins);
+}
+
+/* =========================================================
+   Level editor, custom levels and share codes
+   ========================================================= */
+const ED_TOOLS = {
+  spike:  { w: 36,  add: b => b.spikes(1) },
+  spike2: { w: 72,  add: b => b.spikes(2) },
+  spike3: { w: 108, add: b => b.spikes(3) },
+  pit:    { w: 160, add: b => b.pit(160) },
+  pitW:   { w: 320, add: b => b.orbPit(320) },
+  gust:   { w: 420, pre: 30, add: b => b.gustPit(420) },
+  block:  { w: 220, add: b => b.block(220, 50) },
+  blockH: { w: 220, add: b => b.block(220, 95) },
+  cloud:  { w: 120, add: b => b.cloud(120) },
+  wall:   { w: 44,  add: b => b.wall() },
+  pad:    { w: 44,  add: b => b.pad() },
+  energy: { w: 138, soft: true, add: b => b.energy(3) },
+  house:  { w: 92,  soft: true, add: b => b.house() },
+  fast:   { w: 30,  add: b => b.portal(1.3) },
+  normal: { w: 30,  add: b => b.portal(1) },
+  slow:   { w: 30,  add: b => b.portal(.8) },
+  check:  { w: 24,  soft: true, add: b => b.check() },
+};
+const ED_SPEEDS = [300, 340, 380, 420];
+const ED_START = 400, ED_MAX_ITEMS = 250, ED_MAX_X = 60000;
+const ED = { L: null, idx: -1, tool: 'spike', cam: 0, hover: null, down: null, fromEditor: false };
+
+function buildCustom(L) {
+  const b = new Builder(L.speed || 340);
+  const items = L.items.slice().sort((a, c) => a[1] - c[1]);
+  let end = 1500;
+  for (const [k, x] of items) { const tl = ED_TOOLS[k]; if (!tl) continue; b.x = x; tl.add(b); end = Math.max(end, x + tl.w + 400); }
+  b.x = end; b.finish(100);
+  b.o.sort((a, c) => a.x - c.x);
+  return { idx: -2, custom: L, speed: L.speed || 340, objs: b.o, groups: b.groups, len: b.len, houses: b.o.filter(o => o.t === 'house').length, D: b.D };
+}
+const footprint = ([k, x]) => { const tl = ED_TOOLS[k]; return [x - (tl.pre || 0), x + tl.w]; };
+function edFree(k, x, skipIdx) {
+  const tl = ED_TOOLS[k], [a, b] = footprint([k, x]);
+  if (a < ED_START || b > ED_MAX_X) return false;
+  return ED.L.items.every((it, i) => {
+    if (i === skipIdx) return true;
+    const o = ED_TOOLS[it[0]]; if (!!tl.soft !== !!o.soft) return true; // objects in the background never block the track
+    if (tl.soft && it[0] !== k) return true;
+    const [c, d] = footprint(it); return b <= c || a >= d;
+  });
+}
+
+// share codes: "LD1." + base64url of a small JSON
+const b64u = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = str => decodeURIComponent(escape(atob(str.replace(/-/g, '+').replace(/_/g, '/'))));
+const levelCode = L => 'LD1.' + b64u(JSON.stringify({ n: L.name, t: L.theme, s: L.speed, i: L.items }));
+function parseCode(code) {
+  try {
+    code = String(code).trim();
+    const m = code.match(/LD1\.([A-Za-z0-9_-]+)/); if (!m) return null;
+    const o = JSON.parse(unb64u(m[1]));
+    if (!o || !Array.isArray(o.i) || o.i.length > ED_MAX_ITEMS) return null;
+    const items = o.i.filter(it => Array.isArray(it) && ED_TOOLS[it[0]] && Number.isInteger(it[1]) && it[1] >= ED_START && it[1] <= ED_MAX_X).map(it => [it[0], it[1]]);
+    if (!items.length) return null;
+    return { id: 'l' + Date.now().toString(36), name: String(o.n || t('untitled')).slice(0, 24), theme: Number.isInteger(o.t) && o.t >= 0 && o.t < THEMES.length ? o.t : 0,
+      speed: ED_SPEEDS.includes(o.s) ? o.s : 340, items, verified: false };
+  } catch (e) { return null; }
+}
+const themeName = i => LEVEL_TXT[i] ? LEVEL_TXT[i][save.lang][0] : '';
+
+function createHub() {
+  state = 'menu'; ED.fromEditor = false;
+  const rows = (save.myLevels || []).map((L, i) => `<div class="lvrow"><span><span class="nm">${esc(L.name)}</span><span class="d">${esc(themeName(L.theme))} · ${L.items.length} · ${L.verified ? '✓ ' + t('verified') : ''}</span></span>
+    <span class="row"><button class="btn" data-a="play" data-i="${i}">${t('play')}</button><button class="btn alt" data-a="edit" data-i="${i}">${t('edit')}</button><button class="btn alt" data-a="share" data-i="${i}">${t('edShare')}</button><button class="btn alt" data-a="del" data-i="${i}">${t('del')}</button></span></div>`).join('');
+  show(`<h2>${t('create')}</h2><p class="sub">${t('createSub')}</p>
+    <div class="row"><button class="btn" id="cLevel">+ ${t('newLevel')}</button><button class="btn alt" id="cRunner">+ ${t('newRunner')}</button></div>
+    <h3>${t('myLevels')}</h3><div class="mylv">${rows || `<p>${t('noLevels')}</p>`}</div>
+    <h3>${t('loadCode')}</h3><form id="codeForm" class="row" autocomplete="off"><input id="codeIn" class="nick" placeholder="${t('codePh')}"><button class="btn alt" type="submit">${t('load')}</button></form><p id="codeMsg" class="sub"></p>
+    <div class="row"><button class="btn alt" id="cBack">${t('back')}</button></div>`);
+  on('#cLevel', () => {
+    if ((save.myLevels || []).length >= 8) { toast(t('fullLevels')); return; }
+    openEditor({ id: 'l' + Date.now().toString(36), name: t('untitled'), theme: 0, speed: 340, items: [], verified: false }, -1);
+  });
+  on('#cRunner', () => skinEditor(-1));
+  on('[data-a]', e => {
+    const i = +e.currentTarget.dataset.i, L = save.myLevels[i], a = e.currentTarget.dataset.a;
+    if (a === 'play') playCustom(L, false);
+    else if (a === 'edit') openEditor(L, i);
+    else if (a === 'share') shareLevel(L, createHub);
+    else if (a === 'del') { const b = e.currentTarget; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('sure'); return; } save.myLevels.splice(i, 1); persist(); createHub(); }
+  });
+  screen.querySelector('#codeForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const L = parseCode(screen.querySelector('#codeIn').value);
+    if (!L) { screen.querySelector('#codeMsg').textContent = t('badCode'); return; }
+    sharedLevel(L);
+  });
+  on('#cBack', menu);
+}
+
+function sharedLevel(L) {
+  state = 'menu';
+  show(`<span class="sub">${t('sharedLevel')}</span><h2>${esc(L.name)}</h2><p>${esc(themeName(L.theme))} · ${t('edSpeed')}: ${t('speedN')[ED_SPEEDS.indexOf(L.speed)]} · ${L.items.length}</p>
+    <div class="row"><button class="btn" id="shPlay">${t('play')}</button><button class="btn alt" id="shSave">${t('saveToMine')}</button><button class="btn alt" id="shBack">${t('back')}</button></div>`);
+  on('#shPlay', () => playCustom(L, false));
+  on('#shSave', () => {
+    save.myLevels = save.myLevels || [];
+    if (save.myLevels.length >= 8) { toast(t('fullLevels')); return; }
+    save.myLevels.push(L); persist(); toast(t('levelSaved')); createHub();
+  });
+  on('#shBack', createHub);
+}
+
+function shareLevel(L, back) {
+  const code = levelCode(L), link = location.href.split('#')[0] + '#lvl=' + code;
+  show(`<h2>${t('edShare')}: ${esc(L.name)}</h2><p>${t('shareText')}</p>
+    <h3>${t('shareLink')}</h3><textarea class="code" id="shLink" readonly>${esc(link)}</textarea><div class="row"><button class="btn" id="cpLink">${t('copy')}</button></div>
+    <h3>${t('shareCode')}</h3><textarea class="code" id="shCode" readonly>${esc(code)}</textarea><div class="row"><button class="btn alt" id="cpCode">${t('copy')}</button><button class="btn alt" id="shBack2">${t('back')}</button></div>
+    <p class="sub" id="cpMsg"></p>`);
+  const copy = id => {
+    const ta = screen.querySelector(id);
+    const fallback = () => { ta.focus(); ta.select(); screen.querySelector('#cpMsg').textContent = t('copyFail'); };
+    try { navigator.clipboard.writeText(ta.value).then(() => { screen.querySelector('#cpMsg').textContent = t('copied'); }, fallback); } catch (e) { fallback(); }
+  };
+  on('#cpLink', () => copy('#shLink')); on('#cpCode', () => copy('#shCode')); on('#shBack2', back);
+}
+
+function playCustom(L, fromEditor) {
+  musicStop(); demo = false; endless = false; ED.fromEditor = fromEditor; ED.playing = L;
+  lvl = { custom: L }; run = null; newRun(false);
+  document.getElementById('edUI').hidden = true; document.getElementById('pad').hidden = false;
+  state = 'intro';
+  show(`<span class="sub">${fromEditor ? t('levelEditor') : t('myLevels')}</span><h2>${esc(L.name)}</h2><p>${esc(themeName(L.theme))} · ${t('edSpeed')}: ${t('speedN')[ED_SPEEDS.indexOf(L.speed)]}</p>
+    <div class="row"><button class="btn" id="iGo">${t('start')}</button><button class="btn alt" id="iBack">${t('back')}</button></div>`);
+  on('#iGo', go); on('#iBack', leaveCustom);
+}
+function leaveCustom() {
+  musicStop();
+  const L = ED.playing;
+  if (ED.fromEditor && L) { const i = (save.myLevels || []).findIndex(x => x.id === L.id); return openEditor(L, i); }
+  startDemo(); createHub();
+}
+function completeCustom() {
+  state = 'done'; sfx('win'); musicStop();
+  const L = ED.playing, mine = (save.myLevels || []).find(x => x.id === L.id);
+  if (mine) { mine.verified = true; persist(); unlock('tester'); }
+  show(`<h2>${t('customDone')}</h2><p class="sub">${esc(L.name)}</p>
+    <div class="stats"><span>${t('attempts')}: <b>${run.attempt}</b></span><span>${t('timeLine')}: <b>${fmtTime(Math.round(run.time * 1000))}</b></span><span>${t('housesLit')}: <b>${litCount()} ${t('of')} ${lvl.houses}</b></span></div>
+    <div class="row"><button class="btn alt" id="ccRe">${t('retry')}</button><button class="btn" id="ccBack">${ED.fromEditor ? t('backEditor') : t('myLevels')}</button>${mine ? `<button class="btn alt" id="ccShare">${t('edShare')}</button>` : ''}</div>`);
+  on('#ccRe', () => playCustom(L, ED.fromEditor)); on('#ccBack', leaveCustom); on('#ccShare', () => shareLevel(L, leaveCustom));
+}
+
+function simulateCustom(L) {
+  const keep = { demo, endless, lvl, run, state };
+  demo = true; endless = false; lvl = { custom: L }; run = null; newRun(false);
+  let n = 0;
+  while (!run.done && run.p.alive && n < 120 * 300) { step(STEP, autopilot()); n++; }
+  const res = { done: run.done, pct: Math.floor(Math.min(1, run.p.x / lvl.len) * 100) };
+  demo = keep.demo; endless = keep.endless; lvl = keep.lvl; run = keep.run; state = keep.state;
+  return res;
+}
+
+function edSave(quiet) {
+  const L = ED.L;
+  if (!L.items.length) return false;
+  save.myLevels = save.myLevels || [];
+  const i = save.myLevels.findIndex(x => x.id === L.id);
+  if (i >= 0) save.myLevels[i] = L;
+  else { if (save.myLevels.length >= 8) { edMsg(t('fullLevels')); return false; } save.myLevels.push(L); }
+  persist(); unlock('creator');
+  if (!quiet) edMsg(t('levelSaved'));
+  return true;
+}
+function edMsg(text) { const m = document.getElementById('edMsg'); if (m) m.textContent = text; }
+function edRebuild() {
+  lvl = buildCustom(ED.L);
+  if (!run) newRun(false);
+  run.p.alive = false; run.particles = [];
+  const r = document.getElementById('edScroll'); if (r) { r.max = Math.max(0, lvl.len - 300); r.value = ED.cam; }
+}
+
+function openEditor(L, idx) {
+  musicStop(); demo = false; endless = false;
+  ED.L = JSON.parse(JSON.stringify(L)); ED.idx = idx; ED.cam = 0; ED.hover = null; ED.playing = null;
+  lvl = { custom: ED.L }; run = null; newRun(false); run.p.alive = false;
+  state = 'editor'; hide();
+  document.getElementById('pad').hidden = true;
+  const ui = document.getElementById('edUI'); ui.hidden = false;
+  const tools = Object.keys(ED_TOOLS).concat('erase').map(k => `<button type="button" class="chip" data-tool="${k}" aria-pressed="${ED.tool === k}">${t('tools')[k]}</button>`).join('');
+  ui.innerHTML = `<div class="row"><b style="font:400 26px var(--font-display)">${t('levelEditor')}</b>
+      <input id="edName" class="nick" maxlength="24" aria-label="${t('edName')}" value="${esc(ED.L.name)}">
+      <label>${t('edTheme')} <select id="edTheme">${LEVEL_TXT.map((x, i) => `<option value="${i}" ${ED.L.theme === i ? 'selected' : ''}>${i + 1}. ${esc(x[save.lang][0])}</option>`).join('')}</select></label>
+      <label>${t('edSpeed')} <select id="edSpeed">${ED_SPEEDS.map((v, i) => `<option value="${v}" ${ED.L.speed === v ? 'selected' : ''}>${t('speedN')[i]}</option>`).join('')}</select></label></div>
+    <div class="tools-row">${tools}</div>
+    <input type="range" id="edScroll" min="0" max="2000" value="0" aria-label="Scroll">
+    <div class="row"><button class="btn" id="edTest">▶ ${t('edTest')}</button><button class="btn alt" id="edAuto">${t('edAuto')}</button><button class="btn alt" id="edSaveB">${t('edSave')}</button>
+      <button class="btn alt" id="edShareB">${t('edShare')}</button><button class="btn alt" id="edClear">${t('edClear')}</button><button class="btn alt" id="edExit">${t('edExit')}</button></div>
+    <p class="sub" id="edMsg">${t('edHelp')}</p>`;
+  edRebuild();
+  const $e = id => document.getElementById(id);
+  ui.querySelectorAll('[data-tool]').forEach(b => b.addEventListener('click', () => { ED.tool = b.dataset.tool; ui.querySelectorAll('[data-tool]').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  $e('edName').addEventListener('input', e => { ED.L.name = e.target.value.slice(0, 24) || t('untitled'); });
+  $e('edTheme').addEventListener('change', e => { ED.L.theme = +e.target.value; ED.L.verified = false; edRebuild(); });
+  $e('edSpeed').addEventListener('change', e => { ED.L.speed = +e.target.value; ED.L.verified = false; edRebuild(); });
+  $e('edScroll').addEventListener('input', e => { ED.cam = +e.target.value; });
+  $e('edTest').addEventListener('click', () => { if (!ED.L.items.length) return edMsg(t('emptyLevel')); edSave(true); playCustom(ED.L, true); });
+  $e('edAuto').addEventListener('click', () => {
+    if (!ED.L.items.length) return edMsg(t('emptyLevel'));
+    const r = simulateCustom(ED.L);
+    if (r.done) { ED.L.verified = true; edSave(true); edMsg(t('autoOk')); } else edMsg(t('autoFail').replace('{p}', r.pct));
+    edRebuild();
+  });
+  $e('edSaveB').addEventListener('click', () => { if (!ED.L.items.length) return edMsg(t('emptyLevel')); edSave(false); });
+  $e('edShareB').addEventListener('click', () => {
+    if (!ED.L.items.length) return edMsg(t('emptyLevel'));
+    edSave(true); ui.hidden = true; document.getElementById('pad').hidden = false; state = 'menu';
+    shareLevel(ED.L, () => openEditor(ED.L, ED.idx));
+  });
+  $e('edClear').addEventListener('click', e => {
+    const b = e.currentTarget; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('sure'); return; }
+    ED.L.items = []; ED.L.verified = false; delete b.dataset.sure; b.textContent = t('edClear'); edRebuild();
+  });
+  $e('edExit').addEventListener('click', () => { if (ED.L.items.length) edSave(true); closeEditor(); createHub(); });
+}
+function closeEditor() {
+  document.getElementById('edUI').hidden = true; document.getElementById('pad').hidden = false;
+  state = 'menu'; startDemo();
+}
+function edWorldX(e) { const r = cv.getBoundingClientRect(); return ED.cam + (e.clientX - r.left) / r.width * W; }
+function edItemAt(wx) {
+  let best = -1, bw = Infinity;
+  ED.L.items.forEach((it, i) => { const [a, b] = footprint(it); if (wx >= a && wx <= b && b - a < bw) { best = i; bw = b - a; } });
+  return best;
+}
+function edTap(wx) {
+  if (ED.tool === 'erase') {
+    const i = edItemAt(wx); if (i >= 0) { ED.L.items.splice(i, 1); ED.L.verified = false; edRebuild(); }
+    return;
+  }
+  const tl = ED_TOOLS[ED.tool], x = Math.round((wx - tl.w / 2) / 10) * 10;
+  if (x - (tl.pre || 0) < ED_START) return edMsg(t('startZone'));
+  if (ED.L.items.length >= ED_MAX_ITEMS || !edFree(ED.tool, x)) return edMsg(t('noSpace'));
+  ED.L.items.push([ED.tool, x]); ED.L.verified = false; edMsg(t('edHelp')); edRebuild();
+}
+function drawEditorMarks(c, cam) {
+  c.save();
+  c.fillStyle = 'rgba(66,127,18,.12)'; c.fillRect(cam < ED_START ? 0 : cam - 10, 0, Math.max(0, ED_START - Math.max(cam, 0)), G);
+  for (let x = Math.floor(cam / 100) * 100; x < cam + W + 100; x += 100) {
+    line(c, [[x, G + 4], [x, G + (x % 500 ? 12 : 22)]], 1.5, 'rgba(91,100,150,.6)');
+    if (x % 500 === 0) { c.fillStyle = C.indigo; c.font = `14px ${FONT_B}`; c.textAlign = 'center'; c.textBaseline = 'top'; c.fillText(String(x / 50) + ' m', x, G + 26); }
+  }
+  if (ED.hover !== null) {
+    if (ED.tool === 'erase') {
+      const i = edItemAt(ED.hover);
+      if (i >= 0) { const [a, b] = footprint(ED.L.items[i]); c.fillStyle = 'rgba(255,68,1,.22)'; c.fillRect(a, 30, b - a, G - 30); }
+    } else {
+      const tl = ED_TOOLS[ED.tool], x = Math.round((ED.hover - tl.w / 2) / 10) * 10, ok = x - (tl.pre || 0) >= ED_START && edFree(ED.tool, x);
+      c.fillStyle = ok ? 'rgba(66,127,18,.25)' : 'rgba(255,68,1,.25)'; c.strokeStyle = ok ? C.green : C.orange; c.lineWidth = 2;
+      c.fillRect(x - (tl.pre || 0), 30, tl.w + (tl.pre || 0), G - 30); c.strokeRect(x - (tl.pre || 0), 30, tl.w + (tl.pre || 0), G - 30);
+      c.fillStyle = ok ? C.green : C.orange; c.font = `16px ${FONT_B}`; c.textAlign = 'center'; c.textBaseline = 'bottom'; c.fillText(t('tools')[ED.tool], x + tl.w / 2, 26);
+    }
+  }
+  c.restore();
+}
+cv.addEventListener('pointerdown', e => {
+  if (state !== 'editor') return;
+  e.preventDefault(); ED.down = { x: e.clientX, cam: ED.cam, moved: false };
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+});
+cv.addEventListener('pointermove', e => {
+  if (state !== 'editor') return;
+  ED.hover = edWorldX(e);
+  if (ED.down) {
+    const dx = e.clientX - ED.down.x;
+    if (Math.abs(dx) > 6) ED.down.moved = true;
+    if (ED.down.moved) { const r = cv.getBoundingClientRect(); ED.cam = Math.max(0, Math.min(lvl.len, ED.down.cam - dx / r.width * W)); const s2 = document.getElementById('edScroll'); if (s2) s2.value = ED.cam; }
+  }
+});
+cv.addEventListener('pointerup', e => {
+  if (state !== 'editor' || !ED.down) return;
+  if (!ED.down.moved) edTap(edWorldX(e));
+  ED.down = null;
+});
+cv.addEventListener('pointerleave', () => { ED.hover = null; });
+window.addEventListener('keydown', e => {
+  if (state !== 'editor' || (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName))) return;
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+    e.preventDefault(); ED.cam = Math.max(0, Math.min(lvl.len, ED.cam + (e.code === 'ArrowLeft' ? -200 : 200)));
+    const s2 = document.getElementById('edScroll'); if (s2) s2.value = ED.cam;
+  }
+});
+
+/* =========================================================
+   Music: a small chiptune per world, made on the fly
+   ========================================================= */
+const MUS = { on: false, timer: 0, step: 0, next: 0, song: null, gain: null, noise: null };
+const SONG_KEYS = [0, 3, 5, -2, 7, 2, 4, -4, 9, 1, -5, 6];
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+function musicPlay(idx) {
+  musicStop();
+  if (save.musicOff || demo) return;
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) { return; }
+  const i = ((idx % 12) + 12) % 12;
+  MUS.song = { root: 57 + SONG_KEYS[i], bpm: 112 + (i % 6) * 6, minor: i % 3 === 1 || i === 8, seed: i * 7 + 3 };
+  MUS.gain = ac.createGain(); MUS.gain.gain.value = .06; MUS.gain.connect(ac.destination);
+  if (!MUS.noise) { const n = Math.floor(ac.sampleRate * .2); MUS.noise = ac.createBuffer(1, n, ac.sampleRate); const d = MUS.noise.getChannelData(0); for (let k = 0; k < n; k++) d[k] = (Math.random() * 2 - 1) * (1 - k / n); }
+  MUS.on = true; MUS.step = 0; MUS.next = ac.currentTime + .08;
+  MUS.timer = setInterval(musicTick, 40);
+}
+function musicStop() {
+  MUS.on = false; clearInterval(MUS.timer);
+  if (MUS.gain) { const g = MUS.gain; try { g.gain.setTargetAtTime(0, ac.currentTime, .05); setTimeout(() => { try { g.disconnect(); } catch (e) {} }, 300); } catch (e) {} MUS.gain = null; }
+}
+function mNote(type, f, t0, dur, vol) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t0); g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur);
+  o.connect(g); g.connect(MUS.gain); o.start(t0); o.stop(t0 + dur + .02);
+}
+function mHit(t0, dur, vol) { const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = MUS.noise; g.gain.value = vol; s.connect(g); g.connect(MUS.gain); s.start(t0, 0, dur); }
+function musicTick() {
+  if (!MUS.on || !ac || !MUS.gain) return;
+  const S = MUS.song, sp = 60 / S.bpm / 4;
+  const scale = S.minor ? [0, 3, 5, 7, 10] : [0, 2, 4, 7, 9], third = S.minor ? 3 : 4;
+  const prog = S.minor ? [0, 8, 3, 10] : [0, 7, 9, 5];
+  while (MUS.next < ac.currentTime + .15) {
+    const st = MUS.step, t0 = MUS.next, bar = Math.floor(st / 16) % 4, s16 = st % 16, root = S.root + prog[bar];
+    if (s16 % 8 === 0) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(140, t0); o.frequency.exponentialRampToValueAtTime(45, t0 + .12); g.gain.setValueAtTime(1, t0); g.gain.exponentialRampToValueAtTime(.001, t0 + .15); o.connect(g); g.connect(MUS.gain); o.start(t0); o.stop(t0 + .16); }
+    if (s16 === 4 || s16 === 12) mHit(t0, .09, .45);
+    if (s16 % 2 === 1) mHit(t0, .025, .12);
+    if ([0, 3, 6, 8, 11, 14].includes(s16)) mNote('triangle', hz(root - 24), t0, sp * 2.2, .55);
+    if (s16 % 2 === 0) mNote('square', hz(root + [0, third, 7, 12][(s16 / 2) % 4]), t0, sp * 1.4, .1);
+    const h = hash(S.seed * 131 + (st % 64));
+    if (s16 % 2 === 0 && h < .5) mNote('triangle', hz(S.root + 12 + scale[Math.floor(hash(h * 977) * 5)] + (hash(st + S.seed) < .25 ? 12 : 0)), t0, sp * 3, .28);
+    MUS.next += sp; MUS.step++;
+  }
+}
+
+/* =========================================================
    Main loop
    ========================================================= */
 let last = performance.now(), acc = 0;
@@ -1673,6 +2229,7 @@ function frame(now) {
     run.flashT = Math.max(0, run.flashT - dt);
     if (run.done) { if (demo) { run = null; newRun(false); } else complete(); }
   }
+  if (state === 'editor' && run) { run.p.x = ED.cam + PX; run.time += dt; }
   if (run) render(dt);
   requestAnimationFrame(frame);
 }
@@ -1713,6 +2270,12 @@ document.getElementById('bPause').addEventListener('click', pause);
 const bSound = document.getElementById('bSound');
 bSound.addEventListener('click', () => { save.mute = !save.mute; persist(); bSound.style.opacity = save.mute ? .4 : 1; });
 bSound.style.opacity = save.mute ? .4 : 1;
+const bMusic = document.getElementById('bMusic');
+bMusic.addEventListener('click', () => {
+  save.musicOff = !save.musicOff; persist(); bMusic.style.opacity = save.musicOff ? .4 : 1;
+  if (save.musicOff) musicStop(); else if (state === 'play') musicPlay(endless ? 5 : lvl.custom ? lvl.custom.theme || 0 : lvl.idx);
+});
+bMusic.style.opacity = save.musicOff ? .4 : 1;
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 
 function applyLang() {
@@ -1722,6 +2285,7 @@ function applyLang() {
 
 /* Test hook: run a level with the autopilot, without drawing */
 window.__lightDash = {
+  editor() { return { state, items: ED.L ? ED.L.items.length : -1, cam: ED.cam, tool: ED.tool }; },
   simulateEndless() {
     const keep = { demo, endless, lvl, run, state };
     demo = true; endless = true; run = null; newRun(false);
@@ -1751,6 +2315,7 @@ window.__lightDash = {
 applyLang();
 startDemo();
 menu();
+if (/^#lvl=/.test(location.hash)) { const L = parseCode(location.hash.slice(5)); if (L) sharedLevel(L); }
 requestAnimationFrame(frame);
 })();
 </script>
