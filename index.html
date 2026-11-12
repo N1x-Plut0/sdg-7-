@@ -329,6 +329,24 @@ Object.assign(T.ru, {
   emptyLevel: 'Сначала поставь хотя бы один предмет.', untitled: 'Мой уровень', noSpace: 'Здесь нет места: предметы не должны пересекаться.', startZone: 'Старт: здесь ставить нельзя', verified: 'проверен',
   tools: { spike: 'Шип', spike2: '2 шипа', spike3: '3 шипа', pit: 'Яма', pitW: 'Широкая яма + солнце', gust: 'Поток ветра', block: 'Блок', blockH: 'Высокий блок', cloud: 'Облако смога', wall: 'Стена смога', pad: 'Батут', energy: 'Энергия ×3', house: 'Дом', fast: '>> Быстро', normal: '> Обычно', slow: '< Медленно', check: 'Флажок', erase: 'Ластик' },
 });
+Object.assign(T.ru, {
+  community: 'Уровни игроков', communitySub: 'Уровни, которые создали и опубликовали игроки. Играй, ставь ♥ и публикуй свои!',
+  tabNew: 'Новые', tabTop: 'Лучшие', tabPlays: 'Популярные', by: 'автор', publish: 'Опубликовать', published: 'Опубликован',
+  pubOk: 'Уровень опубликован! Теперь в него могут играть все.', pubNeedNick: 'Чтобы публиковать уровни, сначала выбери ник в таблице рекордов.',
+  pubNeedCheck: 'Сначала пройди уровень сама или проверь его автопилотом в редакторе.', pubBadName: 'Название для публикации: 2–24 латинские буквы или цифры, без грубых слов. Переименуй уровень в редакторе.',
+  pubTooMany: 'Можно опубликовать до 10 уровней. Удали один из опубликованных.', pubTooFast: 'Подожди полминуты перед следующей публикацией.', pubFail: 'Не получилось опубликовать. Проверь интернет и попробуй ещё раз.',
+  noCommunity: 'Пока никто не опубликовал уровень. Стань первым: «Создать» → «Опубликовать».', like: 'Нравится', liked: 'Тебе нравится', yours: 'твой',
+  delPub: 'Убрать из каталога', likeIt: '♥ Понравился уровень?', commOff: 'Каталог уровней работает, когда подключена таблица рекордов (Netlify).',
+});
+Object.assign(T.en, {
+  community: 'Player levels', communitySub: 'Levels that players made and published. Play them, give a ♥ and publish your own!',
+  tabNew: 'New', tabTop: 'Best', tabPlays: 'Popular', by: 'by', publish: 'Publish', published: 'Published',
+  pubOk: 'Level published! Now everyone can play it.', pubNeedNick: 'To publish levels, first choose a nickname on the leaderboard.',
+  pubNeedCheck: 'First finish the level yourself or check it with the autopilot in the editor.', pubBadName: 'Name for publishing: 2–24 Latin letters or numbers, no rude words. Rename the level in the editor.',
+  pubTooMany: 'You can publish up to 10 levels. Remove one of your published levels first.', pubTooFast: 'Wait half a minute before publishing again.', pubFail: 'Couldn\'t publish. Check your internet and try again.',
+  noCommunity: 'Nobody has published a level yet. Be the first: Create → Publish.', like: 'Like', liked: 'You like it', yours: 'yours',
+  delPub: 'Remove from catalogue', likeIt: '♥ Did you like this level?', commOff: 'The level catalogue works when the leaderboard (Netlify) is connected.',
+});
 Object.assign(T.en, {
   create: 'Create', createSub: 'Make your own runner and your own levels, then share them with friends.', newRunner: 'New runner', runnerEditor: 'Runner editor', yourRunner: 'Your runner',
   rName: 'Name', rShirt: 'Shirt', rPants: 'Trousers', rSkin: 'Skin', rHair: 'Hair', rStyle: 'Hairstyle & hat', rHat: 'Hat colour', rExtras: 'Extras', rGoggles: 'Glasses', rCrown: 'Sun crown',
@@ -1464,6 +1482,7 @@ function menu() {
       <button class="btn" id="mPlay">${t('play')}</button>
       <button class="btn alt" id="mSkins">${t('skins')}</button>
       <button class="btn alt" id="mCreate">${t('create')}</button>
+      <button class="btn alt" id="mComm">${t('community')}</button>
       <button class="btn alt" id="mAch">${t('achievements')}</button>
       <button class="btn alt" id="mBook">${t('book')}</button>
       <button class="btn alt" id="mBoard">${t('board')}</button>
@@ -1476,7 +1495,7 @@ function menu() {
       <span><kbd>↑</kbd>${t('kj')}</span><span><kbd>↓</kbd>${t('ks')}</span>
       <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
     </div>`);
-  on('#mPlay', levels); on('#mSkins', skins); on('#mCreate', createHub); on('#mAch', achievements); on('#mBook', book); on('#mBoard', () => board('score')); on('#mQuests', quests); on('#mStats', statsTable);
+  on('#mPlay', levels); on('#mSkins', skins); on('#mCreate', createHub); on('#mComm', () => community('new')); on('#mAch', achievements); on('#mBook', book); on('#mBoard', () => board('score')); on('#mQuests', quests); on('#mStats', statsTable);
   on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; save.langChosen = true; persist(); applyLang(); menu(); });
 }
 
@@ -1938,10 +1957,10 @@ const themeName = i => LEVEL_TXT[i] ? LEVEL_TXT[i][save.lang][0] : '';
 function createHub() {
   state = 'menu'; ED.fromEditor = false;
   const rows = (save.myLevels || []).map((L, i) => `<div class="lvrow"><span><span class="nm">${esc(L.name)}</span><span class="d">${esc(themeName(L.theme))} · ${L.items.length} · ${L.verified ? '✓ ' + t('verified') : ''}</span></span>
-    <span class="row"><button class="btn" data-a="play" data-i="${i}">${t('play')}</button><button class="btn alt" data-a="edit" data-i="${i}">${t('edit')}</button><button class="btn alt" data-a="share" data-i="${i}">${t('edShare')}</button><button class="btn alt" data-a="del" data-i="${i}">${t('del')}</button></span></div>`).join('');
+    <span class="row"><button class="btn" data-a="play" data-i="${i}">${t('play')}</button><button class="btn alt" data-a="edit" data-i="${i}">${t('edit')}</button><button class="btn alt" data-a="share" data-i="${i}">${t('edShare')}</button><button class="btn alt" data-a="pub" data-i="${i}">${L.publishedId ? '✓ ' + t('published') : t('publish')}</button><button class="btn alt" data-a="del" data-i="${i}">${t('del')}</button></span></div>`).join('');
   show(`<h2>${t('create')}</h2><p class="sub">${t('createSub')}</p>
     <div class="row"><button class="btn" id="cLevel">+ ${t('newLevel')}</button><button class="btn alt" id="cRunner">+ ${t('newRunner')}</button></div>
-    <h3>${t('myLevels')}</h3><div class="mylv">${rows || `<p>${t('noLevels')}</p>`}</div>
+    <h3>${t('myLevels')}</h3><p class="sub" id="pubMsg"></p><div class="mylv">${rows || `<p>${t('noLevels')}</p>`}</div>
     <h3>${t('loadCode')}</h3><form id="codeForm" class="row" autocomplete="off"><input id="codeIn" class="nick" placeholder="${t('codePh')}"><button class="btn alt" type="submit">${t('load')}</button></form><p id="codeMsg" class="sub"></p>
     <div class="row"><button class="btn alt" id="cBack">${t('back')}</button></div>`);
   on('#cLevel', () => {
@@ -1954,6 +1973,7 @@ function createHub() {
     if (a === 'play') playCustom(L, false);
     else if (a === 'edit') openEditor(L, i);
     else if (a === 'share') shareLevel(L, createHub);
+    else if (a === 'pub') publishLevel(L);
     else if (a === 'del') { const b = e.currentTarget; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('sure'); return; } save.myLevels.splice(i, 1); persist(); createHub(); }
   });
   screen.querySelector('#codeForm').addEventListener('submit', e => {
@@ -2004,6 +2024,7 @@ function playCustom(L, fromEditor) {
 function leaveCustom() {
   musicStop();
   const L = ED.playing;
+  if (L && L.communityId) { startDemo(); return community(ED.commSort || 'new'); }
   if (ED.fromEditor && L) { const i = (save.myLevels || []).findIndex(x => x.id === L.id); return openEditor(L, i); }
   startDemo(); createHub();
 }
@@ -2013,7 +2034,9 @@ function completeCustom() {
   if (mine) { mine.verified = true; persist(); unlock('tester'); }
   show(`<h2>${t('customDone')}</h2><p class="sub">${esc(L.name)}</p>
     <div class="stats"><span>${t('attempts')}: <b>${run.attempt}</b></span><span>${t('timeLine')}: <b>${fmtTime(Math.round(run.time * 1000))}</b></span><span>${t('housesLit')}: <b>${litCount()} ${t('of')} ${lvl.houses}</b></span></div>
+    ${L.communityId && !L.mine ? `<div class="row"><span>${t('likeIt')}</span><button class="btn alt" id="ccLike">${L.liked ? '♥ ' + t('liked') : '♡ ' + t('like')}</button></div>` : ''}
     <div class="row"><button class="btn alt" id="ccRe">${t('retry')}</button><button class="btn" id="ccBack">${ED.fromEditor ? t('backEditor') : t('myLevels')}</button>${mine ? `<button class="btn alt" id="ccShare">${t('edShare')}</button>` : ''}</div>`);
+  on('#ccLike', async e => { const btn = e.currentTarget; if (!save.nick) { toast(t('pubNeedNick')); return; } await pushScore(); const r = await levelsCall({ action: 'like', levelId: L.communityId }); if (r && r.ok) { L.liked = r.liked; btn.textContent = r.liked ? '♥ ' + t('liked') : '♡ ' + t('like'); } });
   on('#ccRe', () => playCustom(L, ED.fromEditor)); on('#ccBack', leaveCustom); on('#ccShare', () => shareLevel(L, leaveCustom));
 }
 
@@ -2156,6 +2179,72 @@ window.addEventListener('keydown', e => {
     const s2 = document.getElementById('edScroll'); if (s2) s2.value = ED.cam;
   }
 });
+
+/* =========================================================
+   Community levels: publish, browse, play, like
+   ========================================================= */
+const LV_URL = LB_URL ? LB_URL.replace(/\/api\/leaderboard$/, '/api/levels') : '';
+const levelNameOk = n => /^[A-Za-z0-9 _.,!?'-]{2,24}$/.test(n) && /[A-Za-z0-9]/.test(n) && !BAD.some(w => n.toLowerCase().replace(/[^a-z]/g, '').includes(w));
+async function levelsCall(body) {
+  if (!LV_URL) return null;
+  const me = lbPlayer();
+  try {
+    const r = await fetch(LV_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.assign({ id: me.id, key: me.key }, body)) });
+    return await r.json();
+  } catch (e) { return null; }
+}
+async function publishLevel(L) {
+  const msg = text => { const m = screen.querySelector('#pubMsg'); if (m) m.textContent = text; };
+  if (!LV_URL) return msg(t('commOff'));
+  if (!save.nick) { msg(t('pubNeedNick')); return setTimeout(() => nickname(createHub), 1200); }
+  if (!L.verified) return msg(t('pubNeedCheck'));
+  if (!levelNameOk(L.name.trim())) return msg(t('pubBadName'));
+  await pushScore(); // make sure this player exists on the server
+  const r = await levelsCall({ action: 'publish', level: { name: L.name.trim(), theme: L.theme, speed: L.speed, items: L.items } });
+  if (r && r.ok) { L.publishedId = r.levelId; persist(); toast(t('pubOk')); return createHub(); }
+  const err = r && r.error;
+  msg(err === 'bad_level_name' ? t('pubBadName') : err === 'too_many' ? t('pubTooMany') : err === 'too_fast' ? t('pubTooFast') : err === 'not_player' ? t('pubNeedNick') : t('pubFail'));
+}
+async function community(sort) {
+  state = 'menu'; ED.commSort = sort;
+  const head = `<h2>${t('community')}</h2><p class="sub">${t('communitySub')}</p>`;
+  if (!LV_URL) { show(`${head}<div class="fact"><b>${t('commOff')}</b></div><div class="row"><button class="btn alt" id="cmBack">${t('back')}</button></div>`); return on('#cmBack', menu); }
+  const tabs = `<div class="row tabs"><button class="btn${sort === 'new' ? '' : ' alt'}" data-sort="new">${t('tabNew')}</button><button class="btn${sort === 'top' ? '' : ' alt'}" data-sort="top">${t('tabTop')}</button>
+    <button class="btn${sort === 'plays' ? '' : ' alt'}" data-sort="plays">${t('tabPlays')}</button><button class="btn alt" id="cmCreate">+ ${t('create')}</button><button class="btn alt" id="cmBack">${t('back')}</button></div>`;
+  const wire = () => { on('[data-sort]', e => community(e.currentTarget.dataset.sort)); on('#cmCreate', createHub); on('#cmBack', menu); };
+  show(`${head}${tabs}<p>${t('loading')}</p>`); wire();
+  let data = null;
+  try { const r = await fetch(`${LV_URL}?sort=${sort}&me=${encodeURIComponent(lbPlayer().id)}`); if (r.ok) data = await r.json(); } catch (e) {}
+  if (state !== 'menu' || !screen.querySelector('[data-sort]')) return;
+  if (!data || !Array.isArray(data.levels)) { show(`${head}${tabs}<div class="fact"><b>${t('boardErr')}</b></div>`); return wire(); }
+  const rows = data.levels.map(L => `<div class="lvrow"><span><span class="nm">${esc(L.name)}</span>
+      <span class="d">${t('by')} ${esc(L.authorName || t('anon'))}${L.mine ? ` (${t('yours')})` : ''} · ${esc(themeName(L.theme))} · ${t('speedN')[ED_SPEEDS.indexOf(L.speed)] || ''} · ♥ ${L.likes} · ▶ ${L.plays}</span></span>
+      <span class="row"><button class="btn" data-play="${L.id}">${t('play')}</button>${L.mine ? `<button class="btn alt" data-delpub="${L.id}">${t('delPub')}</button>`
+        : `<button class="btn alt" data-like="${L.id}" aria-pressed="${!!L.liked}">${L.liked ? '♥' : '♡'} ${L.likes}</button>`}</span></div>`).join('');
+  show(`${head}${tabs}<div class="mylv">${rows || `<p>${t('noCommunity')}</p>`}</div>`);
+  wire();
+  on('[data-play]', e => playCommunity(e.currentTarget.dataset.play, data.levels.find(x => x.id === e.currentTarget.dataset.play)));
+  on('[data-like]', async e => {
+    const b = e.currentTarget; if (!save.nick) { toast(t('pubNeedNick')); return; }
+    await pushScore();
+    const r = await levelsCall({ action: 'like', levelId: b.dataset.like });
+    if (r && r.ok) { b.textContent = `${r.liked ? '♥' : '♡'} ${r.likes}`; b.setAttribute('aria-pressed', r.liked); }
+  });
+  on('[data-delpub]', async e => {
+    const b = e.currentTarget; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('sure'); return; }
+    const r = await levelsCall({ action: 'delete', levelId: b.dataset.delpub });
+    if (r && r.ok) { (save.myLevels || []).forEach(x => { if (x.publishedId === b.dataset.delpub) delete x.publishedId; }); persist(); community(sort); }
+  });
+}
+async function playCommunity(id, summary) {
+  let r = null;
+  try { const res = await fetch(`${LV_URL}?id=${encodeURIComponent(id)}`); if (res.ok) r = await res.json(); } catch (e) {}
+  if (!r || !r.level) { toast(t('boardErr')); return; }
+  const v = r.level;
+  const L = { id: 'c' + v.id, communityId: v.id, name: v.name, theme: v.theme, speed: v.speed, items: v.items, mine: !!(summary && summary.mine), liked: !!(summary && summary.liked) };
+  fetch(LV_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'play', levelId: v.id }) }).catch(() => {});
+  playCustom(L, false);
+}
 
 /* =========================================================
    Music: a small chiptune per world, made on the fly

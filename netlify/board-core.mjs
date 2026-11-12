@@ -107,7 +107,7 @@ const adminView = r => ({ id: r.id, name: r.name, skin: r.skin, score: r.score, 
   bestM: r.bestM, homes: r.homes, times: r.times || [], updated: r.updated, blocked: !!r.blocked, admin: !!r.admin });
 const wait = ms => new Promise(res => setTimeout(res, ms));
 
-export async function handleAdmin(req, store, password) {
+export async function handleAdmin(req, store, password, levelStore) {
   try {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     if (req.method !== 'POST') return json({ error: 'method' }, 405);
@@ -126,6 +126,14 @@ export async function handleAdmin(req, store, password) {
     if (!ok) { await wait(1200); return json({ error: b.playerId ? 'not_admin' : (password && password.length >= 8 ? 'wrong_password' : 'admin_off') }, 401); }
     if (b.action === 'whoami') return json({ ok: true });
 
+    if (b.action === 'levels') {
+      if (!levelStore) return json({ levels: [] });
+      return json({ levels: (await allLevels(levelStore)).map(levelSummary) });
+    }
+    if (b.action === 'deleteLevel') {
+      if (!levelStore || typeof b.levelId !== 'string' || !/^[a-f0-9]{8,40}$/.test(b.levelId)) return json({ error: 'bad_id' }, 400);
+      await levelStore.delete(b.levelId); return json({ ok: true });
+    }
     if (b.action === 'list') {
       const { blobs } = await store.list();
       const rows = (await Promise.all(blobs.slice(0, 5000).map(x => store.get(x.key, { type: 'json' })))).filter(r => r && r.id);
@@ -158,6 +166,103 @@ export async function handleAdmin(req, store, password) {
       row.score = score(row);
       await store.setJSON(b.id, row);
       return json({ ok: true, player: adminView(row) });
+    }
+    return json({ error: 'bad_action' }, 400);
+  } catch (e) {
+    console.error(e);
+    return json({ error: 'server' }, 500);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Community levels: players publish levels made in the editor, everyone can
+// browse, play and like them. Authors and admins can delete them.
+// ---------------------------------------------------------------------------
+const LEVEL_TOOLS = ['spike', 'spike2', 'spike3', 'pit', 'pitW', 'gust', 'block', 'blockH', 'cloud', 'wall', 'pad', 'energy', 'house', 'fast', 'normal', 'slow', 'check'];
+const LEVEL_SPEEDS = [300, 340, 380, 420];
+const MAX_PER_AUTHOR = 10;
+export function levelNameOk(n) {
+  if (typeof n !== 'string' || !/^[A-Za-z0-9 _.,!?'-]{2,24}$/.test(n) || !/[A-Za-z0-9]/.test(n)) return false;
+  const low = n.toLowerCase().replace(/[^a-z]/g, '');
+  return !BAD.some(w => low.includes(w));
+}
+const levelSummary = L => ({ id: L.id, name: L.name, authorName: L.authorName, theme: L.theme, speed: L.speed, items: L.items.length,
+  plays: L.plays || 0, likes: (L.likedBy || []).length, created: L.created, author: L.author });
+async function allLevels(levelStore) {
+  const { blobs } = await levelStore.list();
+  return (await Promise.all(blobs.slice(0, 3000).map(x => levelStore.get(x.key, { type: 'json' })))).filter(L => L && L.id);
+}
+async function playerAuth(store, id, key) {
+  if (typeof id !== 'string' || !/^[a-f0-9-]{16,64}$/.test(id) || typeof key !== 'string') return null;
+  const me = await store.get(id, { type: 'json' });
+  if (!me || me.blocked || me.keyHash !== (await sha256(key))) return null;
+  return me;
+}
+const randomId = () => [...crypto.getRandomValues(new Uint8Array(10))].map(v => v.toString(16).padStart(2, '0')).join('');
+
+export async function handleLevels(req, store, levelStore) {
+  try {
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      const one = url.searchParams.get('id');
+      if (one) {
+        if (!/^[a-f0-9]{8,40}$/.test(one)) return json({ error: 'bad_id' }, 400);
+        const L = await levelStore.get(one, { type: 'json' });
+        if (!L) return json({ error: 'not_found' }, 404);
+        return json({ level: { ...levelSummary(L), author: undefined, items: L.items } });
+      }
+      const sort = url.searchParams.get('sort') || 'new', me = url.searchParams.get('me') || '';
+      const list = await allLevels(levelStore);
+      if (sort === 'top') list.sort((a, b) => ((b.likedBy || []).length - (a.likedBy || []).length) || (b.created - a.created));
+      else if (sort === 'plays') list.sort((a, b) => ((b.plays || 0) - (a.plays || 0)) || (b.created - a.created));
+      else list.sort((a, b) => b.created - a.created);
+      return json({ total: list.length, levels: list.slice(0, 60).map(L => ({ ...levelSummary(L), author: undefined, mine: !!me && L.author === me, liked: !!me && (L.likedBy || []).includes(me) })) });
+    }
+    if (req.method !== 'POST') return json({ error: 'method' }, 405);
+    if (Number(req.headers.get('content-length') || 0) > 20000) return json({ error: 'too_big' }, 413);
+    let b;
+    try { b = await req.json(); } catch (e) { return json({ error: 'bad_json' }, 400); }
+    if (!b) return json({ error: 'bad_json' }, 400);
+
+    if (b.action === 'play') {
+      if (typeof b.levelId !== 'string' || !/^[a-f0-9]{8,40}$/.test(b.levelId)) return json({ error: 'bad_id' }, 400);
+      const L = await levelStore.get(b.levelId, { type: 'json' });
+      if (!L) return json({ error: 'not_found' }, 404);
+      L.plays = (L.plays || 0) + 1; await levelStore.setJSON(L.id, L);
+      return json({ ok: true, plays: L.plays });
+    }
+
+    const me = await playerAuth(store, b.id, b.key);
+    if (!me) return json({ error: 'not_player' }, 403);
+
+    if (b.action === 'publish') {
+      const lv = b.level || {};
+      const name = typeof lv.name === 'string' ? lv.name.trim().replace(/\s+/g, ' ') : '';
+      if (!levelNameOk(name)) return json({ error: 'bad_level_name' }, 400);
+      if (!Number.isInteger(lv.theme) || lv.theme < 0 || lv.theme >= 12 || !LEVEL_SPEEDS.includes(lv.speed)) return json({ error: 'bad_level' }, 400);
+      if (!Array.isArray(lv.items) || !lv.items.length || lv.items.length > 250
+        || !lv.items.every(it => Array.isArray(it) && it.length === 2 && LEVEL_TOOLS.includes(it[0]) && int(it[1], 400, 60000))) return json({ error: 'bad_level' }, 400);
+      const list = await allLevels(levelStore);
+      const mine = list.filter(L => L.author === me.id);
+      if (mine.length >= MAX_PER_AUTHOR) return json({ error: 'too_many' }, 409);
+      if (mine.some(L => Date.now() - L.created < 30000)) return json({ error: 'too_fast' }, 429);
+      const L = { id: randomId(), author: me.id, authorName: me.name, name, theme: lv.theme, speed: lv.speed, items: lv.items.map(it => [it[0], it[1]]), created: Date.now(), plays: 0, likedBy: [] };
+      await levelStore.setJSON(L.id, L);
+      return json({ ok: true, levelId: L.id });
+    }
+    if (typeof b.levelId !== 'string' || !/^[a-f0-9]{8,40}$/.test(b.levelId)) return json({ error: 'bad_id' }, 400);
+    const L = await levelStore.get(b.levelId, { type: 'json' });
+    if (!L) return json({ error: 'not_found' }, 404);
+    if (b.action === 'like') {
+      const set = new Set(L.likedBy || []);
+      if (set.has(me.id)) set.delete(me.id); else if (L.author !== me.id) set.add(me.id);
+      L.likedBy = [...set].slice(0, 20000); await levelStore.setJSON(L.id, L);
+      return json({ ok: true, likes: L.likedBy.length, liked: set.has(me.id) });
+    }
+    if (b.action === 'delete') {
+      if (L.author !== me.id && !me.admin) return json({ error: 'not_yours' }, 403);
+      await levelStore.delete(L.id); return json({ ok: true });
     }
     return json({ error: 'bad_action' }, 400);
   } catch (e) {

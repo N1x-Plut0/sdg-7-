@@ -62,6 +62,7 @@ On a phone, use the big arrow buttons under the screen.
 - **Speed arrows:** green arrows speed you up, yellow ones slow you down, blue ones bring back normal speed.
 - **Daily quests:** three new quests every day (light 15 homes, ride 5 updrafts…), with a daily streak.
 - **Level editor:** build your own levels with spikes, gaps, blocks, updrafts, speed arrows and homes, check them with the autopilot, and share them with a code or a link.
+- **Player levels:** publish your checked levels for everyone. Browse new, best (♥) and popular levels, play them and give a ♥. Admins can remove levels from the admin panel.
 - **Runner editor:** make your own runner: shirt, trousers, skin, hair, hairstyle or hat, glasses and more. Rare hairstyles unlock with the runners you earn.
 - **Music:** a small chiptune for every world, with its own on/off button.
 - **Marathon 2030:** an endless run through the worlds. Can you make it 2030 meters?
@@ -124,7 +125,7 @@ Players can change their nickname any time from the game.
 
 ### Admin panel
 
-`admin.html` lets the game's admins correct nicknames and numbers, block or delete players, and make other players admins.
+`admin.html` lets the game's admins correct nicknames and numbers, block or delete players, make other players admins, and remove published player levels.
 - The nicknames **dev mode** and **enthropy** are reserved for the admins: only one player can hold each, and that player
   becomes an admin. In the same browser, the leaderboard then shows an **Admin panel** button and the panel opens without a password.
   Change the list with the `ADMIN_NAMES` environment variable in Netlify (comma separated).

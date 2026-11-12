@@ -82,6 +82,17 @@ tr.changed td { background: #fff7d6; }
         <tbody id="rows"></tbody>
       </table>
     </div>
+    <div class="card">
+      <b style="font:400 28px var(--font-display)">Уровни игроков</b>
+      <p style="font-size:15px">Опубликованные уровни из каталога «Player levels». Можно открыть, чтобы сыграть, или удалить неподходящий.</p>
+      <p class="msg" id="lvMsg"></p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Название</th><th>Автор</th><th>Мир</th><th>Предметов</th><th>♥</th><th>▶</th><th>Опубликован</th><th>Действия</th></tr></thead>
+        <tbody id="lvRows"></tbody>
+      </table>
+    </div>
   </section>
 </div>
 
@@ -122,7 +133,7 @@ tr.changed td { background: #fff7d6; }
       if (['wrong_password', 'admin_off', 'not_admin'].includes(res.error)) { usePlayer = false; showLogin(errText(res.error)); return; }
       say($('msg'), errText(res.error), true); return;
     }
-    players = res.players; say($('msg'), ''); render();
+    players = res.players; say($('msg'), ''); render(); loadLevels();
   }
 
   function showLogin(text) {
@@ -130,6 +141,34 @@ tr.changed td { background: #fff7d6; }
   }
 
   const NUMS = ['levels', 'facts', 'ach', 'quests', 'bestM', 'homes'];
+  let levels = [];
+  async function loadLevels() {
+    const res = await call({ action: 'levels' });
+    if (res.error) { say($('lvMsg'), errText(res.error), true); return; }
+    levels = res.levels || []; renderLevels();
+  }
+  function renderLevels() {
+    const tb = $('lvRows'); tb.textContent = '';
+    if (!levels.length) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 9; td.textContent = 'Пока никто не опубликовал уровень.'; tr.appendChild(td); tb.appendChild(tr); return; }
+    const gameUrl = location.href.replace(/admin\.html.*$/, '');
+    levels.sort((a, b) => b.created - a.created).forEach((L, i) => {
+      const tr = document.createElement('tr');
+      const cell = text => { const td = document.createElement('td'); td.textContent = text; tr.appendChild(td); return td; };
+      cell(i + 1); cell(L.name); cell(L.authorName || '—'); cell(L.theme + 1); cell(L.items); cell(L.likes); cell(L.plays);
+      cell(L.created ? new Date(L.created).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }) : '—');
+      const ac = document.createElement('td'); const box = document.createElement('div'); box.className = 'actions'; ac.appendChild(box); tr.appendChild(ac);
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'danger'; del.textContent = 'Удалить';
+      del.addEventListener('click', async () => {
+        if (!del.classList.contains('sure')) { del.classList.add('sure'); del.textContent = 'Точно удалить?'; setTimeout(() => { del.classList.remove('sure'); del.textContent = 'Удалить'; }, 4000); return; }
+        const res = await call({ action: 'deleteLevel', levelId: L.id });
+        if (res.error) { say($('lvMsg'), errText(res.error), true); return; }
+        levels = levels.filter(x => x.id !== L.id); say($('lvMsg'), `Удалён уровень: ${L.name}`); renderLevels();
+      });
+      box.appendChild(del);
+      tb.appendChild(tr);
+    });
+  }
+
   function render() {
     const q = $('q').value.trim().toLowerCase();
     const list = players.filter(p => !q || p.name.toLowerCase().includes(q));
@@ -194,7 +233,7 @@ tr.changed td { background: #fff7d6; }
     if (res.error) { say($('loginMsg'), errText(res.error), true); return; }
     try { sessionStorage.setItem('ld-admin', password); } catch (err) {}
     $('pw').value = ''; $('login').hidden = true; $('panel').hidden = false;
-    players = res.players; render();
+    players = res.players; render(); loadLevels();
   });
   $('q').addEventListener('input', render);
   $('reload').addEventListener('click', load);
@@ -204,7 +243,7 @@ tr.changed td { background: #fff7d6; }
     if (player && API) {
       usePlayer = true;
       const res = await call({ action: 'list' });
-      if (!res.error) { $('login').hidden = true; $('panel').hidden = false; players = res.players; render(); return; }
+      if (!res.error) { $('login').hidden = true; $('panel').hidden = false; players = res.players; render(); loadLevels(); return; }
       usePlayer = false;
     }
     if (password) { $('login').hidden = true; $('panel').hidden = false; load(); } else showLogin();
