@@ -131,7 +131,8 @@ input.nick:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px
 .card .plus { font: 400 54px/1 var(--font-display); color: var(--green); }
 .editor { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 620px) { .editor { grid-template-columns: minmax(0, 1fr); } }
-.editor canvas { width: 180px; height: 210px; justify-self: center; background: #fff; border: 2px solid var(--indigo); border-radius: 16px 6px 16px 6px; }
+.prevcol { display: grid; gap: 8px; justify-items: center; }
+.editor canvas { width: 180px; height: 230px; justify-self: center; background: #fff; border: 2px solid var(--indigo); border-radius: 16px 6px 16px 6px; }
 .edctl { display: grid; gap: 8px; }
 .edctl h4 { margin: 4px 0 0; font: 400 20px var(--font-display); color: var(--green); }
 .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -150,6 +151,12 @@ input.nick:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px
 .lvrow .d { font-size: 15px; color: var(--green); display: block; }
 .mylv { display: grid; gap: 8px; max-width: 720px; }
 textarea.code { width: 100%; min-height: 70px; font: 14px ui-monospace, Menlo, monospace; color: var(--indigo); border: 2px solid var(--indigo); border-radius: 10px; padding: 8px; overflow-wrap: anywhere; }
+.accgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; max-width: 760px; }
+.accform { display: grid; gap: 8px; align-content: start; padding: 12px 14px; background: #fff; border: 2px solid var(--indigo); border-radius: 14px 5px 16px 4px; }
+.accform h3 { margin: 0; }
+.accform label { display: grid; gap: 2px; font-size: 17px; }
+.accform .hint { font-size: 14px; color: var(--green); }
+.accform .btn { justify-self: start; }
 .tgt b { display: block; font: 400 22px/1.1 var(--font-display); color: var(--green); }
 .stats { display: flex; flex-wrap: wrap; gap: 8px 22px; font-size: 20px; }
 .stats b { color: var(--green); font-weight: 400; }
@@ -330,6 +337,34 @@ Object.assign(T.ru, {
   tools: { spike: 'Шип', spike2: '2 шипа', spike3: '3 шипа', pit: 'Яма', pitW: 'Широкая яма + солнце', gust: 'Поток ветра', block: 'Блок', blockH: 'Высокий блок', cloud: 'Облако смога', wall: 'Стена смога', pad: 'Батут', energy: 'Энергия ×3', house: 'Дом', fast: '>> Быстро', normal: '> Обычно', slow: '< Медленно', check: 'Флажок', erase: 'Ластик' },
 });
 Object.assign(T.ru, {
+  account: 'Аккаунт', accSub: 'Аккаунт сохраняет весь твой прогресс в облаке: уровни, ачивки, персонажей, свои уровни. Войди с любого устройства и продолжай. Почта не нужна.',
+  register: 'Создать аккаунт', login: 'Войти', logout: 'Выйти', username: 'Логин', password: 'Пароль', password2: 'Пароль ещё раз', newPassword: 'Новый пароль', oldPassword: 'Старый пароль',
+  accHintUser: '3–16 латинских букв, цифр, _ . -', accHintPass: 'Минимум 6 символов. Придумай новый пароль, не тот, что от почты или соцсетей.',
+  accRegNote: 'Весь прогресс с этого устройства сохранится в новом аккаунте.', accLoginNote: 'После входа на этом устройстве будет прогресс из аккаунта.',
+  accOk: 'Аккаунт создан! Прогресс сохранён в облаке.', accWelcome: 'С возвращением!', accBadUser: 'Логин: 3–16 латинских букв, цифр, _ . - без грубых слов.', accBadPass: 'Пароль: от 6 до 64 символов.',
+  accMismatch: 'Пароли не совпадают.', accTaken: 'Этот логин уже занят.', accWrong: 'Неверный логин или пароль.', accAlready: 'Этот игрок уже привязан к аккаунту. Войди в него.', accFail: 'Не получилось. Проверь интернет и попробуй ещё раз.',
+  accOff: 'Аккаунты работают, когда подключена таблица рекордов (Netlify).', loggedAs: 'Аккаунт', cloudSaved: 'Сохранено в облаке', saveNow: 'Сохранить сейчас', changePass: 'Сменить пароль', passChanged: 'Пароль изменён.',
+  logoutSure: 'Выйти? На этом устройстве начнётся новая игра, но всё сохранено в аккаунте.', forgot: 'Забыл(а) пароль? Попроси админа игры сбросить его.', never: 'ещё нет',
+});
+Object.assign(T.en, {
+  account: 'Account', accSub: 'An account keeps all your progress in the cloud: levels, achievements, runners and your own levels. Log in on any device and carry on. No email needed.',
+  register: 'Create account', login: 'Log in', logout: 'Log out', username: 'Username', password: 'Password', password2: 'Password again', newPassword: 'New password', oldPassword: 'Old password',
+  accHintUser: '3–16 Latin letters, numbers, _ . -', accHintPass: 'At least 6 characters. Make a new password, not the one from your email or social media.',
+  accRegNote: 'All progress from this device goes into the new account.', accLoginNote: 'After logging in, this device shows your account\'s progress.',
+  accOk: 'Account created! Your progress is saved in the cloud.', accWelcome: 'Welcome back!', accBadUser: 'Username: 3–16 Latin letters, numbers, _ . - and no rude words.', accBadPass: 'Password: 6 to 64 characters.',
+  accMismatch: 'The passwords don\'t match.', accTaken: 'This username is taken.', accWrong: 'Wrong username or password.', accAlready: 'This player already has an account. Log in to it.', accFail: 'That didn\'t work. Check your internet and try again.',
+  accOff: 'Accounts work when the leaderboard (Netlify) is connected.', loggedAs: 'Account', cloudSaved: 'Saved in the cloud', saveNow: 'Save now', changePass: 'Change password', passChanged: 'Password changed.',
+  logoutSure: 'Log out? This device starts a new game, but everything is saved in your account.', forgot: 'Forgot your password? Ask the game\'s admin to reset it.', never: 'not yet',
+});
+Object.assign(T.ru, {
+  skLook: 'Лицо', skHead: 'Голова', skFace: 'Выражение', skHat: 'Головной убор', skClothes: 'Одежда', skTop: 'Верх', skBottom: 'Низ', skShoes: 'Обувь', skColor: 'Цвет',
+  skAccHint: 'Можно выбрать сразу несколько. Некоторые открываются за ачивки.', skRun: 'Бег', skJump: 'Прыжок', skSlide: 'Подкат', skRandom: 'Случайный образ',
+});
+Object.assign(T.en, {
+  skLook: 'Face', skHead: 'Head', skFace: 'Expression', skHat: 'Headwear', skClothes: 'Clothes', skTop: 'Top', skBottom: 'Bottom', skShoes: 'Shoes', skColor: 'Colour',
+  skAccHint: 'Pick as many as you like. Some unlock with achievements.', skRun: 'Run', skJump: 'Jump', skSlide: 'Slide', skRandom: 'Surprise me',
+});
+Object.assign(T.ru, {
   community: 'Уровни игроков', communitySub: 'Уровни, которые создали и опубликовали игроки. Играй, ставь ♥ и публикуй свои!',
   tabNew: 'Новые', tabTop: 'Лучшие', tabPlays: 'Популярные', by: 'автор', publish: 'Опубликовать', published: 'Опубликован',
   pubOk: 'Уровень опубликован! Теперь в него могут играть все.', pubNeedNick: 'Чтобы публиковать уровни, сначала выбери ник в таблице рекордов.',
@@ -448,7 +483,11 @@ try {
   if (s) { Object.assign(save, s); save.stats = Object.assign({ energy: 0, walls: 0, attempts: 0, houses: 0, bestM: 0, skinChanged: 0 }, s.stats); save.lv = Array.from({ length: 12 }, (_, i) => (s.lv && s.lv[i]) || {}); }
   if (!save.langChosen) save.lang = 'en';
 } catch (e) {}
-const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+const persist = () => {
+  save.updatedAt = Date.now();
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
+  clearTimeout(window.__ldCloudTimer); window.__ldCloudTimer = setTimeout(() => { try { cloudSave(); } catch (e) {} }, 4000);
+};
 const t = k => (T[save.lang][k] !== undefined ? T[save.lang][k] : k);
 
 /* =========================================================
@@ -480,7 +519,7 @@ const SKINS = [
 const skinById = id => SKINS.find(s => s.id === id) || (save.custom || []).find(s => s.id === id)
   || (/^c[0-9a-f]{6}$/.test(id) ? { id, shirt: '#' + id.slice(1), pants: '#3d4470', skin: '#dab680', hair: '#1a1210', style: 'short' } : SKINS[0]);
 // what other players see on the leaderboard: a custom runner travels as its shirt colour
-const skinWire = () => { const c = (save.custom || []).find(s => s.id === save.skin); return c ? 'c' + c.shirt.slice(1).toLowerCase() : String(save.skin).slice(0, 12); };
+const skinWire = () => { const c = (save.custom || []).find(s => s.id === save.skin); return c ? 'c' + String(c.v === 2 ? c.topColor : c.shirt).slice(1).toLowerCase() : String(save.skin).slice(0, 12); };
 const skinOpen = s => !s.need || save.ach.includes(s.need);
 
 const ACH = [
@@ -1017,6 +1056,7 @@ const FONT_B = '"Linotype Feltpen", "Patrick Hand", "Neucha", cursive';
 function line(c, pts, w = 2, col = C.indigo) { c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); }
 
 function drawPerson(c, sk, time, pose) {
+  if (sk.v === 2) return drawCustom(c, sk, time, pose);
   // origin at the feet, facing right, 52px tall
   const ph = time * 14, sw = pose === 'run' ? Math.sin(ph) : pose === 'air' ? .9 : 0;
   c.save();
@@ -1488,6 +1528,7 @@ function menu() {
       <button class="btn alt" id="mBoard">${t('board')}</button>
       <button class="btn alt" id="mQuests">${t('quests')}${questsLeft() ? ` (${questsLeft()})` : ''}</button>
       <button class="btn alt" id="mStats">${t('stats')}</button>
+      <button class="btn alt" id="mAcc">${accountName() ? '👤 ' + esc(accountName()) : t('account')}</button>
       <button class="btn alt" id="mLang">${t('lang')}</button>
     </div>
     <h3>${t('controls')}</h3>
@@ -1495,7 +1536,7 @@ function menu() {
       <span><kbd>↑</kbd>${t('kj')}</span><span><kbd>↓</kbd>${t('ks')}</span>
       <span><kbd>→</kbd>${t('kr')}</span><span><kbd>←</kbd>${t('kl')}</span>
     </div>`);
-  on('#mPlay', levels); on('#mSkins', skins); on('#mCreate', createHub); on('#mComm', () => community('new')); on('#mAch', achievements); on('#mBook', book); on('#mBoard', () => board('score')); on('#mQuests', quests); on('#mStats', statsTable);
+  on('#mPlay', levels); on('#mSkins', skins); on('#mCreate', createHub); on('#mAcc', accountScreen); on('#mComm', () => community('new')); on('#mAch', achievements); on('#mBook', book); on('#mBoard', () => board('score')); on('#mQuests', quests); on('#mStats', statsTable);
   on('#mLang', () => { save.lang = save.lang === 'ru' ? 'en' : 'ru'; save.langChosen = true; persist(); applyLang(); menu(); });
 }
 
@@ -1586,8 +1627,8 @@ function skins() {
       <span class="n">${esc(c.name)}</span><span class="d">${save.skin === c.id ? t('wear') : t('yourRunner')}</span></button><button type="button" class="chip" data-e="${i}">✎ ${t('edit')}</button></div>`).join('');
   const add = (save.custom || []).length < 4 ? `<button class="card newc" id="sNew"><span class="plus">+</span><span class="n">${t('newRunner')}</span><span class="d">${t('runnerEditor')}</span></button>` : '';
   show(`<h2>${t('choose')}</h2><div class="cards">${add}${mine}${cards}</div><div class="row"><button class="btn alt" id="sBack">${t('back')}</button></div>`);
-  on('#sNew', () => skinEditor(-1));
-  on('[data-e]', e => skinEditor(+e.currentTarget.dataset.e));
+  on('#sNew', () => { ED.draft = null; skinEditor(-1); });
+  on('[data-e]', e => { ED.draft = null; skinEditor(+e.currentTarget.dataset.e); });
   screen.querySelectorAll('canvas[data-p]').forEach(cn => {
     const x = cn.getContext('2d'), sk = skinById(cn.dataset.p);
     x.setTransform(2, 0, 0, 2, 0, 0); x.translate(35, 76); x.scale(1.2, 1.2);
@@ -1821,72 +1862,256 @@ function nickname(back) {
 }
 
 /* =========================================================
-   Runner editor (custom skins)
+   Runner editor 2.0: hair, hats, clothes, face and accessories are separate parts
    ========================================================= */
 const PAL = {
-  shirt: ['#5b6496', '#427f12', '#ff4401', '#fdca39', '#ffffff', '#8fb3e6', '#b1741e', '#2f3664', '#e86aa6', '#8e5cc4', '#1aa58f', '#333333'],
-  pants: ['#3d4470', '#5b6496', '#427f12', '#b1741e', '#ffffff', '#1f2447', '#ff4401', '#333333', '#8fb3e6'],
-  skin: ['#f0d2a8', '#e8c39a', '#dab680', '#c48a5a', '#b1741e', '#8a5a3c', '#6b4428', '#4a2f1b'],
-  hair: ['#1a1210', '#4a2f1b', '#8a5a3c', '#b1741e', '#e8c27a', '#d8d8d8', '#ff4401', '#5b6496', '#e86aa6', '#427f12'],
-  hat: ['#fdca39', '#ff4401', '#427f12', '#5b6496', '#ffffff', '#2f3664', '#e86aa6', '#8fb3e6'],
+  skin: ['#f6dcc0', '#f0d2a8', '#e8c39a', '#dab680', '#c48a5a', '#b1741e', '#8a5a3c', '#6b4428', '#4a2f1b'],
+  hair: ['#1a1210', '#4a2f1b', '#8a5a3c', '#b1741e', '#e8c27a', '#f3e2b0', '#d8d8d8', '#ff4401', '#e86aa6', '#8e5cc4', '#5b6496', '#427f12', '#1aa58f'],
+  cloth: ['#5b6496', '#3d4470', '#427f12', '#1aa58f', '#8fb3e6', '#ff4401', '#fdca39', '#e86aa6', '#8e5cc4', '#b1741e', '#ffffff', '#d8d8d8', '#333333'],
 };
-// hairstyles: free ones, plus special ones that come with an unlocked runner
-const STYLES = [['short'], ['bun'], ['curly'], ['long'], ['cap'], ['helmet'], ['hood'], ['sunhat'],
-  ['hardhat', 'li'], ['headlamp', 'night'], ['chef', 'mei'], ['sailor', 'kai'], ['visor', 'ada'], ['astro', 'yuki'], ['grandpa', 'ken'], ['robot', 'volt'], ['led', 'watt']];
-const STYLE_NAMES = { short: ['Короткая', 'Short'], bun: ['Пучок', 'Bun'], curly: ['Кудри', 'Curly'], long: ['Длинные', 'Long'], cap: ['Кепка', 'Cap'], helmet: ['Шлем', 'Helmet'], hood: ['Капюшон', 'Hood'], sunhat: ['Панама', 'Sun hat'],
-  hardhat: ['Каска', 'Hard hat'], headlamp: ['Фонарик', 'Headlamp'], chef: ['Колпак', 'Chef hat'], sailor: ['Бескозырка', 'Sailor cap'], visor: ['Визор', 'Visor'], astro: ['Скафандр', 'Space helmet'], grandpa: ['Седина', 'Grey hair'], robot: ['Робот', 'Robot'], led: ['Лампочка', 'Light bulb'] };
-const styleOpen = st => !st[1] || skinOpen(SKINS.find(k => k.id === st[1]));
-const crownOpen = () => ['zara', 'gold', 'dawn'].some(id => skinOpen(SKINS.find(k => k.id === id)));
+// [id, unlocked by runner id (or achievement), Russian name, English name]
+const PARTS = {
+  head:   [['human', null, 'Человек', 'Human'], ['robot', 'volt', 'Робот', 'Robot'], ['led', 'watt', 'Лампочка', 'Light bulb']],
+  face:   [['smile', null, 'Улыбка', 'Smile'], ['grin', null, 'Широкая улыбка', 'Big grin'], ['wow', null, 'Удивление', 'Wow'], ['calm', null, 'Спокойствие', 'Calm'], ['freckles', null, 'Веснушки', 'Freckles'], ['blush', null, 'Румянец', 'Blush']],
+  hair:   [['none', null, 'Без волос', 'No hair'], ['short', null, 'Короткие', 'Short'], ['buzz', null, 'Ёжик', 'Buzz cut'], ['spiky', null, 'Торчком', 'Spiky'], ['mohawk', null, 'Ирокез', 'Mohawk'],
+           ['bob', null, 'Каре', 'Bob'], ['long', null, 'Длинные', 'Long'], ['ponytail', null, 'Хвост', 'Ponytail'], ['bun', null, 'Пучок', 'Bun'], ['twobuns', null, 'Два пучка', 'Two buns'],
+           ['braids', null, 'Косички', 'Braids'], ['curly', null, 'Кудри', 'Curly'], ['afro', null, 'Афро', 'Afro']],
+  hat:    [['none', null, 'Без шапки', 'No hat'], ['cap', null, 'Кепка', 'Cap'], ['beanie', null, 'Шапка', 'Beanie'], ['helmet', null, 'Велошлем', 'Bike helmet'], ['sunhat', null, 'Панама', 'Sun hat'],
+           ['cowboy', null, 'Ковбойская', 'Cowboy hat'], ['tophat', null, 'Цилиндр', 'Top hat'], ['headband', null, 'Повязка', 'Headband'], ['bow', null, 'Бант', 'Bow'], ['party', null, 'Колпачок', 'Party hat'],
+           ['hardhat', 'li', 'Каска', 'Hard hat'], ['headlamp', 'night', 'Каска с фонариком', 'Headlamp'], ['chef', 'mei', 'Колпак шефа', 'Chef hat'], ['sailor', 'kai', 'Бескозырка', 'Sailor cap'],
+           ['astro', 'yuki', 'Скафандр', 'Space helmet'], ['crown', 'crown', 'Солнечная корона', 'Sun crown']],
+  top:    [['tshirt', null, 'Футболка', 'T-shirt'], ['stripes', null, 'Полоски', 'Stripes'], ['sport', null, 'Спортивная №7', 'Sport #7'], ['hoodie', null, 'Худи', 'Hoodie'], ['jacket', null, 'Куртка', 'Jacket'],
+           ['dress', null, 'Платье', 'Dress'], ['overalls', null, 'Комбинезон', 'Overalls'], ['vest', null, 'Жилет', 'Safety vest'], ['labcoat', 'amara', 'Халат учёного', 'Lab coat']],
+  bottom: [['pants', null, 'Брюки', 'Trousers'], ['shorts', null, 'Шорты', 'Shorts'], ['skirt', null, 'Юбка', 'Skirt']],
+  acc:    [['glasses', null, 'Очки', 'Glasses'], ['sunglasses', null, 'Тёмные очки', 'Sunglasses'], ['headphones', null, 'Наушники', 'Headphones'], ['scarf', null, 'Шарф', 'Scarf'],
+           ['necklace', null, 'Бусы', 'Necklace'], ['bowtie', null, 'Бабочка', 'Bow tie'], ['badge', null, 'Значок SDG 7', 'SDG 7 badge'], ['earrings', null, 'Серёжки', 'Earrings'],
+           ['mustache', null, 'Усы', 'Mustache'], ['backpack', 'ach:e100', 'Солнечный рюкзак', 'Solar backpack'], ['cape', 'ach:perfect', 'Плащ героя', 'Hero cape'], ['wings', 'ach:champion', 'Крылья', 'Wings']],
+};
+function partOpen(p) {
+  const need = p[1];
+  if (!need) return true;
+  if (need === 'crown') return ['zara', 'gold', 'dawn'].some(id => skinOpen(SKINS.find(k => k.id === id)));
+  if (need.startsWith('ach:')) return save.ach.includes(need.slice(4));
+  return skinOpen(SKINS.find(k => k.id === need));
+}
+function partLockText(p) {
+  const need = p[1];
+  if (need === 'crown') return SKINS.find(k => k.id === 'zara')[save.lang];
+  if (need.startsWith('ach:')) { const a = ACH.find(x => x.id === need.slice(4)); return a ? a[save.lang][0] : ''; }
+  return SKINS.find(k => k.id === need)[save.lang];
+}
+const partName = p => p[save.lang === 'ru' ? 2 : 3];
 
-function skinEditor(idx) {
+// Older custom runners (one "style" field) become new-style runners when edited.
+function toV2(o) {
+  if (o && o.v === 2) return o;
+  o = o || {};
+  const hats = ['cap', 'helmet', 'hardhat', 'headlamp', 'chef', 'sailor', 'sunhat', 'astro'];
+  const hairs = ['bun', 'curly', 'long'];
+  return { v: 2, id: o.id || 'u' + Date.now().toString(36), name: o.name || t('yourRunner'), skin: o.skin || '#dab680', face: 'smile',
+    head: o.style === 'robot' ? 'robot' : o.style === 'led' ? 'led' : 'human',
+    hair: hairs.includes(o.style) ? o.style : o.style === 'grandpa' ? 'buzz' : 'short', hairColor: o.hair || '#4a2f1b',
+    hat: o.crown ? 'crown' : hats.includes(o.style) ? o.style : 'none', hatColor: o.hat || '#fdca39',
+    top: o.style === 'hood' ? 'hoodie' : 'tshirt', topColor: o.shirt || '#427f12', bottom: 'pants', bottomColor: o.pants || '#3d4470', shoes: '#333333',
+    acc: o.goggles ? ['glasses'] : [] };
+}
+
+function drawCustom(c, sk, time, pose) {
+  const ph = time * 14, sw = pose === 'run' ? Math.sin(ph) : pose === 'air' ? .9 : 0, air = pose === 'air';
+  const has = a => (sk.acc || []).includes(a);
+  const ink = C.indigo;
+  c.save();
+  if (pose === 'slide') { c.translate(-6, 0); c.rotate(-1.15); }
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  // behind the body: wings, cape, backpack
+  if (has('wings')) {
+    const f = Math.sin(time * 10) * .25;
+    for (const s of [-1, 1]) { c.save(); c.translate(-4, -34); c.rotate(s * .5 + f * s); c.fillStyle = 'rgba(255,255,255,.9)'; c.strokeStyle = ink; c.lineWidth = 1.5; c.beginPath(); c.ellipse(-9, -6, 11, 5, -.6, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore(); }
+  }
+  if (has('cape')) { c.fillStyle = '#ff4401'; c.strokeStyle = ink; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-6, -37); c.quadraticCurveTo(-18 - sw * 3, -26, -16 - Math.sin(ph * .7) * 4, -12); c.lineTo(-4, -18); c.closePath(); c.fill(); c.stroke(); }
+  if (has('backpack')) { c.fillStyle = '#b1741e'; c.strokeStyle = ink; c.lineWidth = 1.5; c.beginPath(); c.roundRect(-15, -37, 9, 14, 3); c.fill(); c.stroke(); c.fillStyle = '#5577c0'; c.fillRect(-14, -36, 7, 5); }
+  // legs: trousers, shorts or bare legs under a skirt or dress
+  const legPath = s => [[0, -22], [s * 9, -11 + Math.abs(s) * 2], [s * 14 + (air ? -4 : 0), air ? -6 : 0]];
+  const legCol = (back) => sk.bottom === 'pants' && sk.top !== 'dress' ? (back ? shade(sk.bottomColor) : sk.bottomColor) : (back ? shade(sk.skin) : sk.skin);
+  const drawLeg = (s, back) => {
+    const pts = legPath(s);
+    line(c, pts, sk.bottom === 'pants' && sk.top !== 'dress' ? 4.5 : 3.6, legCol(back));
+    if (sk.bottom === 'shorts' && sk.top !== 'dress') line(c, [pts[0], [(pts[0][0] + pts[1][0]) / 2 + s, (pts[0][1] + pts[1][1]) / 2]], 5.5, back ? shade(sk.bottomColor) : sk.bottomColor);
+    c.fillStyle = sk.shoes || '#333'; c.beginPath(); c.ellipse(pts[2][0] + 2.5, pts[2][1] - 1, 4, 2.4, 0, 0, Math.PI * 2); c.fill();
+  };
+  drawLeg(-sw, true); drawLeg(sw, false);
+  if (sk.bottom === 'skirt' && sk.top !== 'dress' && sk.top !== 'labcoat') { c.fillStyle = sk.bottomColor; c.strokeStyle = ink; c.lineWidth = 1.6; c.beginPath(); c.moveTo(-8, -24); c.lineTo(-12, -13); c.lineTo(12, -13); c.lineTo(8, -24); c.closePath(); c.fill(); c.stroke(); }
+  // body
+  const body = (col, bottomY = -22, flare = 0) => { c.fillStyle = col; c.strokeStyle = ink; c.lineWidth = 2; c.beginPath(); c.moveTo(-8 - flare, bottomY); c.lineTo(-9, -36); c.quadraticCurveTo(0, -42, 9, -36); c.lineTo(8 + flare, bottomY); c.closePath(); c.fill(); c.stroke(); };
+  const tc = sk.topColor;
+  if (sk.top === 'dress') body(tc, -11, 5);
+  else if (sk.top === 'labcoat') { body('#ffffff', -13, 3); c.fillStyle = tc; c.beginPath(); c.moveTo(-3, -38); c.lineTo(0, -30); c.lineTo(3, -38); c.fill(); line(c, [[0, -30], [0, -14]], 1.2, ink); }
+  else if (sk.top === 'overalls') { body(tc); c.fillStyle = sk.bottomColor; c.strokeStyle = ink; c.lineWidth = 1.5; c.beginPath(); c.roundRect(-6, -31, 12, 10, 2); c.fill(); c.stroke(); line(c, [[-5, -31], [-6, -37]], 2, sk.bottomColor); line(c, [[5, -31], [6, -37]], 2, sk.bottomColor); }
+  else body(tc);
+  if (sk.top === 'stripes') for (const y of [-33, -29, -25]) line(c, [[-8, y], [8, y]], 1.6, 'rgba(255,255,255,.85)');
+  if (sk.top === 'sport') { c.fillStyle = '#fff'; c.font = `bold 9px ${FONT_B}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('7', 1, -29); }
+  if (sk.top === 'jacket') { line(c, [[0, -38], [0, -23]], 1.3, ink); line(c, [[-4, -38], [0, -34], [4, -38]], 1.5, ink); }
+  if (sk.top === 'hoodie') { line(c, [[-4, -27], [4, -27]], 1.3, ink); line(c, [[-2, -37], [-2, -33]], 1, '#fff'); line(c, [[3, -37], [3, -33]], 1, '#fff'); }
+  if (sk.top === 'vest') { line(c, [[-7, -30], [7, -30]], 2.2, C.yellow); line(c, [[-7, -26], [7, -26]], 2.2, C.yellow); }
+  // arms: sleeves for long tops, skin for t-shirts
+  const longSleeve = ['hoodie', 'jacket', 'labcoat', 'overalls'].includes(sk.top) && sk.top !== 'overalls';
+  const armCol = sk.top === 'labcoat' ? '#ffffff' : longSleeve ? tc : sk.skin;
+  const arm = (s, back) => {
+    const pts = [[0, -35], [s * -9, -28], [s * -12, -20 + (air ? -14 : 0)]];
+    line(c, pts, 3.5, back ? shade(armCol) : armCol);
+    if (!longSleeve) line(c, [pts[0], [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2]], 4.2, back ? shade(sk.top === 'dress' || sk.top === 'labcoat' ? tc : tc) : tc);
+  };
+  arm(sw, true); arm(-sw, false);
+  if (has('scarf')) { c.fillStyle = '#ff4401'; c.strokeStyle = ink; c.lineWidth = 1.2; c.beginPath(); c.roundRect(-7, -40, 15, 4, 2); c.fill(); c.stroke(); c.beginPath(); c.moveTo(-5, -37); c.lineTo(-9 - Math.sin(ph) * 2, -29); c.lineTo(-6, -29); c.closePath(); c.fill(); c.stroke(); }
+  if (has('necklace')) for (let k = 0; k < 5; k++) { c.fillStyle = k % 2 ? '#fdca39' : '#e86aa6'; c.beginPath(); c.arc(-4 + k * 2.2, -36 + Math.abs(k - 2) * -.8 + 1.5, 1.2, 0, Math.PI * 2); c.fill(); }
+  if (has('bowtie')) { c.fillStyle = '#ff4401'; c.beginPath(); c.moveTo(1, -37.5); c.lineTo(-3, -39.5); c.lineTo(-3, -35.5); c.closePath(); c.moveTo(1, -37.5); c.lineTo(5, -39.5); c.lineTo(5, -35.5); c.closePath(); c.fill(); }
+  if (has('badge')) { c.fillStyle = C.yellow; c.strokeStyle = ink; c.lineWidth = 1; c.beginPath(); c.arc(4.5, -31, 3, 0, Math.PI * 2); c.fill(); c.stroke(); c.fillStyle = ink; c.font = `bold 4.5px ${FONT_B}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('7', 4.5, -30.8); }
+  // head
+  if (sk.head === 'led') { if (IMG.led.complete && IMG.led.naturalWidth) c.drawImage(IMG.led, -11, -64, 22, 26); c.restore(); return; }
+  if (sk.head === 'robot') {
+    c.fillStyle = sk.skin; c.strokeStyle = ink; c.lineWidth = 1.8; c.beginPath(); c.roundRect(-8, -57, 18, 16, 4); c.fill(); c.stroke();
+    line(c, [[1, -57], [1, -63]], 1.8, ink); c.fillStyle = C.orange; c.beginPath(); c.arc(1, -64, 2.2, 0, Math.PI * 2); c.fill();
+    c.fillStyle = '#4fd07a'; c.fillRect(-3, -52, 4, 4); c.fillRect(4, -52, 4, 4); line(c, [[-2, -45], [7, -45]], 1.5, ink);
+  } else {
+    // hair that falls behind the head
+    c.fillStyle = sk.hairColor; c.strokeStyle = ink; c.lineWidth = 1.2;
+    if (sk.hair === 'long') { c.beginPath(); c.ellipse(-3, -42, 9, 11, 0, 0, Math.PI * 2); c.fill(); }
+    if (sk.hair === 'bob') { c.beginPath(); c.ellipse(-1, -46, 10, 9.5, 0, 0, Math.PI * 2); c.fill(); }
+    if (sk.hair === 'afro') { c.beginPath(); c.arc(0, -50, 12.5, 0, Math.PI * 2); c.fill(); }
+    if (sk.hair === 'ponytail') { c.beginPath(); c.ellipse(-11, -46 + Math.sin(ph) * 1.5, 4, 7, .5, 0, Math.PI * 2); c.fill(); }
+    if (sk.hair === 'braids') for (const dx of [-7, 6]) { line(c, [[dx, -46], [dx - 1, -38 + Math.sin(ph) * 1], [dx, -33]], 3, sk.hairColor); }
+    c.fillStyle = sk.skin; c.beginPath(); c.arc(1, -47, 8, 0, Math.PI * 2); c.fill(); c.lineWidth = 1.8; c.strokeStyle = ink; c.stroke();
+    // face
+    const f = sk.face || 'smile';
+    c.fillStyle = C.deep; c.beginPath(); c.arc(4.5, -48, f === 'wow' ? 1.6 : 1.3, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = C.deep; c.lineWidth = 1.1;
+    if (f === 'smile' || f === 'freckles' || f === 'blush') { c.beginPath(); c.arc(5.2, -45, 2, .2, Math.PI - .6); c.stroke(); }
+    if (f === 'grin') { c.fillStyle = '#fff'; c.beginPath(); c.arc(5, -44.5, 2.6, 0, Math.PI); c.closePath(); c.fill(); c.stroke(); }
+    if (f === 'wow') { c.beginPath(); c.arc(5.5, -43.5, 1.3, 0, Math.PI * 2); c.stroke(); }
+    if (f === 'calm') line(c, [[3.8, -43.8], [7, -43.8]], 1.1, C.deep);
+    if (f === 'freckles') { c.fillStyle = '#b1741e'; for (const [x, y] of [[2, -45.5], [3.3, -44.6], [7.6, -45.6]]) { c.beginPath(); c.arc(x, y, .5, 0, Math.PI * 2); c.fill(); } }
+    if (f === 'blush') { c.fillStyle = 'rgba(232,106,166,.5)'; c.beginPath(); c.ellipse(3, -45, 1.8, 1.1, 0, 0, Math.PI * 2); c.fill(); }
+    if (has('mustache')) { c.fillStyle = sk.hairColor; c.beginPath(); c.ellipse(5, -44.6, 3, 1.1, 0, 0, Math.PI * 2); c.fill(); }
+    if (has('earrings')) { c.fillStyle = C.yellow; c.beginPath(); c.arc(-2, -43.5, 1.2, 0, Math.PI * 2); c.fill(); }
+    // hair on top of the head
+    c.fillStyle = sk.hairColor; c.strokeStyle = ink; c.lineWidth = 1.2;
+    switch (sk.hair) {
+      case 'short': case 'long': case 'ponytail': case 'braids': case 'bob': c.beginPath(); c.arc(1, -50, 8.3, Math.PI * 1.02, Math.PI * 1.98); c.fill(); break;
+      case 'buzz': c.beginPath(); c.arc(1, -48.5, 8.1, Math.PI * 1.08, Math.PI * 1.9); c.fill(); break;
+      case 'spiky': c.beginPath(); c.moveTo(-7, -49); for (let k = 0; k < 5; k++) { c.lineTo(-6 + k * 3.4, -59 + (k % 2) * 2); c.lineTo(-4.3 + k * 3.4, -52); } c.lineTo(9, -49); c.closePath(); c.fill(); break;
+      case 'mohawk': c.beginPath(); c.moveTo(-6, -50); c.lineTo(-3, -61); c.lineTo(2, -62); c.lineTo(6, -58); c.lineTo(4, -53); c.closePath(); c.fill(); break;
+      case 'bun': c.beginPath(); c.arc(1, -50, 8.2, Math.PI * 1.02, Math.PI * 1.98); c.fill(); c.beginPath(); c.arc(-6, -55, 4, 0, Math.PI * 2); c.fill(); break;
+      case 'twobuns': c.beginPath(); c.arc(1, -50, 8.2, Math.PI * 1.02, Math.PI * 1.98); c.fill(); c.beginPath(); c.arc(-6, -55, 3.3, 0, Math.PI * 2); c.arc(7, -56, 3.3, 0, Math.PI * 2); c.fill(); break;
+      case 'curly': for (let k = 0; k < 6; k++) { c.beginPath(); c.arc(-6 + k * 2.6, -54 + (k % 2) * 1.5, 3.4, 0, Math.PI * 2); c.fill(); } c.beginPath(); c.arc(-6, -47, 3.4, 0, Math.PI * 2); c.fill(); break;
+      case 'afro': for (let k = 0; k < 7; k++) { c.beginPath(); c.arc(-8 + k * 2.8, -56 + Math.abs(k - 3) * 1.3, 3.5, 0, Math.PI * 2); c.fill(); } break;
+    }
+    // glasses
+    if (has('glasses')) { c.strokeStyle = ink; c.lineWidth = 1.2; c.fillStyle = 'rgba(200,230,250,.55)'; c.beginPath(); c.arc(5, -48, 2.8, 0, Math.PI * 2); c.fill(); c.stroke(); line(c, [[-1, -48.5], [2.2, -48.5]], 1.1, ink); }
+    if (has('sunglasses')) { c.fillStyle = '#1f2447'; c.beginPath(); c.roundRect(1.5, -50, 7.5, 3.6, 1.5); c.fill(); line(c, [[-1, -49], [1.5, -49]], 1.2, '#1f2447'); }
+  }
+  // hats
+  const hc = sk.hatColor;
+  c.fillStyle = hc; c.strokeStyle = ink; c.lineWidth = 1.5;
+  switch (sk.hat) {
+    case 'cap': c.beginPath(); c.arc(1, -50, 8.4, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[3, -50.5], [13, -50]], 3, hc); break;
+    case 'beanie': c.beginPath(); c.arc(1, -50, 8.6, Math.PI, Math.PI * 2); c.fill(); c.stroke(); c.fillRect(-8, -51, 18, 3); c.beginPath(); c.arc(1, -59.5, 2.2, 0, Math.PI * 2); c.fill(); c.stroke(); break;
+    case 'helmet': c.beginPath(); c.ellipse(1, -52, 9.5, 6.5, 0, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[-3, -57], [5, -57]], 1, '#fff'); break;
+    case 'sunhat': c.beginPath(); c.ellipse(1, -54, 15, 3.5, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.beginPath(); c.arc(1, -55, 7, Math.PI, Math.PI * 2); c.fill(); c.stroke(); break;
+    case 'cowboy': c.beginPath(); c.ellipse(1, -54, 15, 3, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.beginPath(); c.moveTo(-5, -54); c.lineTo(-4, -62); c.quadraticCurveTo(1, -59, 6, -62); c.lineTo(7, -54); c.closePath(); c.fill(); c.stroke(); break;
+    case 'tophat': c.beginPath(); c.ellipse(1, -54, 11, 2.5, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.fillRect(-5, -66, 12, 12); c.strokeRect(-5, -66, 12, 12); line(c, [[-5, -57], [7, -57]], 2, '#ff4401'); break;
+    case 'headband': line(c, [[-7, -51], [9, -51]], 2.5, hc); break;
+    case 'bow': c.beginPath(); c.moveTo(-3, -56); c.lineTo(-9, -60); c.lineTo(-9, -52); c.closePath(); c.moveTo(-3, -56); c.lineTo(3, -60); c.lineTo(3, -52); c.closePath(); c.fill(); c.stroke(); break;
+    case 'party': c.beginPath(); c.moveTo(-5, -54); c.lineTo(3, -70); c.lineTo(8, -54); c.closePath(); c.fill(); c.stroke(); c.fillStyle = C.yellow; c.beginPath(); c.arc(3, -70, 2, 0, Math.PI * 2); c.fill(); break;
+    case 'hardhat': case 'headlamp':
+      c.beginPath(); c.arc(1, -51, 8.6, Math.PI, Math.PI * 2); c.fill(); c.stroke(); line(c, [[-9, -51], [12, -51]], 2.5, ink);
+      if (sk.hat === 'headlamp') { c.fillStyle = 'rgba(253,202,57,.35)'; c.beginPath(); c.moveTo(8, -54); c.lineTo(44, -66); c.lineTo(44, -40); c.closePath(); c.fill(); c.fillStyle = '#fff6b0'; c.beginPath(); c.arc(8, -54, 2.6, 0, Math.PI * 2); c.fill(); c.stroke(); }
+      break;
+    case 'chef': c.fillStyle = '#fff'; c.beginPath(); c.roundRect(-6, -59, 14, 7, 2); c.fill(); c.stroke(); c.beginPath(); c.arc(-2, -61, 5, 0, Math.PI * 2); c.arc(5, -62, 5.5, 0, Math.PI * 2); c.fill(); c.stroke(); break;
+    case 'sailor': c.fillStyle = '#fff'; c.beginPath(); c.ellipse(1, -55, 9, 4, 0, 0, Math.PI * 2); c.fill(); c.stroke(); line(c, [[-6, -53], [8, -53]], 2.5, hc); break;
+    case 'astro': c.fillStyle = 'rgba(190,215,255,.35)'; c.lineWidth = 1.8; c.beginPath(); c.arc(1, -47, 12, 0, Math.PI * 2); c.fill(); c.stroke(); c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.arc(-4, -52, 2.5, 0, Math.PI * 2); c.fill(); break;
+    case 'crown': c.fillStyle = C.yellow; c.beginPath(); for (let i = 0; i < 5; i++) { const a = Math.PI + i * Math.PI / 4; c.lineTo(1 + Math.cos(a) * 15, -50 + Math.sin(a) * 15); c.lineTo(1 + Math.cos(a + Math.PI / 8) * 9, -50 + Math.sin(a + Math.PI / 8) * 9); } c.closePath(); c.fill(); break;
+  }
+  if (has('headphones')) { c.strokeStyle = '#333'; c.lineWidth = 2; c.beginPath(); c.arc(1, -48, 9.5, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); c.fillStyle = hc === '#333333' ? '#ff4401' : '#333'; c.beginPath(); c.roundRect(-3, -50, 4, 6, 1.5); c.fill(); }
+  c.restore();
+}
+// a slightly darker version of a colour, for the far arm and leg
+function shade(hex) {
+  const n = parseInt(String(hex).slice(1), 16); if (isNaN(n)) return hex;
+  const f = v => Math.max(0, Math.round(v * .78));
+  return '#' + [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(f).map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+function skinEditor(idx, tab) {
   state = 'menu';
   if (idx < 0 && (save.custom || []).length >= 4) { toast(t('fullRunners')); return; }
-  const d = idx >= 0 ? Object.assign({}, save.custom[idx]) : { id: 'u' + Date.now().toString(36), name: save.nick || t('yourRunner'), shirt: '#427f12', pants: '#3d4470', skin: '#dab680', hair: '#4a2f1b', hat: '#fdca39', style: 'cap', goggles: false, crown: false };
-  const sw = (k) => `<div class="swatches">${PAL[k].map(c => `<button type="button" class="swatch" data-k="${k}" data-v="${c}" style="background:${c}" aria-label="${k} ${c}" aria-pressed="${d[k] === c}"></button>`).join('')}</div>`;
-  const styles = STYLES.map(st => {
-    const open = styleOpen(st), who = st[1] ? SKINS.find(k => k.id === st[1]) : null;
-    return `<button type="button" class="chip" data-style="${st[0]}" aria-pressed="${d.style === st[0]}" ${open ? '' : `disabled title="${t('lockedBy')}: ${esc(who[save.lang])}"`}>${open ? '' : '🔒 '}${STYLE_NAMES[st[0]][save.lang === 'ru' ? 0 : 1]}</button>`;
-  }).join('');
+  const d = ED.draft && ED.draftIdx === idx ? ED.draft : idx >= 0 ? toV2(Object.assign({}, save.custom[idx])) : toV2({ name: save.nick || t('yourRunner') });
+  ED.draft = d; ED.draftIdx = idx;
+  tab = tab || ED.skTab || 'look'; ED.skTab = tab;
+  const sw = (k, pal) => `<div class="swatches">${PAL[pal].map(col => `<button type="button" class="swatch" data-k="${k}" data-v="${col}" style="background:${col}" aria-label="${col}" aria-pressed="${d[k] === col}"></button>`).join('')}</div>`;
+  const chips = (k, multi) => `<div class="swatches">${PARTS[k].map(p => {
+    const open = partOpen(p), on = multi ? (d.acc || []).includes(p[0]) : d[k] === p[0];
+    return `<button type="button" class="chip" data-part="${k}" data-v="${p[0]}" aria-pressed="${on}" ${open ? '' : `disabled title="${t('lockedBy')}: ${esc(partLockText(p))}"`}>${open ? '' : '🔒 '}${esc(partName(p))}</button>`;
+  }).join('')}</div>`;
+  const tabs = [['look', t('skLook')], ['hair', t('rHair')], ['hat', t('skHat')], ['clothes', t('skClothes')], ['acc', t('rExtras')]];
+  const panels = {
+    look: `<h4>${t('skHead')}</h4>${chips('head')}<h4>${t('rSkin')}</h4>${sw('skin', 'skin')}<h4>${t('skFace')}</h4>${chips('face')}`,
+    hair: `<h4>${t('rStyle')}</h4>${chips('hair')}<h4>${t('skColor')}</h4>${sw('hairColor', 'hair')}`,
+    hat: `<h4>${t('skHat')}</h4>${chips('hat')}<h4>${t('skColor')}</h4>${sw('hatColor', 'cloth')}`,
+    clothes: `<h4>${t('skTop')}</h4>${chips('top')}${sw('topColor', 'cloth')}<h4>${t('skBottom')}</h4>${chips('bottom')}${sw('bottomColor', 'cloth')}<h4>${t('skShoes')}</h4>${sw('shoes', 'cloth')}`,
+    acc: `<p class="sub">${t('skAccHint')}</p>${chips('acc', true)}`,
+  };
   show(`<h2>${t('runnerEditor')}</h2>
-    <div class="editor"><canvas id="skPrev" width="360" height="420" aria-label="${t('runnerEditor')}"></canvas>
+    <div class="editor"><div class="prevcol"><canvas id="skPrev" width="360" height="460" aria-label="${t('runnerEditor')}"></canvas>
+      <div class="swatches"><button type="button" class="chip" data-pose="run" aria-pressed="${(ED.pose || 'run') === 'run'}">${t('skRun')}</button><button type="button" class="chip" data-pose="air" aria-pressed="${ED.pose === 'air'}">${t('skJump')}</button><button type="button" class="chip" data-pose="slide" aria-pressed="${ED.pose === 'slide'}">${t('skSlide')}</button></div>
+      <button type="button" class="btn alt" id="skRand">🎲 ${t('skRandom')}</button></div>
     <div class="edctl">
       <label>${t('rName')} <input id="skName" class="nick" maxlength="16" value="${esc(d.name)}"></label>
-      <h4>${t('rShirt')}</h4>${sw('shirt')}<h4>${t('rPants')}</h4>${sw('pants')}<h4>${t('rSkin')}</h4>${sw('skin')}<h4>${t('rHair')}</h4>${sw('hair')}
-      <h4>${t('rStyle')}</h4><div class="swatches">${styles}</div>
-      <h4>${t('rHat')}</h4>${sw('hat')}
-      <h4>${t('rExtras')}</h4><div class="swatches"><button type="button" class="chip" id="skGog" aria-pressed="${!!d.goggles}">${t('rGoggles')}</button>
-        <button type="button" class="chip" id="skCrown" aria-pressed="${!!d.crown}" ${crownOpen() ? '' : `disabled title="${t('lockedBy')}: ${esc(SKINS.find(k => k.id === 'zara')[save.lang])}"`}>${crownOpen() ? '' : '🔒 '}${t('rCrown')}</button></div>
+      <div class="swatches" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" class="chip" data-tab="${k}" aria-selected="${tab === k}" aria-pressed="${tab === k}">${n}</button>`).join('')}</div>
+      ${panels[tab]}
     </div></div>
     <div class="row"><button class="btn" id="skSave">${t('saveRunner')}</button>${idx >= 0 ? `<button class="btn alt" id="skDel">${t('del')}</button>` : ''}<button class="btn alt" id="skBack">${t('back')}</button></div>`);
-  const cv2 = screen.querySelector('#skPrev'), x2 = cv2.getContext('2d');
-  let t0 = performance.now();
+  const cv2 = screen.querySelector('#skPrev'), x2 = cv2.getContext('2d'), t0 = performance.now();
   const draw = now => {
     if (!document.body.contains(cv2)) return;
-    x2.setTransform(1, 0, 0, 1, 0, 0); x2.clearRect(0, 0, 360, 420);
-    x2.setTransform(3.6, 0, 0, 3.6, 180, 360); drawPerson(x2, d, (now - t0) / 1000, 'run');
+    x2.setTransform(1, 0, 0, 1, 0, 0); x2.clearRect(0, 0, 360, 460);
+    x2.setTransform(3.6, 0, 0, 3.6, 180, 400); drawCustom(x2, d, (now - t0) / 1000, ED.pose || 'run');
     requestAnimationFrame(draw);
   };
   requestAnimationFrame(draw);
-  screen.querySelectorAll('.swatch').forEach(b => b.addEventListener('click', () => {
-    d[b.dataset.k] = b.dataset.v; screen.querySelectorAll(`.swatch[data-k="${b.dataset.k}"]`).forEach(x => x.setAttribute('aria-pressed', x === b));
+  const keepName = () => { d.name = (screen.querySelector('#skName').value || '').slice(0, 16); };
+  screen.querySelectorAll('.swatch').forEach(b => b.addEventListener('click', () => { d[b.dataset.k] = b.dataset.v; screen.querySelectorAll(`.swatch[data-k="${b.dataset.k}"]`).forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  screen.querySelectorAll('[data-part]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.part, v = b.dataset.v;
+    if (k === 'acc') {
+      const set = new Set(d.acc || []);
+      if (set.has(v)) set.delete(v); else { set.add(v); if (v === 'glasses') set.delete('sunglasses'); if (v === 'sunglasses') set.delete('glasses'); }
+      d.acc = [...set]; screen.querySelectorAll('[data-part="acc"]').forEach(x => x.setAttribute('aria-pressed', d.acc.includes(x.dataset.v)));
+    } else { d[k] = v; screen.querySelectorAll(`[data-part="${k}"]`).forEach(x => x.setAttribute('aria-pressed', x === b)); }
   }));
-  screen.querySelectorAll('[data-style]').forEach(b => b.addEventListener('click', () => {
-    d.style = b.dataset.style; screen.querySelectorAll('[data-style]').forEach(x => x.setAttribute('aria-pressed', x === b));
-  }));
-  on('#skGog', e => { d.goggles = !d.goggles; e.currentTarget.setAttribute('aria-pressed', d.goggles); });
-  on('#skCrown', e => { d.crown = !d.crown; e.currentTarget.setAttribute('aria-pressed', d.crown); });
+  on('[data-tab]', e => { keepName(); skinEditor(idx, e.currentTarget.dataset.tab); });
+  on('[data-pose]', e => { ED.pose = e.currentTarget.dataset.pose; screen.querySelectorAll('[data-pose]').forEach(x => x.setAttribute('aria-pressed', x === e.currentTarget)); });
+  on('#skRand', () => {
+    keepName();
+    const pick = k => { const open = PARTS[k].filter(partOpen); return open[Math.floor(Math.random() * open.length)][0]; };
+    const col = k => PAL[k][Math.floor(Math.random() * PAL[k].length)];
+    Object.assign(d, { head: Math.random() < .85 ? 'human' : pick('head'), face: pick('face'), skin: col('skin'), hair: pick('hair'), hairColor: col('hair'), hat: Math.random() < .5 ? 'none' : pick('hat'),
+      hatColor: col('cloth'), top: pick('top'), topColor: col('cloth'), bottom: pick('bottom'), bottomColor: col('cloth'), shoes: col('cloth'),
+      acc: PARTS.acc.filter(partOpen).filter(() => Math.random() < .18).map(p => p[0]).filter((a, i, arr) => !(a === 'sunglasses' && arr.includes('glasses'))) });
+    skinEditor(idx, tab);
+  });
   on('#skSave', () => {
-    d.name = (screen.querySelector('#skName').value || '').trim().slice(0, 16) || t('yourRunner');
+    keepName(); d.name = d.name.trim() || t('yourRunner');
     save.custom = save.custom || [];
     if (idx >= 0) save.custom[idx] = d; else save.custom.push(d);
+    ED.draft = null;
     save.skin = d.id; save.stats.skinChanged = 1; persist(); unlock('stylist'); checkAch(); pushSoon(); skins();
   });
   on('#skDel', e => {
     const b = e.currentTarget;
     if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('sure'); return; }
-    save.custom.splice(idx, 1); if (save.skin === d.id) save.skin = 'anya'; persist(); skins();
+    save.custom.splice(idx, 1); if (save.skin === d.id) save.skin = 'anya'; ED.draft = null; persist(); skins();
   });
-  on('#skBack', skins);
+  on('#skBack', () => { ED.draft = null; skins(); });
 }
 
 /* =========================================================
@@ -1967,7 +2192,7 @@ function createHub() {
     if ((save.myLevels || []).length >= 8) { toast(t('fullLevels')); return; }
     openEditor({ id: 'l' + Date.now().toString(36), name: t('untitled'), theme: 0, speed: 340, items: [], verified: false }, -1);
   });
-  on('#cRunner', () => skinEditor(-1));
+  on('#cRunner', () => { ED.draft = null; skinEditor(-1); });
   on('[data-a]', e => {
     const i = +e.currentTarget.dataset.i, L = save.myLevels[i], a = e.currentTarget.dataset.a;
     if (a === 'play') playCustom(L, false);
@@ -2179,6 +2404,112 @@ window.addEventListener('keydown', e => {
     const s2 = document.getElementById('edScroll'); if (s2) s2.value = ED.cam;
   }
 });
+
+/* =========================================================
+   Accounts and cloud saves
+   ========================================================= */
+const ACC_KEY = 'light-dash-account';
+const ACC_URL = LB_URL ? LB_URL.replace(/\/api\/leaderboard$/, '/api/account') : '';
+function accountName() { try { const a = JSON.parse(localStorage.getItem(ACC_KEY)); return a && a.username || ''; } catch (e) { return ''; } }
+async function accCall(body) {
+  if (!ACC_URL) return null;
+  try { const r = await fetch(ACC_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return await r.json(); } catch (e) { return null; }
+}
+async function cloudSave() {
+  if (!accountName() || !ACC_URL) return null;
+  const me = lbPlayer();
+  const r = await accCall({ action: 'save', id: me.id, key: me.key, data: save });
+  if (r && r.ok) { try { localStorage.setItem('light-dash-cloud-at', String(r.updated)); } catch (e) {} }
+  return r;
+}
+// On start: if the account's cloud copy is newer than this device's, use it.
+async function cloudSync() {
+  if (!accountName() || !ACC_URL) return;
+  const me = lbPlayer();
+  const r = await accCall({ action: 'load', id: me.id, key: me.key });
+  if (!r || !r.ok) return;
+  if (r.data && (r.updated || 0) > (save.updatedAt || 0) + 1500) {
+    let done = false; try { done = sessionStorage.getItem('ld-synced') === String(r.updated); sessionStorage.setItem('ld-synced', String(r.updated)); } catch (e) {}
+    if (done) return;
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(Object.assign({}, r.data, { updatedAt: r.updated }))); } catch (e) { return; }
+    location.reload();
+  } else if (!r.data) cloudSave();
+}
+function accountScreen(msg) {
+  state = 'menu';
+  const head = `<h2>${t('account')}</h2><p class="sub">${t('accSub')}</p>`;
+  if (!ACC_URL) { show(`${head}<div class="fact"><b>${t('accOff')}</b></div><div class="row"><button class="btn alt" id="aBack2">${t('back')}</button></div>`); return on('#aBack2', menu); }
+  const name = accountName();
+  if (name) {
+    let at = 0; try { at = +localStorage.getItem('light-dash-cloud-at') || 0; } catch (e) {}
+    show(`${head}<div class="stats"><span>${t('loggedAs')}: <b>${esc(name)}</b></span>${save.nick ? `<span>${t('nick')}: <b>${esc(save.nick)}</b></span>` : ''}
+        <span>${t('cloudSaved')}: <b id="accAt">${at ? new Date(at).toLocaleString(save.lang === 'ru' ? 'ru-RU' : 'en-GB', { dateStyle: 'short', timeStyle: 'short' }) : t('never')}</b></span></div>
+      <p class="sub" id="accMsg">${msg ? esc(msg) : ''}</p>
+      <div class="row"><button class="btn" id="accSave">${t('saveNow')}</button><button class="btn alt" id="accPw">${t('changePass')}</button><button class="btn alt" id="accOut">${t('logout')}</button><button class="btn alt" id="aBack2">${t('back')}</button></div>
+      <form id="pwForm" class="accform" hidden autocomplete="off"><label>${t('oldPassword')} <input id="pwOld" class="nick" type="password" maxlength="64"></label>
+        <label>${t('newPassword')} <input id="pwNew" class="nick" type="password" maxlength="64"></label><button class="btn" type="submit">${t('save')}</button></form>`);
+    on('#aBack2', menu);
+    on('#accSave', async () => { const r = await cloudSave(); accountScreen(r && r.ok ? t('saved') : t('accFail')); });
+    on('#accPw', () => { screen.querySelector('#pwForm').hidden = false; screen.querySelector('#pwOld').focus(); });
+    screen.querySelector('#pwForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const me = lbPlayer(), nw = screen.querySelector('#pwNew').value;
+      if (nw.length < 6 || nw.length > 64) { screen.querySelector('#accMsg').textContent = t('accBadPass'); return; }
+      const r = await accCall({ action: 'password', id: me.id, key: me.key, old: screen.querySelector('#pwOld').value, password: nw });
+      accountScreen(r && r.ok ? t('passChanged') : r && r.error === 'wrong_login' ? t('accWrong') : t('accFail'));
+    });
+    on('#accOut', async e => {
+      const b = e.currentTarget;
+      if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('logout') + '?'; screen.querySelector('#accMsg').textContent = t('logoutSure'); return; }
+      await cloudSave();
+      try { for (const k of [ACC_KEY, 'light-dash-player', SAVE_KEY, 'light-dash-cloud-at']) localStorage.removeItem(k); sessionStorage.removeItem('ld-synced'); } catch (err) {}
+      location.reload();
+    });
+    return;
+  }
+  show(`${head}<p class="sub" id="accMsg">${msg ? esc(msg) : ''}</p>
+    <div class="accgrid">
+      <form id="regForm" class="accform" autocomplete="off"><h3>${t('register')}</h3>
+        <label>${t('username')} <input id="regUser" class="nick" maxlength="16" autocomplete="username"></label><span class="hint">${t('accHintUser')}</span>
+        <label>${t('password')} <input id="regPass" class="nick" type="password" maxlength="64" autocomplete="new-password"></label>
+        <label>${t('password2')} <input id="regPass2" class="nick" type="password" maxlength="64" autocomplete="new-password"></label><span class="hint">${t('accHintPass')}</span>
+        <span class="hint">${t('accRegNote')}</span><button class="btn" type="submit">${t('register')}</button></form>
+      <form id="logForm" class="accform"><h3>${t('login')}</h3>
+        <label>${t('username')} <input id="logUser" class="nick" maxlength="16" autocomplete="username"></label>
+        <label>${t('password')} <input id="logPass" class="nick" type="password" maxlength="64" autocomplete="current-password"></label>
+        <span class="hint">${t('accLoginNote')}</span><span class="hint">${t('forgot')}</span><button class="btn" type="submit">${t('login')}</button></form>
+    </div>
+    <div class="row"><button class="btn alt" id="aBack2">${t('back')}</button></div>`);
+  on('#aBack2', menu);
+  const say2 = text => { screen.querySelector('#accMsg').textContent = text; };
+  screen.querySelector('#regForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const u = screen.querySelector('#regUser').value.trim(), p1 = screen.querySelector('#regPass').value, p2 = screen.querySelector('#regPass2').value;
+    if (!/^[A-Za-z0-9_.-]{3,16}$/.test(u) || BAD.some(w => u.toLowerCase().includes(w))) return say2(t('accBadUser'));
+    if (p1.length < 6 || p1.length > 64) return say2(t('accBadPass'));
+    if (p1 !== p2) return say2(t('accMismatch'));
+    const me = lbPlayer();
+    const r = await accCall({ action: 'register', username: u, password: p1, id: me.id, key: me.key });
+    if (!r || !r.ok) return say2(!r ? t('accFail') : r.error === 'username_taken' ? t('accTaken') : r.error === 'already_has_account' ? t('accAlready') : r.error === 'bad_username' ? t('accBadUser') : r.error === 'bad_password' ? t('accBadPass') : t('accFail'));
+    try { localStorage.setItem(ACC_KEY, JSON.stringify({ username: r.username })); } catch (err) {}
+    if (!save.nick && nickOk(u)) { save.nick = u; await pushScore(true); }
+    persist(); await cloudSave(); accountScreen(t('accOk'));
+  });
+  screen.querySelector('#logForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const r = await accCall({ action: 'login', username: screen.querySelector('#logUser').value.trim(), password: screen.querySelector('#logPass').value });
+    if (!r || !r.ok) return say2(!r ? t('accFail') : t('accWrong'));
+    try {
+      localStorage.setItem('light-dash-player', JSON.stringify({ id: r.id, key: r.key }));
+      localStorage.setItem(ACC_KEY, JSON.stringify({ username: r.username }));
+      const cloud = await accCall({ action: 'load', id: r.id, key: r.key });
+      if (cloud && cloud.ok && cloud.data) localStorage.setItem(SAVE_KEY, JSON.stringify(Object.assign({}, cloud.data, { updatedAt: cloud.updated })));
+      else localStorage.removeItem(SAVE_KEY);
+      sessionStorage.setItem('ld-welcome', '1');
+    } catch (err) {}
+    location.reload();
+  });
+}
 
 /* =========================================================
    Community levels: publish, browse, play, like
@@ -2405,6 +2736,8 @@ applyLang();
 startDemo();
 menu();
 if (/^#lvl=/.test(location.hash)) { const L = parseCode(location.hash.slice(5)); if (L) sharedLevel(L); }
+try { if (sessionStorage.getItem('ld-welcome')) { sessionStorage.removeItem('ld-welcome'); toast(t('accWelcome'), accountName()); } } catch (e) {}
+setTimeout(() => { cloudSync(); }, 300);
 requestAnimationFrame(frame);
 })();
 </script>
