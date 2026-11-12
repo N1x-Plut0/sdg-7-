@@ -63,7 +63,8 @@ On a phone, use the big arrow buttons under the screen.
 - **Daily quests:** three new quests every day (light 15 homes, ride 5 updrafts…), with a daily streak.
 - **Level editor:** build your own levels with spikes, gaps, blocks, updrafts, speed arrows and homes, check them with the autopilot, and share them with a code or a link.
 - **Player levels:** publish your checked levels for everyone. Browse new, best (♥) and popular levels, play them and give a ♥. Admins can remove levels from the admin panel.
-- **Runner editor:** make your own runner: shirt, trousers, skin, hair, hairstyle or hat, glasses and more. Rare hairstyles unlock with the runners you earn.
+- **Runner editor:** design your own runner from separate parts: 13 hairstyles, 16 hats, 9 tops, trousers/shorts/skirt, shoes, 6 expressions, 3 head types and 12 accessories (glasses, headphones, scarf, solar backpack, hero cape, wings…), each in many colours, plus a Surprise me button. Rare parts unlock with runners and achievements you earn.
+- **Accounts:** a username and password (no email) keep all your progress in the cloud, so you can log in and carry on from any device.
 - **Music:** a small chiptune for every world, with its own on/off button.
 - **Marathon 2030:** an endless run through the worlds. Can you make it 2030 meters?
 - **13 runners:** Anya, Timur, Engineer Li, Scientist Amara, Courier Niko, Night shift, Sunny Zara, Watt (the light bulb from our presentation), Chef Mei, Captain Kai, Ada of Grid 2030, Hydro Hana, the Golden runner, Explorer Sol, River guard Nadia, Astronaut Yuki, Grandpa Ken and Robot Volt Sailor Marin, Teacher Olga and the Sunrise champion (21 in total), plus up to 4 runners you design yourself.
@@ -125,7 +126,7 @@ Players can change their nickname any time from the game.
 
 ### Admin panel
 
-`admin.html` lets the game's admins correct nicknames and numbers, block or delete players, make other players admins, and remove published player levels.
+`admin.html` lets the game's admins correct nicknames and numbers, block or delete players, make other players admins, reset a player's account password, and remove published player levels.
 - The nicknames **dev mode** and **enthropy** are reserved for the admins: only one player can hold each, and that player
   becomes an admin. In the same browser, the leaderboard then shows an **Admin panel** button and the panel opens without a password.
   Change the list with the `ADMIN_NAMES` environment variable in Netlify (comma separated).

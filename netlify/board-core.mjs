@@ -107,7 +107,7 @@ const adminView = r => ({ id: r.id, name: r.name, skin: r.skin, score: r.score, 
   bestM: r.bestM, homes: r.homes, times: r.times || [], updated: r.updated, blocked: !!r.blocked, admin: !!r.admin });
 const wait = ms => new Promise(res => setTimeout(res, ms));
 
-export async function handleAdmin(req, store, password, levelStore) {
+export async function handleAdmin(req, store, password, levelStore, accStore) {
   try {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
     if (req.method !== 'POST') return json({ error: 'method' }, 405);
@@ -134,11 +134,23 @@ export async function handleAdmin(req, store, password, levelStore) {
       if (!levelStore || typeof b.levelId !== 'string' || !/^[a-f0-9]{8,40}$/.test(b.levelId)) return json({ error: 'bad_id' }, 400);
       await levelStore.delete(b.levelId); return json({ ok: true });
     }
+    if (b.action === 'resetPassword') {
+      if (!accStore || typeof b.playerId2 !== 'string') return json({ error: 'bad_id' }, 400);
+      if (typeof b.newPassword !== 'string' || b.newPassword.length < 6 || b.newPassword.length > 64) return json({ error: 'bad_password' }, 400);
+      const link = await accStore.get('pid:' + b.playerId2, { type: 'json' });
+      if (!link) return json({ error: 'no_account' }, 404);
+      const rec = await accStore.get('user:' + link.username.toLowerCase(), { type: 'json' });
+      if (!rec) return json({ error: 'no_account' }, 404);
+      rec.salt = randomId() + randomId(); rec.hash = await pbkdf2(b.newPassword, rec.salt, rec.iter || PBKDF2_ITER);
+      await accStore.setJSON('user:' + link.username.toLowerCase(), rec);
+      return json({ ok: true, username: rec.username });
+    }
     if (b.action === 'list') {
       const { blobs } = await store.list();
       const rows = (await Promise.all(blobs.slice(0, 5000).map(x => store.get(x.key, { type: 'json' })))).filter(r => r && r.id);
       rows.sort((x, y) => (y.score || 0) - (x.score || 0));
-      return json({ players: rows.map(adminView) });
+      const names = accStore ? await Promise.all(rows.map(r => accStore.get('pid:' + r.id, { type: 'json' }).catch(() => null))) : [];
+      return json({ players: rows.map((r, i) => ({ ...adminView(r), account: names[i] ? names[i].username : '' })) });
     }
     if (typeof b.id !== 'string' || !/^[a-f0-9-]{16,64}$/.test(b.id)) return json({ error: 'bad_id' }, 400);
     const row = await store.get(b.id, { type: 'json' });
@@ -263,6 +275,89 @@ export async function handleLevels(req, store, levelStore) {
     if (b.action === 'delete') {
       if (L.author !== me.id && !me.admin) return json({ error: 'not_yours' }, 403);
       await levelStore.delete(L.id); return json({ ok: true });
+    }
+    return json({ error: 'bad_action' }, 400);
+  } catch (e) {
+    console.error(e);
+    return json({ error: 'server' }, 500);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Accounts: a username and password that hold a player's identity and a cloud
+// copy of their progress, so they can play on any device. No email needed.
+// ---------------------------------------------------------------------------
+const PBKDF2_ITER = 100000;
+async function pbkdf2(password, saltHex, iter) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const salt = new Uint8Array(saltHex.match(/../g).map(h => parseInt(h, 16)));
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, key, 256);
+  return [...new Uint8Array(bits)].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function usernameOk(u) {
+  if (typeof u !== 'string' || !/^[A-Za-z0-9_.-]{3,16}$/.test(u) || !/[A-Za-z0-9]/.test(u)) return false;
+  return !BAD.some(w => u.toLowerCase().replace(/[^a-z]/g, '').includes(w));
+}
+const passwordOk = p => typeof p === 'string' && p.length >= 6 && p.length <= 64;
+async function accountAuth(accStore, id, key) {
+  if (typeof id !== 'string' || !/^[a-f0-9-]{16,64}$/.test(id) || typeof key !== 'string') return null;
+  const link = await accStore.get('pid:' + id, { type: 'json' });
+  if (!link) return null;
+  const rec = await accStore.get('user:' + link.username.toLowerCase(), { type: 'json' });
+  return rec && rec.id === id && rec.key === key ? rec : null;
+}
+
+export async function handleAccount(req, store, accStore) {
+  try {
+    if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
+    if (req.method !== 'POST') return json({ error: 'method' }, 405);
+    if (Number(req.headers.get('content-length') || 0) > 300000) return json({ error: 'too_big' }, 413);
+    let b;
+    try { b = await req.json(); } catch (e) { return json({ error: 'bad_json' }, 400); }
+    if (!b) return json({ error: 'bad_json' }, 400);
+
+    if (b.action === 'register') {
+      if (!usernameOk(b.username)) return json({ error: 'bad_username' }, 400);
+      if (!passwordOk(b.password)) return json({ error: 'bad_password' }, 400);
+      if (typeof b.id !== 'string' || !/^[a-f0-9-]{16,64}$/.test(b.id) || typeof b.key !== 'string' || b.key.length < 16 || b.key.length > 128) return json({ error: 'bad_id' }, 400);
+      const uk = 'user:' + b.username.toLowerCase();
+      if (await accStore.get(uk, { type: 'json' })) return json({ error: 'username_taken' }, 409);
+      const row = await store.get(b.id, { type: 'json' });
+      if (row && row.keyHash !== (await sha256(b.key))) return json({ error: 'not_yours' }, 403);
+      // the admins' nicknames can only become usernames of those admin players
+      if (adminNames().includes(nameKey(b.username)) && !(row && row.admin)) return json({ error: 'username_taken' }, 409);
+      if (await accStore.get('pid:' + b.id, { type: 'json' })) return json({ error: 'already_has_account' }, 409);
+      const salt = randomId() + randomId();
+      await accStore.setJSON(uk, { username: b.username, salt, iter: PBKDF2_ITER, hash: await pbkdf2(b.password, salt, PBKDF2_ITER), id: b.id, key: b.key, created: Date.now() });
+      await accStore.setJSON('pid:' + b.id, { username: b.username });
+      return json({ ok: true, username: b.username });
+    }
+    if (b.action === 'login') {
+      const rec = typeof b.username === 'string' && /^[A-Za-z0-9_.-]{3,16}$/.test(b.username) ? await accStore.get('user:' + b.username.toLowerCase(), { type: 'json' }) : null;
+      const okPw = rec && typeof b.password === 'string' && (await pbkdf2(b.password, rec.salt, rec.iter || PBKDF2_ITER)) === rec.hash;
+      if (!okPw) { await wait(900); return json({ error: 'wrong_login' }, 401); }
+      return json({ ok: true, username: rec.username, id: rec.id, key: rec.key });
+    }
+    const rec = await accountAuth(accStore, b.id, b.key);
+    if (!rec) return json({ error: 'no_account' }, 403);
+    if (b.action === 'whoami') return json({ ok: true, username: rec.username });
+    if (b.action === 'save') {
+      if (!b.data || typeof b.data !== 'object' || Array.isArray(b.data)) return json({ error: 'bad_data' }, 400);
+      if (JSON.stringify(b.data).length > 250000) return json({ error: 'too_big' }, 413);
+      const updated = Date.now();
+      await accStore.setJSON('save:' + rec.id, { data: b.data, updated });
+      return json({ ok: true, updated });
+    }
+    if (b.action === 'load') {
+      const sv = await accStore.get('save:' + rec.id, { type: 'json' });
+      return json({ ok: true, data: sv ? sv.data : null, updated: sv ? sv.updated : 0 });
+    }
+    if (b.action === 'password') {
+      if ((await pbkdf2(String(b.old || ''), rec.salt, rec.iter || PBKDF2_ITER)) !== rec.hash) { await wait(900); return json({ error: 'wrong_login' }, 401); }
+      if (!passwordOk(b.password)) return json({ error: 'bad_password' }, 400);
+      rec.salt = randomId() + randomId(); rec.hash = await pbkdf2(b.password, rec.salt, rec.iter || PBKDF2_ITER);
+      await accStore.setJSON('user:' + rec.username.toLowerCase(), rec);
+      return json({ ok: true });
     }
     return json({ error: 'bad_action' }, 400);
   } catch (e) {
